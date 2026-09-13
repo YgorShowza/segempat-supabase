@@ -80,6 +80,17 @@ O host exato do pooler deve ser copiado do botão **Connect** do projeto Supabas
 
 A `DATABASE_URL` real deve existir apenas no secret manager do host da API. Se a senha operacional atual não estiver disponível ao responsável pelo ambiente, ela deve ser rotacionada diretamente no ambiente seguro. Nenhuma senha deve ser colocada em Git, issue, documentação pública, chat ou variável `VITE_*`.
 
+## Autorização da aplicação
+
+O modelo funcional permanece separado dos papéis técnicos do PostgreSQL:
+
+- **Administrador Master** — nível máximo da aplicação e único autorizado a administrar `access.permissions.manage`;
+- **Administrador** — administração sem os poderes exclusivos do Master;
+- **Inspetor** — gestão operacional conforme as permissões efetivas;
+- **Operador** — acesso operacional e pessoal autorizado.
+
+A API recompõe as permissões a partir do banco, alterações administrativas invalidam sessões anteriores e o sistema protege a continuidade de pelo menos um Administrador Master utilizável.
+
 ## Storage privado
 
 As evidências usam o bucket:
@@ -141,7 +152,7 @@ Após a API receber uma URL HTTPS:
 4. confirmar TLS, migrations, schema e Storage;
 5. validar CORS e bloqueio de escrita sem `Origin` confiável;
 6. executar smoke/cutover contra o ambiente real;
-7. validar Master, Administrador, Inspetor e Operador;
+7. validar **Administrador Master**, **Administrador**, **Inspetor** e **Operador**, confirmando que `access.permissions.manage` permanece exclusiva do Administrador Master;
 8. testar assinaturas, evidências, auditoria e revogação de sessão;
 9. só depois apontar/publicar o frontend para a API homologada.
 
@@ -181,7 +192,7 @@ A edição preserva os princípios do SEGEMPAT:
 - proteção do último Master;
 - readiness que revalida migrations, banco e storage.
 
-O aplicativo também mantém `robots.txt` com bloqueio de indexação e metadados `noindex`. Isso reduz exposição acidental a buscadores, mas não substitui autenticação e autorização.
+O aplicativo mantém `public/robots.txt` cobrindo todos os crawlers e com `Disallow: /`, além de metadados `noindex, nofollow, noarchive, nosnippet, noimageindex`. Isso reduz exposição acidental a buscadores, mas não substitui autenticação, autorização ou controle de acesso.
 
 ## Performance Advisor
 
