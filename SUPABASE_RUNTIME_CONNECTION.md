@@ -13,6 +13,10 @@ Este documento descreve apenas a edição `YgorShowza/segempat-supabase`. Ele n�
 
 A API valida no preflight que `current_user` é `segempat_app` quando `SEGEMPAT_EXPECTED_DB_ROLE=segempat_app` está configurado.
 
+O catálogo PostgreSQL do projeto real já confirmou que `segempat_app` possui `LOGIN`, não é superuser, não possui `CREATEDB`, `CREATEROLE`, `REPLICATION` ou `BYPASSRLS`, não possui `CREATE` no schema `public` e herda somente o papel técnico `segempat_runtime`.
+
+A credencial de login já existe no PostgreSQL, porém seu valor não é lido nem exibido pelo projeto. Se o responsável pelo ambiente não possuir o valor operacional atual, a senha deve ser **rotacionada diretamente no ambiente seguro** antes de configurar o host da API. Nunca recupere ou publique a senha em Git, issue, documentação ou chat.
+
 ## Session Pooler
 
 Para um serviço hospedado, use preferencialmente o **Shared Session Pooler** do Supabase, porta `5432`.
@@ -31,7 +35,7 @@ Formato da `DATABASE_URL` de runtime:
 postgresql://segempat_app.bkghgceaubnuhjtzggsj:<PASSWORD_PERCENT_ENCODED>@<SESSION_POOLER_HOST>:5432/postgres
 ```
 
-A senha deve ser criada e armazenada diretamente nos secret managers apropriados. Não coloque a senha em Git, issue, documentação, variável `VITE_*` ou chat.
+A `DATABASE_URL` deve ser montada e armazenada diretamente no secret manager do host. Não coloque a senha ou a connection string real em Git, issue, documentação, variável `VITE_*` ou chat.
 
 Se a senha contiver caracteres especiais, faça percent-encoding antes de inseri-la na connection string.
 
@@ -40,6 +44,8 @@ Se a senha contiver caracteres especiais, faça percent-encoding antes de inseri
 `DATABASE_URL` é exclusivamente a conexão de runtime da API. Ela não deve usar `postgres`, `service_role` ou qualquer papel administrativo.
 
 Migrations usam uma credencial separada e temporária em `SEGEMPAT_MIGRATION_DATABASE_URL`, por meio do workflow manual **Supabase Real Migration**. A credencial de migration não pertence ao serviço permanente do Render.
+
+No projeto real, `segempat_app` possui CRUD nas 28 tabelas funcionais, mas apenas `SELECT` em `schema_migrations`, sem capacidade de inserir, alterar, excluir, truncar ou criar triggers nessa tabela. As funções internas `segempat_*` também não são executáveis diretamente pelo runtime.
 
 ## Gate esperado
 
