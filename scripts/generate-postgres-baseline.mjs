@@ -5,7 +5,13 @@ const sourcePath = path.resolve("database/mysql/001_schema.sql");
 const outDir = path.resolve("supabase/migrations");
 const outPath = path.join(outDir, "20260913010000_api_owned_baseline.sql");
 
-const source = fs.readFileSync(sourcePath, "utf8");
+// O schema MySQL contém comentários de documentação entre comandos. Eles não
+// participam da conversão e precisam ser retirados antes do split por ';' para
+// que um comentário não seja confundido com o início de uma instrução SQL.
+const source = fs
+  .readFileSync(sourcePath, "utf8")
+  .replace(/^\s*--.*$/gm, "")
+  .replace(/\n{3,}/g, "\n\n");
 
 function splitStatements(input) {
   const statements = [];
