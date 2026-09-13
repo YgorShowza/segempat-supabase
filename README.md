@@ -6,7 +6,7 @@ Edição independente do **SEGEMPAT** preparada para evoluir sobre **Supabase/Po
 
 ## Status atual
 
-**PORTABILIDADE POSTGRESQL EM DESENVOLVIMENTO — FUNDAÇÃO, MIGRATIONS, API, READINESS, PREFLIGHT E SMOKES JÁ VALIDADOS EM POSTGRESQL 16 NO CI.**
+**PORTABILIDADE POSTGRESQL EM DESENVOLVIMENTO — FUNDAÇÃO, MIGRATIONS, API, READINESS, PREFLIGHT, SMOKES E CUTOVER AUDIT JÁ VALIDADOS EM POSTGRESQL 16 NO CI.**
 
 Ainda **não** significa homologação em um projeto Supabase real e **não** significa produção. Antes dessa classificação ainda serão necessários conexão com um projeto Supabase real, configuração segura de credenciais/roles, validação do storage definitivo, carga de dados/evidências e testes ponta a ponta no ambiente final.
 
@@ -24,7 +24,7 @@ API SEGEMPAT — Node.js / Express
         +--> autenticação, autorização e regras de negócio
 ```
 
-O navegador **não acessa diretamente o PostgreSQL** e não recebe `DATABASE_URL`, senha, certificado ou credencial administrativa. A API continua sendo a fonte de verdade das regras de segurança e negócio.
+O navegador **não acessa diretamente o PostgreSQL** e não recebe `DATABASE_URL`, senha, certificado, service-role key ou credencial administrativa. A API continua sendo a fonte de verdade das regras de segurança e negócio.
 
 ## Stack principal
 
@@ -64,7 +64,7 @@ A cadeia atual contém:
 20260913020000_current_hardening.sql
 ```
 
-O baseline PostgreSQL foi derivado do schema funcional consolidado do SEGEMPAT. O hardening seguinte preserva controles atuais de cronograma, avaliações práticas, ocorrências, auditoria, recuperação de senha e autorização granular.
+A migration `20260913020000_current_hardening.sql` concentra o hardening equivalente às etapas funcionais 002–010 da linha corporativa, incluindo cronograma, avaliações práticas, auditoria, ocorrências, recuperação de senha e controle de acesso granular. O nome histórico `010_granular_access_control.sql` pertence à linha MySQL e é citado apenas para rastreabilidade da equivalência, não como migration ativa desta edição.
 
 O runner `server/scripts/migrate-postgres.js` mantém uma tabela `schema_migrations` com versão, nome, checksum SHA-256 e data de aplicação. A execução é transacional, usa advisory lock e rejeita divergência de checksum.
 
@@ -84,7 +84,7 @@ SEGEMPAT_STORAGE_PATH=/caminho/persistente
 SEGEMPAT_TIMEZONE=America/Maceio
 ```
 
-Nunca coloque `DATABASE_URL`, senha de banco ou segredo de sessão em variáveis `VITE_*`, no frontend, em issues ou em documentação pública.
+O frontend usa apenas o exemplo público `.env.supabase.example`. Nunca coloque `DATABASE_URL`, senha de banco, service-role key ou segredo de sessão em variáveis `VITE_*`, no frontend, em issues ou em documentação pública.
 
 ## Comandos técnicos da API
 
@@ -125,20 +125,21 @@ A branch de portabilidade possui gates PostgreSQL que verificam, entre outros po
 - sessão de Administrador Master;
 - leitura e CRUD de colaboradores;
 - geração de auditoria nas operações autenticadas;
+- bootstrap e mudanças de privilégio auditáveis;
 - auditoria pré-cutover PostgreSQL.
 
 ## Autorização
 
 O modelo granular foi preservado:
 
-- **Master** — nível máximo, incluindo gestão de permissões;
+- **Administrador Master** — nível máximo e único autorizado a administrar a permissão `access.permissions.manage`;
 - **Administrador** — administração sem poderes exclusivos do Master;
 - **Inspetor** — gestão operacional conforme permissões efetivas;
 - **Operador** — acesso operacional e pessoal autorizado.
 
-A API reconstitui o contexto de autorização a partir do banco. Alterações administrativas de nível e permissão invalidam sessões anteriores por `session_epoch`, e o sistema protege a continuidade de pelo menos um Master utilizável.
+A API reconstitui o contexto de autorização a partir do banco. Alterações administrativas de nível e permissão invalidam sessões anteriores por `session_epoch`, e o sistema protege a continuidade de pelo menos um Administrador Master realmente utilizável. Contas legadas nunca são promovidas automaticamente a Master durante a migração.
 
-## Segurança desta edição
+## Segurança e privacidade desta edição
 
 A portabilidade preserva os princípios do projeto corporativo:
 
@@ -155,15 +156,17 @@ A portabilidade preserva os princípios do projeto corporativo:
 - gabaritos e respostas protegidos por autorização;
 - readiness que revalida schema e migrations antes de declarar a API pronta.
 
+O repositório também mantém bloqueio de indexação pública do aplicativo: `public/robots.txt` usa `Disallow: /` e os metadados da aplicação usam `noindex`. Isso reduz exposição acidental a buscadores, mas **não substitui autenticação, autorização ou controle de acesso**.
+
 ## Menor privilégio no Supabase/PostgreSQL
 
 Em produção, a API não deve utilizar uma role administrativa do projeto Supabase. O preflight rejeita uma role de runtime com privilégios elevados como `SUPERUSER`, `CREATEROLE`, `CREATEDB`, `REPLICATION`, `BYPASSRLS`, `CREATE` no schema ou privilégios críticos desnecessários em tabelas.
 
-A conta administrativa/migration deve ser separada da role utilizada continuamente pela API.
+A credencial usada para aplicar migrations deve ser tratada separadamente da role utilizada continuamente pela API. Nenhum segredo real deve ser versionado.
 
 ## Conteúdo MySQL ainda presente
 
-Alguns arquivos `database/mysql/` e documentos históricos continuam no repositório como **referência de origem e rastreabilidade da conversão**. Eles não são o alvo de runtime desta edição. Os workflows MySQL corporativos não fazem parte do CI ativo da edição Supabase.
+Alguns arquivos `database/mysql/` e documentos históricos continuam no repositório como **referência de origem e rastreabilidade da conversão**. Eles não são o alvo de runtime desta edição e os workflows MySQL corporativos não fazem parte do CI ativo da edição Supabase.
 
 A versão oficial preparada para o banco corporativo permanece em:
 
