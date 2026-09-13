@@ -1,8 +1,6 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { Router } from "express";
-import { config } from "../config.js";
 import { query, queryOne, withTransaction } from "../db.js";
+import { storage } from "../storage.js";
 import { audit } from "../audit.js";
 import { requireAdmin, requireAuth } from "../session.js";
 import {
@@ -377,7 +375,6 @@ occurrenceIntegrityRouter.post(
   "/occurrences/:id/attachments",
   requireAuth,
   asyncHandler(async (req, res) => {
-    if (config.storage.driver !== "filesystem") throw badRequest("Driver de armazenamento ainda não suportado nesta API");
     const occurrence = await queryOne(`SELECT * FROM occurrences WHERE id = ? LIMIT 1`, [req.params.id]);
     assertOccurrenceAccess(req, occurrence);
     if (occurrence.status === "Concluída") throw conflict("Ocorrência concluída não recebe novas evidências");
@@ -397,13 +394,9 @@ occurrenceIntegrityRouter.post(
       .slice(0, 255);
     const caption = textOrNull(req.body?.caption, 500);
     const fileName = `${attachmentId}.${decoded.extension}`;
-    const relativePath = path.posix.join("occurrence-evidence", occurrence.id, fileName);
-    const storageRoot = path.resolve(config.storage.path);
-    const absolutePath = path.resolve(storageRoot, relativePath);
-    if (!absolutePath.startsWith(`${storageRoot}${path.sep}`)) throw badRequest("Caminho de evidência inválido");
+    const relativePath = `occurrence-evidence/${occurrence.id}/${fileName}`;
 
-    await fs.mkdir(path.dirname(absolutePath), { recursive: true });
-    await fs.writeFile(absolutePath, decoded.bytes, { mode: 0o600, flag: "wx" });
+    await storage.write(relativePath, decoded.bytes, { contentType: decoded.mimeType });
     try {
       await withTransaction(async (connection) => {
         const [lockedRows] = await connection.execute(
@@ -432,11 +425,12 @@ occurrenceIntegrityRouter.post(
           original_name: originalName,
           private_storage: true,
           immutable_after_upload: true,
+          storage_driver: storage.driver,
           atomic: true,
         }, connection);
       });
     } catch (error) {
-      await fs.rm(absolutePath, { force: true }).catch(() => {});
+      await storage.remove(relativePath).catch(() => {});
       throw error;
     }
 
@@ -448,7 +442,6 @@ occurrenceIntegrityRouter.get(
   "/occurrences/:id/attachments/:attachmentId",
   requireAuth,
   asyncHandler(async (req, res) => {
-    if (config.storage.driver !== "filesystem") throw badRequest("Driver de armazenamento ainda não suportado nesta API");
     const occurrence = await queryOne(`SELECT * FROM occurrences WHERE id = ? LIMIT 1`, [req.params.id]);
     assertOccurrenceAccess(req, occurrence);
     const attachment = await queryOne(
@@ -462,16 +455,10 @@ occurrenceIntegrityRouter.get(
     if (!requested.startsWith(`occurrence-evidence/${occurrence.id}/`) || requested.includes("..")) {
       throw badRequest("Caminho de evidência inválido");
     }
-    const storageRoot = path.resolve(config.storage.path);
-    const candidatePath = path.resolve(storageRoot, requested);
-    if (!candidatePath.startsWith(`${storageRoot}${path.sep}`)) throw badRequest("Caminho de evidência inválido");
 
     try {
-      const [storageRootReal, absolutePath] = await Promise.all([fs.realpath(storageRoot), fs.realpath(candidatePath)]);
-      if (!absolutePath.startsWith(`${storageRootReal}${path.sep}`)) throw badRequest("Caminho de evidência inválido");
-      const stat = await fs.stat(absolutePath);
-      if (!stat.isFile() || stat.size < MIN_ATTACHMENT_BYTES || stat.size > MAX_ATTACHMENT_BYTES) throw notFound("Evidência fotográfica não encontrada");
-      const bytes = await fs.readFile(absolutePath);
+      const bytes = await storage.read(requested);
+      if (bytes.length < MIN_ATTACHMENT_BYTES || bytes.length > MAX_ATTACHMENT_BYTES) throw notFound("Evidência fotográfica não encontrada");
       const validPng = bytes.length >= PNG_SIGNATURE.length && bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE);
       const validJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
       if ((attachment.mime_type === "image/png" && !validPng) || (attachment.mime_type === "image/jpeg" && !validJpeg)) {
