@@ -23,24 +23,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf /tmp/segempat-source
           git clone --no-tags https://github.com/YgorShowza/app-reimagined.git /tmp/segempat-source
-          cd /tmp/segempat-source
-          git checkout cc8e20022645114502d5eb87bbcf2d6bee77a44f
+          git -C /tmp/segempat-source checkout cc8e20022645114502d5eb87bbcf2d6bee77a44f
 
-      - name: Replace destination working tree with source snapshot
+      - name: Import source tree into this repository
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
-          cp -a /tmp/segempat-source/. "$GITHUB_WORKSPACE"/
-          rm -rf "$GITHUB_WORKSPACE/.git"
-          # Restore the destination repository metadata created by actions/checkout.
-          git -C "$GITHUB_WORKSPACE" init
-          git -C "$GITHUB_WORKSPACE" remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git -C "$GITHUB_WORKSPACE" fetch origin main
-          git -C "$GITHUB_WORKSPACE" checkout -B main origin/main
-          # Remove all tracked/untracked destination files, then copy the source snapshot again.
-          git -C "$GITHUB_WORKSPACE" rm -rf . || true
-          find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
-          cp -a /tmp/segempat-source/. "$GITHUB_WORKSPACE"/
-          rm -rf "$GITHUB_WORKSPACE/.git"
+          rsync -a --exclude='.git' /tmp/segempat-source/ "$GITHUB_WORKSPACE"/
+
+          git add -A
+          git commit -m "Import SEGEMPAT snapshot cc8e200 from app-reimagined"
+          git push origin HEAD:main
