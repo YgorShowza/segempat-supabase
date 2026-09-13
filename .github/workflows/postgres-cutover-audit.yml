@@ -1,0 +1,98 @@
+name: PostgreSQL Cutover Audit
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/postgres-cutover-audit.yml'
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/postgres-cutover-audit.yml'
+  workflow_dispatch:
+
+jobs:
+  cutover-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: segempat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d segempat_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/segempat_test
+      POSTGRES_SSL: 'false'
+      POSTGRES_POOL_SIZE: '5'
+      SEGEMPAT_SESSION_SECRET: ci-postgres-session-secret-with-at-least-32-bytes
+      SEGEMPAT_SESSION_SECURE: 'false'
+      SEGEMPAT_SESSION_SAMESITE: lax
+      SEGEMPAT_ALLOWED_ORIGINS: http://127.0.0.1:4173
+      SEGEMPAT_STORAGE_DRIVER: filesystem
+      SEGEMPAT_STORAGE_PATH: /tmp/segempat-postgres-storage
+      SEGEMPAT_TIMEZONE: America/Maceio
+      PORT: '8787'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
+
+      - name: Apply PostgreSQL migrations
+        run: npm run migrate --prefix server
+
+      - name: Prepare evidence storage
+        run: mkdir -p "$SEGEMPAT_STORAGE_PATH"
+
+      - name: Start API
+        shell: bash
+        run: |
+          set -euo pipefail
+          node server/src/index.js >/tmp/segempat-cutover-api.log 2>&1 &
+          echo $! >/tmp/segempat-cutover-api.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8787/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/segempat-cutover-api.log
+          exit 1
+
+      - name: Seed and exercise authenticated Master flow
+        run: npm run smoke:auth --prefix server
+
+      - name: Run PostgreSQL cutover audit
+        run: npm run cutover:audit --prefix server
+
+      - name: Print API log on failure
+        if: failure()
+        run: cat /tmp/segempat-cutover-api.log || true
+
+      - name: Stop API
+        if: always()
+        run: |
+          if test -f /tmp/segempat-cutover-api.pid; then
+            kill "$(cat /tmp/segempat-cutover-api.pid)" 2>/dev/null || true
+          fi
