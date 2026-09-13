@@ -5,9 +5,8 @@ services:
     plan: free
     region: virginia
     branch: main
-    rootDir: server
-    buildCommand: npm ci
-    startCommand: npm start
+    buildCommand: npm ci --prefix server
+    startCommand: npm start --prefix server
     healthCheckPath: /health/ready
     autoDeployTrigger: off
     envVars:
