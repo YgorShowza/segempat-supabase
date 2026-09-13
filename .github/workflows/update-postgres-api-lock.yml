@@ -1,0 +1,58 @@
+name: Update PostgreSQL API lockfile
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - 'server/package.json'
+      - '.github/workflows/update-postgres-api-lock.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Supabase edition branch
+        uses: actions/checkout@v4
+        with:
+          ref: supabase/phase-1-foundation
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Regenerate API package lock
+        run: npm install --prefix server --package-lock-only --ignore-scripts --registry=https://registry.npmjs.org/
+
+      - name: Verify clean API install and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
+          node --check server/src/config.js
+          node --check server/src/db.js
+          if grep -F '"mysql2"' server/package-lock.json >/dev/null; then
+            echo "::error::mysql2 ainda presente no lockfile da edição PostgreSQL"
+            exit 1
+          fi
+          grep -F '"pg"' server/package-lock.json >/dev/null
+
+      - name: Commit lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Lockfile já atualizado."
+            exit 0
+          fi
+          git commit -m "Update API lockfile for PostgreSQL"
+          git push origin HEAD:supabase/phase-1-foundation
