@@ -1,194 +1,208 @@
 # SEGEMPAT · Supabase / PostgreSQL Edition
 
-Edição independente do **SEGEMPAT** preparada para evoluir sobre **Supabase/PostgreSQL**, preservando a interface, os módulos, as regras de negócio, a hierarquia de acesso e a identidade visual do projeto original.
+Edição independente do **SEGEMPAT** preparada para operar sobre **Supabase/PostgreSQL**, preservando a interface, os módulos, as regras de negócio, a hierarquia de acesso e a identidade visual do projeto.
 
-> Esta edição não substitui nem modifica o repositório corporativo MySQL `YgorShowza/app-reimagined`. O projeto corporativo permanece separado e preparado para homologação no MySQL da empresa.
+> **Separação obrigatória:** este repositório não substitui nem modifica `YgorShowza/app-reimagined`. A edição corporativa preparada para MySQL permanece em outro repositório e não recebe alterações desta linha Supabase.
 
-## Status atual
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2FYgorShowza%2Fsegempat-supabase)
 
-**PORTABILIDADE POSTGRESQL EM DESENVOLVIMENTO — FUNDAÇÃO, MIGRATIONS, API, READINESS, PREFLIGHT, SMOKES E CUTOVER AUDIT JÁ VALIDADOS EM POSTGRESQL 16 NO CI.**
+## Estado atual
 
-Ainda **não** significa homologação em um projeto Supabase real e **não** significa produção. Antes dessa classificação ainda serão necessários conexão com um projeto Supabase real, configuração segura de credenciais/roles, validação do storage definitivo, carga de dados/evidências e testes ponta a ponta no ambiente final.
+O projeto Supabase real já existe no plano **Free**, na região São Paulo (`sa-east-1`), com PostgreSQL ativo e saudável.
 
-## Arquitetura da edição Supabase
+Já estão concluídos e validados:
+
+- schema funcional do SEGEMPAT no PostgreSQL;
+- hardening e regras de integridade;
+- três migrations de negócio versionadas e ledger `schema_migrations` com SHA-256;
+- superfície Data API fechada para `anon`, `authenticated` e `service_role` nas tabelas/funções do SEGEMPAT;
+- Security Advisor do Supabase sem lints;
+- papel técnico `segempat_runtime` e login de runtime `segempat_app` com menor privilégio;
+- `segempat_app` sem SUPERUSER, CREATEDB, CREATEROLE, REPLICATION, BYPASSRLS ou CREATE no schema `public`;
+- CRUD do runtime nas 28 tabelas funcionais e somente leitura no histórico de migrations;
+- bucket privado `segempat-evidence`, limitado a 1,5 MB e PNG/JPEG;
+- driver server-side para Supabase Storage;
+- Blueprint `render.yaml` para homologação da API em Render Free;
+- preflight, smoke, cutover audit, CI, contratos e readiness automatizados;
+- gate manual **Hosted API Readiness** para validar a API depois do deploy.
+
+O estado correto neste momento é:
+
+> **SUPABASE REAL E SEGURANÇA DE BANCO/STORAGE PREPARADOS — PENDENTE INJETAR OS SECRETS NO HOST, CONECTAR A API E EXECUTAR A HOMOLOGAÇÃO E2E.**
+
+Isso ainda **não significa produção nem homologação final**.
+
+## Arquitetura
 
 ```text
 Frontend SEGEMPAT
         |
         | HTTPS / JSON
         v
-API SEGEMPAT — Node.js / Express
+API SEGEMPAT · Node.js / Express
         |
-        +--> Supabase / PostgreSQL
-        +--> storage privado de evidências
+        +--> PostgreSQL Supabase
+        +--> Supabase Storage privado
         +--> autenticação, autorização e regras de negócio
 ```
 
-O navegador **não acessa diretamente o PostgreSQL** e não recebe `DATABASE_URL`, senha, certificado, service-role key ou credencial administrativa. A API continua sendo a fonte de verdade das regras de segurança e negócio.
-
-## Stack principal
-
-### Frontend
-
-- React 19
-- TypeScript
-- TanStack Router / TanStack Query
-- TanStack Start / Vite
-- Tailwind CSS
-- Bun
-- Cloudflare Workers como opção de publicação do frontend
-
-### Backend
-
-- Node.js 20+
-- Express
-- PostgreSQL 15+; CI atual em PostgreSQL 16
-- driver `pg`
-- sessões assinadas por cookie
-- bcrypt para senhas e códigos sensíveis
-- Helmet e CORS por allowlist
-- storage privado controlado pela API
+O navegador não recebe senha do PostgreSQL, `DATABASE_URL`, credenciais S3, service-role key nem credenciais administrativas. O backend continua sendo a fonte de verdade das regras de segurança e negócio.
 
 ## Banco e migrations
 
-As migrations desta edição ficam exclusivamente em:
-
-```text
-supabase/migrations/
-```
-
-A cadeia atual contém:
+A cadeia de negócio fica exclusivamente em `supabase/migrations/`:
 
 ```text
 20260913010000_api_owned_baseline.sql
 20260913020000_current_hardening.sql
+20260913030000_api_surface_hardening.sql
 ```
 
-A migration `20260913020000_current_hardening.sql` concentra o hardening equivalente às etapas funcionais 002–010 da linha corporativa, incluindo cronograma, avaliações práticas, auditoria, ocorrências, recuperação de senha e controle de acesso granular. O nome histórico `010_granular_access_control.sql` pertence à linha MySQL e é citado apenas para rastreabilidade da equivalência, não como migration ativa desta edição.
+O runner `server/scripts/migrate-postgres.js` usa transação, advisory lock e uma tabela `schema_migrations` com versão, nome do arquivo, checksum SHA-256 e data de aplicação. Divergência de checksum é rejeitada.
 
-O runner `server/scripts/migrate-postgres.js` mantém uma tabela `schema_migrations` com versão, nome, checksum SHA-256 e data de aplicação. A execução é transacional, usa advisory lock e rejeita divergência de checksum.
-
-## Configuração da API
-
-Use `server/.env.example` como referência. Os principais valores são:
+Papéis técnicos e outros itens de infraestrutura do ambiente ficam separados da cadeia de negócio. A configuração reproduzível dos papéis está em:
 
 ```text
-DATABASE_URL=postgresql://...
-POSTGRES_SSL=true
-POSTGRES_SSL_CA_PATH=
-POSTGRES_POOL_SIZE=10
-SEGEMPAT_SESSION_SECRET=...
-SEGEMPAT_ALLOWED_ORIGINS=https://...
-SEGEMPAT_STORAGE_DRIVER=filesystem
-SEGEMPAT_STORAGE_PATH=/caminho/persistente
-SEGEMPAT_TIMEZONE=America/Maceio
+supabase/bootstrap/runtime-roles.sql
 ```
 
-O frontend usa apenas o exemplo público `.env.supabase.example`. Nunca coloque `DATABASE_URL`, senha de banco, service-role key ou segredo de sessão em variáveis `VITE_*`, no frontend, em issues ou em documentação pública.
+## Runtime PostgreSQL
+
+A identidade permanente da API é `segempat_app`, herdando somente `segempat_runtime`.
+
+Para hospedagem, a configuração preparada usa o **Shared Session Pooler** do Supabase, com o username:
+
+```text
+segempat_app.bkghgceaubnuhjtzggsj
+```
+
+O host exato do pooler deve ser copiado do botão **Connect** do projeto Supabase. Não monte o hostname manualmente.
+
+A `DATABASE_URL` real deve existir apenas no secret manager do host da API. Se a senha operacional atual não estiver disponível ao responsável pelo ambiente, ela deve ser rotacionada diretamente no ambiente seguro. Nenhuma senha deve ser colocada em Git, issue, documentação pública, chat ou variável `VITE_*`.
+
+## Autorização da aplicação
+
+O modelo funcional permanece separado dos papéis técnicos do PostgreSQL:
+
+- **Administrador Master** — nível máximo da aplicação e único autorizado a administrar `access.permissions.manage`;
+- **Administrador** — administração sem os poderes exclusivos do Master;
+- **Inspetor** — gestão operacional conforme as permissões efetivas;
+- **Operador** — acesso operacional e pessoal autorizado.
+
+A API recompõe as permissões a partir do banco, alterações administrativas invalidam sessões anteriores e o sistema protege a continuidade de pelo menos um Administrador Master utilizável.
+
+## Storage privado
+
+As evidências usam o bucket:
+
+```text
+segempat-evidence
+```
+
+Características já confirmadas:
+
+- privado;
+- limite de 1,5 MB por objeto;
+- `image/png` e `image/jpeg`;
+- acesso da aplicação exclusivamente pelo backend;
+- downloads autorizados pela API;
+- readiness preparado para probe de escrita, leitura e remoção no driver ativo.
+
+As credenciais S3 do backend devem ser geradas/configuradas somente no secret manager do host.
+
+## Homologação da API no Render Free
+
+O repositório possui `render.yaml` na raiz e um botão **Deploy to Render** no topo deste README.
+
+O Blueprint prepara:
+
+- Web Service Node;
+- plano `free`;
+- branch `main`;
+- deploy automático desligado;
+- `/health/ready` como health check;
+- TLS PostgreSQL obrigatório;
+- pool da API de 5 conexões;
+- papel esperado `segempat_app`;
+- Storage Supabase privado;
+- sessão segura em HTTPS.
+
+Durante a criação no Render, os valores marcados como `sync: false` precisam ser cadastrados diretamente na interface do Render. Não os publique no repositório.
+
+Os principais secrets são:
+
+```text
+DATABASE_URL
+SEGEMPAT_ALLOWED_ORIGINS
+SUPABASE_STORAGE_S3_ACCESS_KEY_ID
+SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY
+```
+
+`SEGEMPAT_SESSION_SECRET` é gerado pelo Blueprint.
+
+Consulte [`RENDER_SUPABASE_HANDOFF.md`](RENDER_SUPABASE_HANDOFF.md) e [`SUPABASE_RUNTIME_CONNECTION.md`](SUPABASE_RUNTIME_CONNECTION.md) antes do primeiro deploy.
+
+## Gates depois do deploy
+
+Após a API receber uma URL HTTPS:
+
+1. validar `/health`;
+2. validar `/health/ready`;
+3. executar o workflow **Hosted API Readiness** no branch `main`;
+4. confirmar TLS, migrations, schema e Storage;
+5. validar CORS e bloqueio de escrita sem `Origin` confiável;
+6. executar smoke/cutover contra o ambiente real;
+7. validar **Administrador Master**, **Administrador**, **Inspetor** e **Operador**, confirmando que `access.permissions.manage` permanece exclusiva do Administrador Master;
+8. testar assinaturas, evidências, auditoria e revogação de sessão;
+9. só depois apontar/publicar o frontend para a API homologada.
 
 ## Comandos técnicos da API
 
-Dentro de `server/`:
-
 ```bash
-npm ci
-npm run preflight
-npm run migrate
-npm run smoke
-npm run start
+npm ci --prefix server
+npm run preflight --prefix server
+npm run migrate --prefix server
+npm run smoke --prefix server
+npm run cutover:audit --prefix server
+npm run start --prefix server
 ```
 
-O gate ampliado de pré-cutover é:
+A credencial de migration deve ser separada da credencial de runtime. O workflow manual **Supabase Real Migration** usa `SEGEMPAT_MIGRATION_DATABASE_URL` e nunca é executado automaticamente em push ou pull request.
 
-```bash
-npm run cutover:audit
-```
+## Stack principal
 
-Ele reúne smoke estrutural PostgreSQL, validação da role de runtime, coerência funcional mínima, evidências e revisão de acessos privilegiados.
+**Frontend:** React 19, TypeScript, TanStack Router/Query, Vite/TanStack Start, Tailwind CSS e Bun.
 
-## Validações já automatizadas
+**Backend:** Node.js 20+, Express, PostgreSQL 15+, driver `pg`, sessões assinadas por cookie, bcrypt, Helmet, CORS por allowlist e storage privado controlado pela API.
 
-A branch de portabilidade possui gates PostgreSQL que verificam, entre outros pontos:
+## Segurança
 
-- aplicação e idempotência das migrations;
-- checksum e histórico de migrations;
-- presença das tabelas críticas;
-- foreign keys, índices únicos e triggers de proteção;
-- catálogo de níveis e permissões;
-- PostgreSQL em UTC e UTF-8;
-- preflight do ambiente;
-- política de menor privilégio para a role de produção;
-- inicialização real da API sobre PostgreSQL;
-- `/health` e `/health/ready`;
-- proteção de `Origin` nas escritas;
-- login real por sessão;
-- sessão de Administrador Master;
-- leitura e CRUD de colaboradores;
-- geração de auditoria nas operações autenticadas;
-- bootstrap e mudanças de privilégio auditáveis;
-- auditoria pré-cutover PostgreSQL.
-
-## Autorização
-
-O modelo granular foi preservado:
-
-- **Administrador Master** — nível máximo e único autorizado a administrar a permissão `access.permissions.manage`;
-- **Administrador** — administração sem poderes exclusivos do Master;
-- **Inspetor** — gestão operacional conforme permissões efetivas;
-- **Operador** — acesso operacional e pessoal autorizado.
-
-A API reconstitui o contexto de autorização a partir do banco. Alterações administrativas de nível e permissão invalidam sessões anteriores por `session_epoch`, e o sistema protege a continuidade de pelo menos um Administrador Master realmente utilizável. Contas legadas nunca são promovidas automaticamente a Master durante a migração.
-
-## Segurança e privacidade desta edição
-
-A portabilidade preserva os princípios do projeto corporativo:
+A edição preserva os princípios do SEGEMPAT:
 
 - backend como fonte de verdade;
-- negação por padrão fora das permissões efetivas;
-- credenciais somente no servidor;
+- negação por padrão;
+- credenciais apenas no servidor;
+- menor privilégio no PostgreSQL;
 - CORS explícito;
 - cookies seguros em produção;
-- TLS obrigatório para PostgreSQL em produção;
+- TLS obrigatório para o banco em produção;
 - transações em operações críticas;
-- auditoria append-only protegida por triggers;
-- evidências privadas fora de rotas públicas;
+- auditoria protegida;
 - códigos sensíveis com hash, expiração e uso único;
-- gabaritos e respostas protegidos por autorização;
-- readiness que revalida schema e migrations antes de declarar a API pronta.
+- proteção do último Master;
+- readiness que revalida migrations, banco e storage.
 
-O repositório também mantém bloqueio de indexação pública do aplicativo: `public/robots.txt` usa `Disallow: /` e os metadados da aplicação usam `noindex`. Isso reduz exposição acidental a buscadores, mas **não substitui autenticação, autorização ou controle de acesso**.
+O aplicativo mantém `public/robots.txt` cobrindo todos os crawlers e com `Disallow: /`, além de metadados `noindex, nofollow, noarchive, nosnippet, noimageindex`. Isso reduz exposição acidental a buscadores, mas não substitui autenticação, autorização ou controle de acesso.
 
-## Menor privilégio no Supabase/PostgreSQL
+## Performance Advisor
 
-Em produção, a API não deve utilizar uma role administrativa do projeto Supabase. O preflight rejeita uma role de runtime com privilégios elevados como `SUPERUSER`, `CREATEROLE`, `CREATEDB`, `REPLICATION`, `BYPASSRLS`, `CREATE` no schema ou privilégios críticos desnecessários em tabelas.
+O Security Advisor está limpo. O Performance Advisor ainda apresenta apenas itens informativos de um banco recém-criado, como foreign keys sem índice dedicado e índices sem uso observado. Esses itens serão refinados com base em carga e consultas reais, em vez de alterar o schema apenas para zerar o linter.
 
-A credencial usada para aplicar migrations deve ser tratada separadamente da role utilizada continuamente pela API. Nenhum segredo real deve ser versionado.
+## Documentos principais
 
-## Conteúdo MySQL ainda presente
+- [`SUPABASE_REAL_PROJECT_CHECKLIST.md`](SUPABASE_REAL_PROJECT_CHECKLIST.md)
+- [`SUPABASE_RUNTIME_CONNECTION.md`](SUPABASE_RUNTIME_CONNECTION.md)
+- [`RENDER_SUPABASE_HANDOFF.md`](RENDER_SUPABASE_HANDOFF.md)
+- [`SUPABASE_EDITION.md`](SUPABASE_EDITION.md)
 
-Alguns arquivos `database/mysql/` e documentos históricos continuam no repositório como **referência de origem e rastreabilidade da conversão**. Eles não são o alvo de runtime desta edição e os workflows MySQL corporativos não fazem parte do CI ativo da edição Supabase.
-
-A versão oficial preparada para o banco corporativo permanece em:
-
-```text
-YgorShowza/app-reimagined
-```
-
-## O que ainda falta para homologar no Supabase real
-
-Antes de chamar esta edição de homologada, ainda é necessário:
-
-1. criar/conectar o projeto Supabase real;
-2. definir roles e secrets reais sem expô-los ao frontend;
-3. aplicar as migrations no ambiente Supabase alvo;
-4. validar TLS, pool/conexões e menor privilégio;
-5. decidir e validar o storage definitivo de assinaturas/evidências;
-6. executar carga/migração de dados quando aplicável;
-7. rodar preflight, smoke, cutover audit e `/health/ready` no ambiente real;
-8. executar testes ponta a ponta dos perfis Master, Administrador, Inspetor e Operador;
-9. validar dispositivos, impressão/PDF, Modo TV e operação real;
-10. publicar o frontend somente depois dos gates anteriores.
-
-## Documento de portabilidade
-
-Veja também [`SUPABASE_EDITION.md`](SUPABASE_EDITION.md) para o contexto da separação entre as edições PostgreSQL e MySQL.
+A frase **“SEGEMPAT homologado no Supabase”** só deve ser usada depois dos gates reais de API, Storage e E2E.
