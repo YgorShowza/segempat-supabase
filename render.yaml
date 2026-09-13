@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: segempat-api-supabase
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health/ready
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: POSTGRES_SSL
+        value: "true"
+      - key: POSTGRES_POOL_SIZE
+        value: "5"
+      - key: DATABASE_URL
+        sync: false
+      - key: SEGEMPAT_SESSION_SECRET
+        generateValue: true
+      - key: SEGEMPAT_SESSION_COOKIE
+        value: segempat_session
+      - key: SEGEMPAT_SESSION_TTL_HOURS
+        value: "12"
+      - key: SEGEMPAT_SESSION_SECURE
+        value: "true"
+      - key: SEGEMPAT_SESSION_SAMESITE
+        value: lax
+      - key: SEGEMPAT_ALLOWED_ORIGINS
+        sync: false
+      - key: SEGEMPAT_STORAGE_DRIVER
+        value: supabase
+      - key: SEGEMPAT_STORAGE_BUCKET
+        value: segempat-evidence
+      - key: SUPABASE_STORAGE_S3_ENDPOINT
+        value: https://bkghgceaubnuhjtzggsj.storage.supabase.co/storage/v1/s3
+      - key: SUPABASE_STORAGE_S3_REGION
+        value: sa-east-1
+      - key: SUPABASE_STORAGE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: SEGEMPAT_TIMEZONE
+        value: America/Maceio
