@@ -1,4 +1,4 @@
-name: Generate PostgreSQL baseline
+name: Validate PostgreSQL migration chain
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - supabase/phase-1-foundation
     paths:
       - 'scripts/generate-postgres-baseline.mjs'
+      - 'supabase/migrations/**'
       - '.github/workflows/generate-postgres-baseline.yml'
   workflow_dispatch:
 
@@ -38,32 +39,43 @@ jobs:
           ref: supabase/phase-1-foundation
           fetch-depth: 0
 
-      - name: Replace legacy Supabase migrations with API-owned baseline
+      - name: Regenerate API-owned baseline
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf supabase/migrations
           node scripts/generate-postgres-baseline.mjs
 
-      - name: Validate baseline on PostgreSQL 16
+      - name: Validate complete migration chain on PostgreSQL 16
         shell: bash
         run: |
           set -euo pipefail
-          psql -h 127.0.0.1 -U postgres -d segempat_test -v ON_ERROR_STOP=1 \
-            -f supabase/migrations/20260913010000_api_owned_baseline.sql
-          psql -h 127.0.0.1 -U postgres -d segempat_test -Atc \
-            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"
+          mapfile -t migrations < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | sort)
+          test "${#migrations[@]}" -gt 0
+          for migration in "${migrations[@]}"; do
+            echo "Applying ${migration}"
+            psql -h 127.0.0.1 -U postgres -d segempat_test -v ON_ERROR_STOP=1 -f "$migration"
+          done
 
-      - name: Commit generated baseline
+          table_count=$(psql -h 127.0.0.1 -U postgres -d segempat_test -Atc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
+          echo "Public tables: ${table_count}"
+          test "$table_count" -ge 27
+
+          psql -h 127.0.0.1 -U postgres -d segempat_test -v ON_ERROR_STOP=1 -c \
+            "SELECT code, rank_value FROM access_levels ORDER BY rank_value DESC;"
+          psql -h 127.0.0.1 -U postgres -d segempat_test -v ON_ERROR_STOP=1 -c \
+            "SELECT count(*) AS permissions FROM access_permissions;"
+
+      - name: Commit regenerated baseline if needed
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A supabase/migrations
+          git add supabase/migrations/20260913010000_api_owned_baseline.sql
           if git diff --cached --quiet; then
             echo "Baseline já está atualizado."
             exit 0
           fi
-          git commit -m "Generate API-owned PostgreSQL baseline"
+          git commit -m "Regenerate API-owned PostgreSQL baseline"
           git push origin HEAD:supabase/phase-1-foundation
