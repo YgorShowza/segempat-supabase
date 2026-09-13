@@ -1,5 +1,5 @@
 /**
- * Cria (ou reabilita) o primeiro Administrador Master do SEGEMPAT direto no MySQL.
+ * Cria (ou reabilita) o primeiro Administrador Master do SEGEMPAT no PostgreSQL.
  *
  * Uso recomendado (senha via stdin, sem gravá-la no histórico do shell):
  *   read -rsp 'Senha temporária: ' SENHA_TMP; echo
