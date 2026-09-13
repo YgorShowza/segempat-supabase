@@ -33,32 +33,73 @@ export const pool = new Pool({
   application_name: "segempat-api",
 });
 
+const CONFLICT_TARGETS = new Map([
+  ["user_access_levels", "user_id"],
+  ["registration_activation_codes", "employee_id"],
+  ["password_reset_codes", "user_id"],
+]);
+
 const UNSUPPORTED_MYSQL_SQL = [
-  /\bON\s+DUPLICATE\s+KEY\b/i,
-  /\bINSERT\s+IGNORE\b/i,
   /\bLAST_INSERT_ID\s*\(/i,
-  /\bDATE_FORMAT\s*\(/i,
   /\bDATE_SUB\s*\(/i,
   /\bDATE_ADD\s*\(/i,
-  /\bJSON_EXTRACT\s*\(/i,
-  /\bJSON_UNQUOTE\s*\(/i,
   /\bIFNULL\s*\(/i,
+  /\bFIND_IN_SET\s*\(/i,
+  /@@SESSION\b/i,
 ];
+
+function normalizeMysqlInsertSyntax(sql) {
+  let value = String(sql);
+  const insertIgnore = /^\s*INSERT\s+IGNORE\s+INTO\b/i.test(value);
+  if (insertIgnore) value = value.replace(/\bINSERT\s+IGNORE\s+INTO\b/i, "INSERT INTO");
+
+  if (/\bON\s+DUPLICATE\s+KEY\s+UPDATE\b/i.test(value)) {
+    const table = /\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_]*)/i.exec(value)?.[1]?.toLowerCase();
+    const target = table ? CONFLICT_TARGETS.get(table) : null;
+    if (!target) {
+      throw new Error(`[segempat-api] UPSERT legado sem chave PostgreSQL mapeada: ${table || "tabela desconhecida"}`);
+    }
+    value = value
+      .replace(/\bON\s+DUPLICATE\s+KEY\s+UPDATE\b/i, `ON CONFLICT (${target}) DO UPDATE SET`)
+      .replace(/\bVALUES\(([A-Za-z_][A-Za-z0-9_]*)\)/gi, "EXCLUDED.$1");
+  } else if (insertIgnore) {
+    const semicolon = /;\s*$/.test(value);
+    value = value.replace(/;\s*$/, "");
+    value = `${value} ON CONFLICT DO NOTHING${semicolon ? ";" : ""}`;
+  }
+
+  return value;
+}
+
+function normalizeMysqlJsonSyntax(sql) {
+  return String(sql)
+    .replace(
+      /JSON_CONTAINS\(\s*COALESCE\(\s*question_bank_ids\s*,\s*JSON_ARRAY\(\)\s*\)\s*,\s*JSON_QUOTE\(\s*\?\s*\)\s*,\s*'\$'\s*\)/gi,
+      "COALESCE(question_bank_ids, '[]'::jsonb) @> jsonb_build_array(CAST(? AS text))",
+    )
+    .replace(
+      /JSON_UNQUOTE\(\s*JSON_EXTRACT\(\s*([^,()]+(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\s*,\s*'\$\.([A-Za-z_][A-Za-z0-9_]*)'\s*\)\s*\)/gi,
+      "($1 ->> '$2')",
+    );
+}
+
+function normalizeCommonSql(sql) {
+  return normalizeMysqlJsonSyntax(normalizeMysqlInsertSyntax(sql))
+    .replace(/`([^`]+)`/g, '"$1"')
+    .replace(/\bUTC_TIMESTAMP\(3\)/gi, "CURRENT_TIMESTAMP(3)")
+    .replace(/\bUTC_TIMESTAMP\(\)/gi, "CURRENT_TIMESTAMP")
+    .replace(/\bJSON_ARRAY\(\)/gi, "'[]'::jsonb")
+    .replace(/\bJSON_OBJECT\(\)/gi, "'{}'::jsonb")
+    .replace(/\bDATE_FORMAT\(\s*evaluation_date\s*,\s*'%Y-%m'\s*\)/gi, "TO_CHAR(evaluation_date, 'YYYY-MM')")
+    .replace(/\bCAST\(([^()]+)\s+AS\s+UNSIGNED\)/gi, "CAST($1 AS NUMERIC)")
+    .replace(/\bDATABASE\(\)/gi, "current_schema()");
+}
 
 function assertNoUnsupportedMysqlSyntax(sql) {
   const found = UNSUPPORTED_MYSQL_SQL.find((pattern) => pattern.test(sql));
   if (found) {
     throw new Error(`[segempat-api] SQL MySQL ainda não portado para PostgreSQL: ${String(found)}`);
   }
-}
-
-function normalizeCommonSql(sql) {
-  return String(sql)
-    .replace(/`([^`]+)`/g, '"$1"')
-    .replace(/\bUTC_TIMESTAMP\(3\)/gi, "CURRENT_TIMESTAMP(3)")
-    .replace(/\bUTC_TIMESTAMP\(\)/gi, "CURRENT_TIMESTAMP")
-    .replace(/\bJSON_ARRAY\(\)/gi, "'[]'::jsonb")
-    .replace(/\bJSON_OBJECT\(\)/gi, "'{}'::jsonb");
 }
 
 function postgresPlaceholders(sql) {
@@ -102,8 +143,9 @@ function postgresPlaceholders(sql) {
 }
 
 export function toPostgresSql(sql) {
-  assertNoUnsupportedMysqlSyntax(sql);
-  return postgresPlaceholders(normalizeCommonSql(sql));
+  const normalized = normalizeCommonSql(sql);
+  assertNoUnsupportedMysqlSyntax(normalized);
+  return postgresPlaceholders(normalized);
 }
 
 function mysqlCompatibleResult(result) {
