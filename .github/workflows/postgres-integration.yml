@@ -1,0 +1,166 @@
+name: PostgreSQL API Integration
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - 'scripts/generate-postgres-baseline.mjs'
+      - '.github/workflows/postgres-integration.yml'
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - 'scripts/generate-postgres-baseline.mjs'
+      - '.github/workflows/postgres-integration.yml'
+  workflow_dispatch:
+
+jobs:
+  api-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: segempat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d segempat_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/segempat_test
+      POSTGRES_SSL: 'false'
+      POSTGRES_POOL_SIZE: '5'
+      SEGEMPAT_SESSION_SECRET: ci-postgres-session-secret-with-at-least-32-bytes
+      SEGEMPAT_SESSION_SECURE: 'false'
+      SEGEMPAT_SESSION_SAMESITE: lax
+      SEGEMPAT_ALLOWED_ORIGINS: http://127.0.0.1:4173
+      SEGEMPAT_STORAGE_DRIVER: filesystem
+      SEGEMPAT_STORAGE_PATH: /tmp/segempat-postgres-storage
+      SEGEMPAT_TIMEZONE: America/Maceio
+      PORT: '8787'
+      PGPASSWORD: postgres
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
+
+      - name: Validate API JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find server/src server/scripts -type f -name '*.js' | sort)
+
+      - name: Validate PostgreSQL SQL adapter translations
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          process.env.NODE_ENV = 'test';
+          process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/segempat_test';
+          process.env.POSTGRES_SSL = 'false';
+          process.env.SEGEMPAT_SESSION_SECRET = 'ci-postgres-session-secret-with-at-least-32-bytes';
+          process.env.SEGEMPAT_SESSION_SECURE = 'false';
+          process.env.SEGEMPAT_ALLOWED_ORIGINS = 'http://127.0.0.1:4173';
+          process.env.SEGEMPAT_STORAGE_PATH = '/tmp/segempat-postgres-storage';
+          const { toPostgresSql, pool } = await import('./server/src/db.js');
+          const checks = [
+            ["SELECT * FROM app_users WHERE id = ? AND matricula = ?", /\$1.*\$2/],
+            ["INSERT IGNORE INTO user_roles (id,user_id,role) VALUES (?,?, 'admin')", /ON CONFLICT DO NOTHING/i],
+            ["INSERT INTO user_access_levels (user_id,level_code,updated_by,updated_at) VALUES (?,?,?,UTC_TIMESTAMP(3)) ON DUPLICATE KEY UPDATE level_code = VALUES(level_code), updated_by = VALUES(updated_by), updated_at = UTC_TIMESTAMP(3)", /ON CONFLICT \(user_id\) DO UPDATE SET/i],
+            ["SELECT * FROM cronograma_entries WHERE JSON_CONTAINS(COALESCE(question_bank_ids, JSON_ARRAY()), JSON_QUOTE(?), '$')", /jsonb_build_array/i],
+          ];
+          for (const [sql, expected] of checks) {
+            const converted = toPostgresSql(sql);
+            if (!expected.test(converted)) throw new Error(`Tradução SQL inesperada: ${converted}`);
+          }
+          await pool.end();
+          console.log('Adaptador SQL PostgreSQL validado.');
+          NODE
+
+      - name: Apply PostgreSQL migrations with checksum ledger
+        run: node server/scripts/migrate-postgres.js
+
+      - name: Verify migration idempotency
+        run: node server/scripts/migrate-postgres.js
+
+      - name: Validate migration ledger and schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration_files=$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')
+          migration_rows=$(psql -h 127.0.0.1 -U postgres -d segempat_test -Atc 'SELECT count(*) FROM schema_migrations;')
+          test "$migration_rows" = "$migration_files"
+          table_count=$(psql -h 127.0.0.1 -U postgres -d segempat_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
+          test "$table_count" -ge 30
+          psql -h 127.0.0.1 -U postgres -d segempat_test -Atc "SELECT count(*) FROM access_permissions;" | grep -Eq '^[1-9][0-9]*$'
+          echo "Schema PostgreSQL validado: ${table_count} tabelas; ${migration_rows} migrations."
+
+      - name: Start SEGEMPAT API on PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$SEGEMPAT_STORAGE_PATH"
+          node server/src/index.js >/tmp/segempat-postgres-api.log 2>&1 &
+          echo $! >/tmp/segempat-postgres-api.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8787/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8787/health | tee /tmp/health.json
+
+      - name: Require full API readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://127.0.0.1:8787/health/ready | tee /tmp/readiness.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const readiness = JSON.parse(fs.readFileSync('/tmp/readiness.json', 'utf8'));
+          if (!readiness.ok || readiness.database !== 'connected' || readiness.schema !== 'ready' || readiness.storage !== 'ready') {
+            throw new Error(`Readiness PostgreSQL inválida: ${JSON.stringify(readiness)}`);
+          }
+          console.log('SEGEMPAT API pronta sobre PostgreSQL no CI.');
+          NODE
+
+      - name: Enforce trusted Origin on API writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          blocked=$(curl --silent --output /tmp/blocked.json --write-out '%{http_code}' -X POST http://127.0.0.1:8787/api/auth/logout)
+          test "$blocked" = '403'
+          allowed=$(curl --silent --output /tmp/allowed.json --write-out '%{http_code}' -X POST -H 'Origin: http://127.0.0.1:4173' http://127.0.0.1:8787/api/auth/logout)
+          test "$allowed" = '204'
+          echo 'Proteção de Origin preservada na edição PostgreSQL.'
+
+      - name: Print API log on failure
+        if: failure()
+        run: cat /tmp/segempat-postgres-api.log || true
+
+      - name: Stop API
+        if: always()
+        run: |
+          if test -f /tmp/segempat-postgres-api.pid; then
+            kill "$(cat /tmp/segempat-postgres-api.pid)" 2>/dev/null || true
+          fi
