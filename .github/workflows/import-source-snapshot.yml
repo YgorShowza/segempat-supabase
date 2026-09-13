@@ -1,0 +1,46 @@
+name: Import SEGEMPAT source snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.bootstrap'
+      - '.github/workflows/import-source-snapshot.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone exact corporate-ready source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-tags https://github.com/YgorShowza/app-reimagined.git /tmp/segempat-source
+          cd /tmp/segempat-source
+          git checkout cc8e20022645114502d5eb87bbcf2d6bee77a44f
+
+      - name: Replace destination working tree with source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a /tmp/segempat-source/. "$GITHUB_WORKSPACE"/
+          rm -rf "$GITHUB_WORKSPACE/.git"
+          # Restore the destination repository metadata created by actions/checkout.
+          git -C "$GITHUB_WORKSPACE" init
+          git -C "$GITHUB_WORKSPACE" remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git -C "$GITHUB_WORKSPACE" fetch origin main
+          git -C "$GITHUB_WORKSPACE" checkout -B main origin/main
+          # Remove all tracked/untracked destination files, then copy the source snapshot again.
+          git -C "$GITHUB_WORKSPACE" rm -rf . || true
+          find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a /tmp/segempat-source/. "$GITHUB_WORKSPACE"/
+          rm -rf "$GITHUB_WORKSPACE/.git"
