@@ -25,9 +25,19 @@ Não coloque os valores abaixo em Git, chat, documentação pública ou variáve
 
 `SEGEMPAT_SESSION_SECRET` é gerado pelo próprio Render no Blueprint.
 
-## O que não deve ficar no runtime permanente
+## Migration real sem credencial administrativa no Render
 
-`SEGEMPAT_MIGRATION_DATABASE_URL` é uma credencial administrativa temporária para migrations. Ela não faz parte do Blueprint e não deve permanecer no serviço da API depois da etapa de migration.
+`SEGEMPAT_MIGRATION_DATABASE_URL` é uma credencial administrativa temporária e separada. Ela **não faz parte do Blueprint** e não deve permanecer no serviço da API.
+
+O repositório possui o workflow manual `.github/workflows/supabase-real-migrate.yml`. Para usá-lo:
+
+1. cadastrar `SEGEMPAT_MIGRATION_DATABASE_URL` somente como GitHub Actions Secret do repositório/ambiente controlado;
+2. abrir **Actions -> Supabase Real Migration -> Run workflow** no branch `main`;
+3. informar exatamente `MIGRATE-SEGEMPAT` no campo de confirmação;
+4. acompanhar o runner de migrations, que valida histórico e SHA-256 e não reaplica migrations já registradas;
+5. remover/rotacionar a credencial administrativa quando a janela de migration terminar.
+
+O workflow é `workflow_dispatch`, aceita execução apenas a partir de `main`, usa `permissions: contents: read`, não recebe a `DATABASE_URL` de runtime e nunca executa automaticamente em push ou pull request.
 
 A API de runtime deve operar apenas com a identidade `segempat_app`, de menor privilégio.
 
@@ -37,7 +47,7 @@ A API de runtime deve operar apenas com a identidade `segempat_app`, de menor pr
 2. Definir uma senha privada para `segempat_app` e cadastrar a `DATABASE_URL` no secret manager do Render.
 3. Gerar uma credencial S3 específica do backend e cadastrar as duas variáveis S3 no Render.
 4. Cadastrar `SEGEMPAT_ALLOWED_ORIGINS` com a URL HTTPS exata do frontend.
-5. Executar migrations somente com a credencial separada de migration, conferir checksums e remover essa credencial do ambiente operacional.
+5. Configurar temporariamente o Secret `SEGEMPAT_MIGRATION_DATABASE_URL` no GitHub e executar **Supabase Real Migration** manualmente; conferir o resultado e remover/rotacionar a credencial administrativa.
 6. Fazer o primeiro deploy manual da API.
 7. Validar `/health` e `/health/ready`.
 8. Executar preflight, smoke, autenticação, papéis Master/Admin/Inspetor/Operador, assinatura de prova, evidência de ocorrência, auditoria e revogação de sessão.
