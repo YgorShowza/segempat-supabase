@@ -17,6 +17,15 @@ function expectedDatabaseName() {
   return decodeURIComponent(url.pathname.replace(/^\//, ""));
 }
 
+function expectedRuntimeRole() {
+  const value = String(process.env.SEGEMPAT_EXPECTED_DB_ROLE || "").trim();
+  if (!value) return null;
+  if (!/^[A-Za-z_][A-Za-z0-9_]{0,62}$/.test(value)) {
+    fail("SEGEMPAT_EXPECTED_DB_ROLE contém nome de role PostgreSQL inválido");
+  }
+  return value;
+}
+
 async function checkDatabase() {
   const info = await queryOne(
     `SELECT current_setting('server_version') AS version,
@@ -38,6 +47,11 @@ async function checkDatabase() {
   const expectedDatabase = expectedDatabaseName();
   if (expectedDatabase && String(info.database_name || "") !== expectedDatabase) {
     fail(`database selecionado (${info.database_name || "nenhum"}) difere do DATABASE_URL (${expectedDatabase})`);
+  }
+
+  const expectedRole = expectedRuntimeRole();
+  if (expectedRole && String(info.runtime_role || "") !== expectedRole) {
+    fail(`role PostgreSQL efetiva (${info.runtime_role || "nenhuma"}) difere de SEGEMPAT_EXPECTED_DB_ROLE (${expectedRole})`);
   }
 
   const sessionTimeZone = String(info.session_time_zone || "").trim().toUpperCase();
