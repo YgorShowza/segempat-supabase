@@ -18,7 +18,7 @@ function forbidText(source, needle, label) {
   }
 }
 
-const migration = read("database/mysql/010_granular_access_control.sql");
+const migration = read("supabase/migrations/20260913020000_current_hardening.sql");
 const authorization = read("server/src/authorization.js");
 const authorizationRoute = read("server/src/routes/authorization.js");
 const session = read("server/src/session.js");
@@ -36,7 +36,7 @@ const frontendAccessControl = read("src/lib/access-control.ts");
 const demoMode = read("src/lib/demo-mode.ts");
 const authorizationGateway = read("src/lib/backend/authorization-gateway.ts");
 const permissionUi = read("src/components/access/PermissionAdministration.tsx");
-const integrationWorkflow = read(".github/workflows/mysql-integration.yml");
+const integrationWorkflow = read(".github/workflows/postgres-integration.yml");
 
 for (const table of [
   "access_levels",
@@ -45,12 +45,12 @@ for (const table of [
   "user_access_levels",
   "user_permission_overrides",
 ]) {
-  requireText(migration, `CREATE TABLE ${table}`, `tabela MySQL ${table}`);
+  requireText(migration, `CREATE TABLE ${table}`, `tabela PostgreSQL ${table}`);
   requireText(app, `"${table}"`, `readiness da tabela ${table}`);
 }
 
 for (const level of ["master", "admin", "inspector", "operator"]) {
-  requireText(migration, `('${level}'`, `nível ${level} na migration`);
+  requireText(migration, `('${level}'`, `nível ${level} na migration PostgreSQL`);
   requireText(authorization, `code: "${level}"`, `nível ${level} no motor de autorização`);
 }
 
@@ -128,15 +128,19 @@ requireText(grantMaster, "TI_GRANT_MASTER_ACCESS", "concessão Master gera audit
 forbidText(grantMaster, "password_hash", "concessão Master não deve manipular senha");
 requireText(serverPackage, '"grant-master-access": "node scripts/grant-master-access.js"', "comando operacional de concessão Master");
 
-requireText(manageInspector, "level_code = 'inspector'", "script TI concede nível Inspector");
-requireText(manageInspector, "level_code = 'operator'", "script TI revoga para Operador");
-requireText(manageInspector, 'previousLevel === "master"', "script TI protege conta Master");
-requireText(manageInspector, "session_epoch = session_epoch + 1", "script TI invalida sessões");
+requireText(manageInspector, "level_code = 'inspector'", "script de governança concede nível Inspector");
+requireText(manageInspector, "level_code = 'operator'", "script de governança revoga para Operador");
+requireText(manageInspector, 'previousLevel === "master"', "script de governança protege conta Master");
+requireText(manageInspector, "session_epoch = session_epoch + 1", "script de governança invalida sessões");
 
-requireText(privilegedReport, "user_access_levels", "relatório TI usa níveis granulares");
-requireText(privilegedReport, "effectivePermissions", "relatório TI calcula permissões efetivas");
-requireText(privilegedReport, "TI_GRANT_MASTER_ACCESS", "relatório TI reconhece concessão explícita de Master");
-requireText(integrationWorkflow, '\"version\":\"010\"', "integração MySQL exige migration 010");
+requireText(privilegedReport, "user_access_levels", "relatório usa níveis granulares");
+requireText(privilegedReport, "effectivePermissions", "relatório calcula permissões efetivas");
+requireText(privilegedReport, "TI_GRANT_MASTER_ACCESS", "relatório reconhece concessão explícita de Master");
+
+requireText(integrationWorkflow, "supabase/migrations/**", "integração PostgreSQL acompanha migrations Supabase");
+requireText(integrationWorkflow, "schema_migrations", "integração PostgreSQL valida ledger de migrations");
+requireText(integrationWorkflow, "access_permissions", "integração PostgreSQL valida catálogo granular");
+requireText(integrationWorkflow, "migrate-postgres.js", "integração PostgreSQL usa runner nativo");
 
 if (process.exitCode) process.exit(process.exitCode);
 console.log("SEGEMPAT granular access control contract: OK");
