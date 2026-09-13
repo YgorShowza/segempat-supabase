@@ -5,12 +5,7 @@ import { execFileSync } from "node:child_process";
 const root = process.cwd();
 const failures = [];
 const auditedHistoricalSensitiveBlobs = new Map([
-  // Antigo .env removido antes desta edição. O blob conhecido foi auditado e
-  // continha apenas configuração cliente histórica; qualquer outro .env no
-  // histórico continua bloqueando a revisão pública.
   ["9a2788223df6456976423af36eae73443345b5aa", ".env"],
-  // Exemplo MySQL removido da edição Supabase. O blob possuía somente valores
-  // vazios/de exemplo e é aceito exclusivamente por SHA + caminho históricos.
   ["b0b1c2415bb5197d2857523ee741437a0bd05504", ".env.mysql.example"],
 ]);
 const auditedHistoricalHits = [];
@@ -35,7 +30,6 @@ function normalize(file) {
 function isForbiddenSensitivePath(file) {
   const value = normalize(file);
   const base = path.posix.basename(value).toLowerCase();
-
   const allowedExamples = new Set([".env.example", ".env.supabase.example"]);
   if (/\.env(?:\.|$)/i.test(base) && !allowedExamples.has(base)) return true;
   if (/\.(?:pem|key|p12|pfx|jks|keystore|der)$/i.test(base)) return true;
@@ -45,9 +39,7 @@ function isForbiddenSensitivePath(file) {
 
 function looksBinary(buffer) {
   const limit = Math.min(buffer.length, 8192);
-  for (let index = 0; index < limit; index += 1) {
-    if (buffer[index] === 0) return true;
-  }
+  for (let index = 0; index < limit; index += 1) if (buffer[index] === 0) return true;
   return false;
 }
 
@@ -74,9 +66,7 @@ try {
 } catch {
   fail("não foi possível determinar se o clone Git é completo");
 }
-if (shallow !== "false") {
-  fail("a auditoria pública exige clone Git completo (fetch-depth: 0); clone shallow não é aceito");
-}
+if (shallow !== "false") fail("a auditoria pública exige clone Git completo (fetch-depth: 0); clone shallow não é aceito");
 
 let trackedFiles = [];
 try {
@@ -87,12 +77,10 @@ try {
 
 for (const file of trackedFiles) {
   if (isForbiddenSensitivePath(file)) fail(`arquivo sensível versionado no HEAD: ${file}`);
-
   const fullPath = path.join(root, file);
   if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) continue;
   const data = fs.readFileSync(fullPath);
-  if (looksBinary(data)) continue;
-  scanText(data.toString("utf8"), `HEAD ${file}`);
+  if (!looksBinary(data)) scanText(data.toString("utf8"), `HEAD ${file}`);
 }
 
 try {
@@ -103,7 +91,6 @@ try {
     const objectSha = line.slice(0, separator).trim();
     const historicalPath = line.slice(separator + 1).trim();
     if (!historicalPath || !isForbiddenSensitivePath(historicalPath)) continue;
-
     const auditedPath = auditedHistoricalSensitiveBlobs.get(objectSha);
     if (auditedPath === historicalPath) {
       auditedHistoricalHits.push(`${historicalPath}@${objectSha.slice(0, 12)}`);
@@ -116,16 +103,7 @@ try {
 }
 
 try {
-  const historyPatch = git([
-    "log",
-    "--all",
-    "--no-ext-diff",
-    "--no-color",
-    "--format=",
-    "--patch",
-    "--",
-    ".",
-  ]);
+  const historyPatch = git(["log", "--all", "--no-ext-diff", "--no-color", "--format=", "--patch", "--", "."]);
   scanText(historyPatch, "histórico Git");
 } catch (error) {
   fail(`não foi possível examinar o conteúdo do histórico Git: ${error?.message || "erro desconhecido"}`);
@@ -141,20 +119,19 @@ if (!fs.existsSync(frontendExamplePath)) {
   fail(".env.supabase.example está ausente");
 } else {
   const frontendExample = fs.readFileSync(frontendExamplePath, "utf8");
-  if (!/VITE_SEGEMPAT_API_URL="https:\/\//.test(frontendExample)) {
-    fail(".env.supabase.example deve configurar VITE_SEGEMPAT_API_URL com HTTPS");
-  }
-  if (!/VITE_SEGEMPAT_REQUIRE_API="true"/.test(frontendExample)) {
-    fail(".env.supabase.example deve exigir a API SEGEMPAT");
-  }
+  if (!/VITE_SEGEMPAT_API_URL="https:\/\//.test(frontendExample)) fail(".env.supabase.example deve configurar VITE_SEGEMPAT_API_URL com HTTPS");
+  if (!/VITE_SEGEMPAT_REQUIRE_API="true"/.test(frontendExample)) fail(".env.supabase.example deve exigir a API SEGEMPAT");
   for (const forbidden of ["DATABASE_URL=", "POSTGRES_PASSWORD=", "SEGEMPAT_SESSION_SECRET=", "SUPABASE_SERVICE_ROLE", "SUPABASE_SECRET_KEY"]) {
     if (frontendExample.includes(forbidden)) fail(`.env.supabase.example não pode expor ${forbidden.replace("=", "")}`);
   }
 }
 
 const serverExample = fs.readFileSync(path.join(root, "server/.env.example"), "utf8");
-if (!/DATABASE_URL=postgresql:\/\/user:CHANGE_ME@host:5432\/database/.test(serverExample)) {
-  fail("server/.env.example deve usar placeholder seguro para DATABASE_URL PostgreSQL");
+if (!/DATABASE_URL=postgresql:\/\/segempat_runtime:CHANGE_ME@host:5432\/database/.test(serverExample)) {
+  fail("server/.env.example deve usar placeholder seguro para DATABASE_URL de runtime PostgreSQL");
+}
+if (!/SEGEMPAT_MIGRATION_DATABASE_URL=postgresql:\/\/segempat_migrator:CHANGE_ME@host:5432\/database/.test(serverExample)) {
+  fail("server/.env.example deve documentar credencial separada para migrations PostgreSQL");
 }
 if (!/POSTGRES_SSL=true/.test(serverExample)) fail("server/.env.example deve exigir TLS PostgreSQL em produção");
 if (!/SEGEMPAT_SESSION_SECRET=CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32_BYTES_MINIMUM/.test(serverExample)) {
@@ -172,7 +149,5 @@ if (failures.length) {
 }
 
 console.log(`SEGEMPAT public review readiness: OK (${trackedFiles.length} arquivos versionados; histórico Git verificado).`);
-if (auditedHistoricalHits.length) {
-  console.log(`Histórico sensível conhecido e auditado por SHA exato: ${auditedHistoricalHits.join(", ")}.`);
-}
+if (auditedHistoricalHits.length) console.log(`Histórico sensível conhecido e auditado por SHA exato: ${auditedHistoricalHits.join(", ")}.`);
 console.log("Observação: este gate complementa, mas não substitui, secret scanning e política de segurança do ambiente.");
