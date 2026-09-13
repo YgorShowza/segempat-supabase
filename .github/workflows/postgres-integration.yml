@@ -116,6 +116,13 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d segempat_test -Atc "SELECT count(*) FROM access_permissions;" | grep -Eq '^[1-9][0-9]*$'
           echo "Schema PostgreSQL validado: ${table_count} tabelas; ${migration_rows} migrations."
 
+      - name: Run PostgreSQL preflight and runtime privilege checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$SEGEMPAT_STORAGE_PATH"
+          npm run preflight --prefix server
+
       - name: Start SEGEMPAT API on PostgreSQL
         shell: bash
         run: |
