@@ -41,6 +41,21 @@ O workflow é `workflow_dispatch`, aceita execução apenas a partir de `main`, 
 
 A API de runtime deve operar apenas com a identidade `segempat_app`, de menor privilégio.
 
+## Gate da API hospedada
+
+Depois do primeiro deploy manual, use o workflow **Hosted API Readiness** (`.github/workflows/hosted-api-readiness.yml`) no branch `main`.
+
+Ele recebe apenas dois valores não secretos: a URL HTTPS da API e a origem HTTPS confiável do frontend. O gate valida:
+
+- `/health` e identidade do serviço;
+- `/health/ready` com banco conectado, TLS negociado, schema e storage prontos;
+- migration efetiva igual ao arquivo versionado mais recente do repositório;
+- bloqueio de escrita sem `Origin`;
+- bloqueio de origem não confiável;
+- passagem da origem confiável pelo CORS até a camada de autenticação.
+
+O probe usa matrícula inexistente e senha descartável; não cria usuário e não precisa receber credenciais de operador/administrador.
+
 ## Sequência para a primeira homologação
 
 1. Criar o Blueprint/Web Service a partir do `render.yaml` e manter o deploy automático desligado.
@@ -49,8 +64,8 @@ A API de runtime deve operar apenas com a identidade `segempat_app`, de menor pr
 4. Cadastrar `SEGEMPAT_ALLOWED_ORIGINS` com a URL HTTPS exata do frontend.
 5. Configurar temporariamente o Secret `SEGEMPAT_MIGRATION_DATABASE_URL` no GitHub e executar **Supabase Real Migration** manualmente; conferir o resultado e remover/rotacionar a credencial administrativa.
 6. Fazer o primeiro deploy manual da API.
-7. Validar `/health` e `/health/ready`.
-8. Executar preflight, smoke, autenticação, papéis Master/Admin/Inspetor/Operador, assinatura de prova, evidência de ocorrência, auditoria e revogação de sessão.
+7. Executar **Hosted API Readiness** com a URL da API e a origem confiável do frontend.
+8. Executar os testes autenticados de Master/Admin/Inspetor/Operador, assinatura de prova, evidência de ocorrência, auditoria e revogação de sessão.
 9. Somente depois apontar/publicar o frontend para a URL homologada da API.
 
 ## Limitações do plano Free
