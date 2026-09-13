@@ -44,7 +44,7 @@ if (!process.exitCode) {
            LEFT JOIN user_access_levels ual ON ual.user_id = u.id
           WHERE LOWER(TRIM(u.matricula)) = LOWER(TRIM(?))
           LIMIT 1
-          FOR UPDATE`,
+          FOR UPDATE OF u`,
         [matricula],
       );
       const account = accounts[0];
