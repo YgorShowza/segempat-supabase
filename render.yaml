@@ -16,6 +16,8 @@ services:
         value: "true"
       - key: POSTGRES_POOL_SIZE
         value: "5"
+      - key: SEGEMPAT_EXPECTED_DB_ROLE
+        value: segempat_app
       - key: DATABASE_URL
         sync: false
       - key: SEGEMPAT_SESSION_SECRET
