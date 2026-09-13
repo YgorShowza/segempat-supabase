@@ -9,6 +9,9 @@ const auditedHistoricalSensitiveBlobs = new Map([
   // continha apenas configuração cliente histórica; qualquer outro .env no
   // histórico continua bloqueando a revisão pública.
   ["9a2788223df6456976423af36eae73443345b5aa", ".env"],
+  // Exemplo MySQL removido da edição Supabase. O blob possuía somente valores
+  // vazios/de exemplo e é aceito exclusivamente por SHA + caminho históricos.
+  ["b0b1c2415bb5197d2857523ee741437a0bd05504", ".env.mysql.example"],
 ]);
 const auditedHistoricalHits = [];
 
