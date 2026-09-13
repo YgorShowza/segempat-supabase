@@ -1,0 +1,71 @@
+name: PostgreSQL Smoke Suite
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/postgres-smoke.yml'
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/postgres-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  smoke-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: segempat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d segempat_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/segempat_test
+      POSTGRES_SSL: 'false'
+      POSTGRES_POOL_SIZE: '5'
+      SEGEMPAT_SESSION_SECRET: ci-postgres-session-secret-with-at-least-32-bytes
+      SEGEMPAT_SESSION_SECURE: 'false'
+      SEGEMPAT_SESSION_SAMESITE: lax
+      SEGEMPAT_ALLOWED_ORIGINS: http://127.0.0.1:4173
+      SEGEMPAT_STORAGE_DRIVER: filesystem
+      SEGEMPAT_STORAGE_PATH: /tmp/segempat-postgres-storage
+      SEGEMPAT_TIMEZONE: America/Maceio
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
+
+      - name: Apply PostgreSQL migrations
+        run: npm run migrate --prefix server
+
+      - name: Prepare private storage probe
+        run: mkdir -p "$SEGEMPAT_STORAGE_PATH"
+
+      - name: Run PostgreSQL preflight
+        run: npm run preflight --prefix server
+
+      - name: Run PostgreSQL smoke suite
+        run: npm run smoke --prefix server
