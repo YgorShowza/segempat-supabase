@@ -40,9 +40,9 @@ function splitStatements(input) {
 
 function convertTypeSyntax(value) {
   return value
-    .replace(/\bCHAR\(36\)\b/gi, "UUID")
-    .replace(/\bDATETIME\(3\)\b/gi, "TIMESTAMPTZ(3)")
-    .replace(/\bTINYINT\(1\)\b/gi, "SMALLINT")
+    .replace(/\bCHAR\(36\)/gi, "UUID")
+    .replace(/\bDATETIME\(3\)/gi, "TIMESTAMPTZ(3)")
+    .replace(/\bTINYINT\(1\)/gi, "SMALLINT")
     .replace(/\bBIGINT\s+UNSIGNED\b/gi, "BIGINT")
     .replace(/\bINT\s+UNSIGNED\b/gi, "BIGINT")
     .replace(/\bLONGTEXT\b/gi, "TEXT")
