@@ -1,0 +1,45 @@
+name: Hosted API Readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "URL HTTPS da API hospedada, sem barra final"
+        required: true
+        type: string
+      trusted_origin:
+        description: "Origem HTTPS do frontend configurada em SEGEMPAT_ALLOWED_ORIGINS"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: segempat-hosted-readiness
+  cancel-in-progress: false
+
+jobs:
+  readiness:
+    name: hosted-readiness
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SEGEMPAT_HOSTED_API_URL: ${{ inputs.api_url }}
+      SEGEMPAT_HOSTED_TRUSTED_ORIGIN: ${{ inputs.trusted_origin }}
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate hosted SEGEMPAT API
+        run: node server/scripts/hosted-readiness.js
