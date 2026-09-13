@@ -2,7 +2,7 @@ name: SEGEMPAT CI
 
 on:
   push:
-    branches: [main, supabase/phase-1-foundation]
+    branches: [main, supabase/phase-2-real-project-readiness]
   pull_request:
     branches: [main]
 
@@ -146,6 +146,25 @@ jobs:
           expect_rejected "CA PostgreSQL com TLS desabilitado" POSTGRES_SSL=false POSTGRES_SSL_CA_PATH=/tmp/postgres-ca.pem
           expect_rejected "CA PostgreSQL relativa em produção" POSTGRES_SSL=true POSTGRES_SSL_CA_PATH=./postgres-ca.pem
           expect_rejected "segredo de sessão placeholder" SEGEMPAT_SESSION_SECRET=CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32_BYTES_MINIMUM
+
+      - name: Validate production migration credential separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime='postgresql://segempat_runtime:runtime-ci-only@db.example.test:5432/segempat'
+
+          if NODE_ENV=production DATABASE_URL="$runtime" POSTGRES_SSL=true node server/scripts/migrate-postgres.js >/tmp/migrate-missing-url.log 2>&1; then
+            echo "::error::Migration de produção foi aceita sem SEGEMPAT_MIGRATION_DATABASE_URL"
+            exit 1
+          fi
+          grep -F 'produção exige SEGEMPAT_MIGRATION_DATABASE_URL separada da credencial runtime' /tmp/migrate-missing-url.log >/dev/null
+
+          if NODE_ENV=production DATABASE_URL="$runtime" SEGEMPAT_MIGRATION_DATABASE_URL="$runtime" POSTGRES_SSL=true node server/scripts/migrate-postgres.js >/tmp/migrate-same-url.log 2>&1; then
+            echo "::error::Migration de produção aceitou a mesma connection string da API"
+            exit 1
+          fi
+          grep -F 'a credencial de migration deve ser diferente da DATABASE_URL de runtime em produção' /tmp/migrate-same-url.log >/dev/null
+          echo "Separação runtime/migration PostgreSQL validada."
 
       - name: Validate API security contracts
         shell: bash
