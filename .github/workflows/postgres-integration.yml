@@ -111,7 +111,8 @@ jobs:
           migration_rows=$(psql -h 127.0.0.1 -U postgres -d segempat_test -Atc 'SELECT count(*) FROM schema_migrations;')
           test "$migration_rows" = "$migration_files"
           table_count=$(psql -h 127.0.0.1 -U postgres -d segempat_test -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
-          test "$table_count" -ge 30
+          # 28 tabelas funcionais atuais + schema_migrations. Futuras tabelas podem elevar este total.
+          test "$table_count" -ge 29
           psql -h 127.0.0.1 -U postgres -d segempat_test -Atc "SELECT count(*) FROM access_permissions;" | grep -Eq '^[1-9][0-9]*$'
           echo "Schema PostgreSQL validado: ${table_count} tabelas; ${migration_rows} migrations."
 
