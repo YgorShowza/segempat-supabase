@@ -143,3 +143,14 @@ VITE_SEGEMPAT_REQUIRE_API=true
 A frase **“SEGEMPAT homologado no Supabase”** só deve ser usada depois da execução dos gates reais de API, storage e E2E. O estado atual é:
 
 **“PROJETO SUPABASE REAL CRIADO, SCHEMA/HARDENING APLICADOS E RUNTIME DE MENOR PRIVILÉGIO PREPARADO — PENDENTE CONEXÃO PRIVADA DA API E HOMOLOGAÇÃO E2E.”**
+
+## Fase 5 · Storage privado pela API
+
+- [x] Bucket `segempat-evidence` criado como privado, com limite de 1,5 MB e MIME PNG/JPEG.
+- [x] API preparada para driver `supabase` via endpoint S3 compatível, sem expor credenciais ao frontend.
+- [x] Assinaturas e evidências de ocorrências passam pela abstração server-side; downloads continuam autorizados pela API e usam `Cache-Control: private, no-store`.
+- [x] Readiness do storage passa a executar escrita + leitura + remoção de probe no driver ativo.
+- [ ] Gerar credenciais S3 próprias do backend e armazená-las somente no secret manager do host da API.
+- [ ] Validar upload/download/rollback no bucket real com a API hospedada e credenciais reais.
+
+> Não inserir Access Key ID ou Secret Access Key em Git, chat, frontend ou variáveis `VITE_*`.

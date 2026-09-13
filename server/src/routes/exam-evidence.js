@@ -1,7 +1,5 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { Router } from "express";
-import { config } from "../config.js";
+import { storage } from "../storage.js";
 import { query, queryOne } from "../db.js";
 import { requireAdmin } from "../session.js";
 import { asBool, asyncHandler, badRequest, notFound, parseJson } from "../util.js";
@@ -134,7 +132,6 @@ examEvidenceRouter.get(
   "/exam-signatures",
   requireAdmin,
   asyncHandler(async (req, res) => {
-    if (config.storage.driver !== "filesystem") throw badRequest("Driver de armazenamento ainda não suportado nesta API");
     const requested = String(req.query["path"] || "").trim();
     if (!requested || requested.includes("..") || !requested.startsWith("exam-signatures/") || !requested.endsWith(".png")) throw badRequest("Caminho de assinatura inválido");
 
@@ -148,23 +145,16 @@ examEvidenceRouter.get(
     );
     if (!evidence || !asBool(evidence.signature_agreed) || !evidence.signed_at) throw notFound("Assinatura não encontrada");
 
-    const storageRoot = path.resolve(config.storage.path);
-    const candidatePath = path.resolve(storageRoot, requested);
-    if (!candidatePath.startsWith(`${storageRoot}${path.sep}`)) throw badRequest("Caminho de assinatura inválido");
-
     try {
-      const [storageRootReal, absolutePath] = await Promise.all([fs.realpath(storageRoot), fs.realpath(candidatePath)]);
-      if (!absolutePath.startsWith(`${storageRootReal}${path.sep}`)) throw badRequest("Caminho de assinatura inválido");
-      const stat = await fs.stat(absolutePath);
-      if (!stat.isFile() || stat.size < MIN_SIGNATURE_BYTES || stat.size > MAX_SIGNATURE_BYTES) throw notFound("Assinatura não encontrada");
-      const bytes = await fs.readFile(absolutePath);
+      const bytes = await storage.getPrivate(requested);
+      if (bytes.length < MIN_SIGNATURE_BYTES || bytes.length > MAX_SIGNATURE_BYTES) throw notFound("Assinatura não encontrada");
       if (bytes.length < PNG_SIGNATURE.length || !bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) throw notFound("Assinatura não encontrada");
       res.setHeader("Content-Type", "image/png");
       res.setHeader("Cache-Control", "private, no-store, max-age=0");
       res.setHeader("Content-Disposition", "inline; filename=assinatura.png");
       res.send(bytes);
     } catch (error) {
-      if (error?.code === "ENOENT") throw notFound("Assinatura não encontrada");
+      if (error?.code === "STORAGE_NOT_FOUND") throw notFound("Assinatura não encontrada");
       throw error;
     }
   }),

@@ -153,19 +153,45 @@ if (nodeEnv === "production" && origins.length === 0) {
 }
 
 const storageDriver = String(process.env["SEGEMPAT_STORAGE_DRIVER"] || "filesystem").trim().toLowerCase();
-if (storageDriver !== "filesystem") {
-  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER não suportado nesta etapa: ${storageDriver || "vazio"}. Use filesystem`);
+if (!["filesystem", "supabase"].includes(storageDriver)) {
+  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER inválido: ${storageDriver || "vazio"}. Use filesystem ou supabase`);
   process.exit(1);
 }
 
 const storagePath = String(process.env["SEGEMPAT_STORAGE_PATH"] || "./storage").trim();
-if (!storagePath) {
-  console.error("[segempat-api] SEGEMPAT_STORAGE_PATH não pode ficar vazio");
-  process.exit(1);
-}
-if (nodeEnv === "production" && !path.isAbsolute(storagePath)) {
-  console.error("[segempat-api] SEGEMPAT_STORAGE_PATH deve ser absoluto em produção");
-  process.exit(1);
+const storageBucket = String(process.env["SEGEMPAT_STORAGE_BUCKET"] || "segempat-evidence").trim();
+const s3Endpoint = String(process.env["SUPABASE_STORAGE_S3_ENDPOINT"] || "").trim();
+const s3Region = String(process.env["SUPABASE_STORAGE_S3_REGION"] || "").trim();
+const s3AccessKeyId = String(process.env["SUPABASE_STORAGE_S3_ACCESS_KEY_ID"] || "").trim();
+const s3SecretAccessKey = String(process.env["SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY"] || "").trim();
+
+if (storageDriver === "filesystem") {
+  if (!storagePath) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_PATH não pode ficar vazio");
+    process.exit(1);
+  }
+  if (nodeEnv === "production" && !path.isAbsolute(storagePath)) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_PATH deve ser absoluto em produção");
+    process.exit(1);
+  }
+} else {
+  if (!/^[a-z0-9][a-z0-9._-]{1,62}$/i.test(storageBucket)) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_BUCKET inválido");
+    process.exit(1);
+  }
+  if (!s3Endpoint || !s3Region || !s3AccessKeyId || !s3SecretAccessKey) {
+    console.error("[segempat-api] Storage Supabase exige endpoint, região e credenciais S3 server-side");
+    process.exit(1);
+  }
+  try {
+    const parsed = new URL(s3Endpoint);
+    if (parsed.protocol !== "https:" || !parsed.hostname || !parsed.pathname.endsWith("/storage/v1/s3")) throw new Error("invalid endpoint");
+  } catch {
+    console.error("[segempat-api] SUPABASE_STORAGE_S3_ENDPOINT deve ser HTTPS e terminar com /storage/v1/s3");
+    process.exit(1);
+  }
+  rejectProductionPlaceholder("SUPABASE_STORAGE_S3_ACCESS_KEY_ID", s3AccessKeyId, ["CHANGE_ME"]);
+  rejectProductionPlaceholder("SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY", s3SecretAccessKey, ["CHANGE_ME"]);
 }
 
 export const config = {
@@ -187,6 +213,11 @@ export const config = {
   storage: {
     driver: storageDriver,
     path: storagePath,
+    bucket: storageBucket,
+    s3Endpoint,
+    s3Region,
+    s3AccessKeyId,
+    s3SecretAccessKey,
   },
   allowedOrigins: origins,
   timezone: timezoneValue(),
