@@ -80,7 +80,8 @@ function normalizeMysqlJsonSyntax(sql) {
     .replace(
       /JSON_UNQUOTE\(\s*JSON_EXTRACT\(\s*([^,()]+(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\s*,\s*'\$\.([A-Za-z_][A-Za-z0-9_]*)'\s*\)\s*\)/gi,
       "($1 ->> '$2')",
-    );
+    )
+    .replace(/\bJSON_LENGTH\(\s*([A-Za-z_][A-Za-z0-9_.]*)\s*\)/gi, "jsonb_array_length($1)");
 }
 
 function normalizeCommonSql(sql) {
@@ -92,7 +93,11 @@ function normalizeCommonSql(sql) {
     .replace(/\bJSON_OBJECT\(\)/gi, "'{}'::jsonb")
     .replace(/\bDATE_FORMAT\(\s*evaluation_date\s*,\s*'%Y-%m'\s*\)/gi, "TO_CHAR(evaluation_date, 'YYYY-MM')")
     .replace(/\bCAST\(([^()]+)\s+AS\s+UNSIGNED\)/gi, "CAST($1 AS NUMERIC)")
-    .replace(/\bDATABASE\(\)/gi, "current_schema()");
+    .replace(/\bDATABASE\(\)/gi, "current_schema()")
+    .replace(
+      /@@FOREIGN_KEY_CHECKS\b/gi,
+      "CASE WHEN current_setting('session_replication_role') = 'origin' THEN 1 ELSE 0 END",
+    );
 }
 
 function assertNoUnsupportedMysqlSyntax(sql) {
