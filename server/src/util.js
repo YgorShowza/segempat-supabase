@@ -31,7 +31,7 @@ export function nowUtc() {
   return new Date();
 }
 
-/** Converte campos JSON do MySQL (que podem vir como string) para valor JS. */
+/** Converte campos JSON do banco (que podem vir como string) para valor JS. */
 export function parseJson(value, fallback) {
   if (value === null || value === undefined) return fallback;
   if (typeof value === "object") return value;

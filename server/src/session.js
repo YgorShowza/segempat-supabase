@@ -76,7 +76,7 @@ export function clearSessionCookie(res) {
 /**
  * Reconstrói o contexto de autorização a cada requisição. Conta e colaborador
  * precisam permanecer ativos mesmo quando o cookie de sessão ainda é válido.
- * Nível e permissões também são recarregados do MySQL; alterações administrativas
+ * Nível e permissões também são recarregados do PostgreSQL; alterações administrativas
  * incrementam session_epoch e derrubam imediatamente as sessões anteriores.
  */
 export async function loadAuthContext(userId) {
