@@ -1,0 +1,97 @@
+name: SEGEMPAT Cloudflare Deployment Readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: segempat-cloudflare-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cloudflare-dry-run:
+    name: Cloudflare Deployment Readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Normalize dependency registries
+        run: node scripts/normalize-package-registries.mjs
+
+      - name: Install dependencies from official npm registry
+        run: bun install --frozen-lockfile --registry https://registry.npmjs.org
+
+      - name: Validate Cloudflare contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '"@cloudflare/vite-plugin"' package.json >/dev/null
+          grep -F '"wrangler"' package.json >/dev/null
+          grep -F 'cloudflare({ viteEnvironment: { name: "ssr" } })' vite.config.ts >/dev/null
+          grep -F '"main": "@tanstack/react-start/server-entry"' wrangler.jsonc >/dev/null
+          grep -F '"nodejs_compat"' wrangler.jsonc >/dev/null
+          grep -F '"workers_dev": true' wrangler.jsonc >/dev/null
+          echo "Contrato Cloudflare presente e coerente."
+
+      - name: Validate production deploy guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_file='.github/workflows/cloudflare-production-deploy.yml'
+
+          test -f "$deploy_file"
+          grep -F 'workflow_dispatch:' "$deploy_file" >/dev/null
+
+          if grep -Eq '^[[:space:]]+push:' "$deploy_file"; then
+            echo 'Deploy de produção não pode ser acionado por push.'
+            exit 1
+          fi
+
+          if grep -Eq '^[[:space:]]+pull_request:' "$deploy_file"; then
+            echo 'Deploy de produção não pode ser acionado por pull_request.'
+            exit 1
+          fi
+
+          grep -F "if: github.ref == 'refs/heads/main'" "$deploy_file" >/dev/null
+          grep -F 'environment: production' "$deploy_file" >/dev/null
+          grep -F 'DEPLOY_CONFIRMATION' "$deploy_file" >/dev/null
+          grep -F 'CLOUDFLARE_API_TOKEN' "$deploy_file" >/dev/null
+          grep -F 'CLOUDFLARE_ACCOUNT_ID' "$deploy_file" >/dev/null
+          grep -F 'VITE_SEGEMPAT_API_URL' "$deploy_file" >/dev/null
+          grep -F 'VITE_SEGEMPAT_REQUIRE_API' "$deploy_file" >/dev/null
+          grep -F 'wrangler deploy --dry-run' "$deploy_file" >/dev/null
+          echo 'Guardas do deploy manual de produção validadas.'
+
+      - name: Build corporate frontend
+        env:
+          VITE_SEGEMPAT_API_URL: https://segempat-api.example.test
+          VITE_SEGEMPAT_REQUIRE_API: "true"
+        run: bun run build
+
+      - name: Cloudflare deploy dry-run
+        env:
+          CI: "true"
+          VITE_SEGEMPAT_API_URL: https://segempat-api.example.test
+          VITE_SEGEMPAT_REQUIRE_API: "true"
+        run: bunx wrangler deploy --dry-run --outdir .wrangler-dry-run
+
+      - name: Validate dry-run artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d .wrangler-dry-run
+          test -n "$(find .wrangler-dry-run -type f -print -quit)"
+          echo "Pacote Cloudflare compilado em dry-run sem publicação."

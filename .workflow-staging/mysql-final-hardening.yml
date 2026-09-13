@@ -1,0 +1,53 @@
+name: SEGEMPAT MySQL Final Hardening
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-mysql-final-hardening-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mysql-final-hardening-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate final MySQL hardening contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'charset: "utf8mb4_unicode_ci"' server/src/db.js >/dev/null
+          test -f database/mysql/009_secure_password_recovery.sql
+          test -f database/mysql/010_granular_access_control.sql
+          test -f .github/workflows/mysql-integration.yml
+          test -f server/.npmrc
+          grep -F 'registry=https://registry.npmjs.org/' server/.npmrc >/dev/null
+          grep -F 'replace-registry-host=always' server/.npmrc >/dev/null
+          grep -F 'image: mysql:8.0' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'registry-url: https://registry.npmjs.org' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'npm --prefix server run preflight' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'npm --prefix server run migrate' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'npm --prefix server run smoke' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F '/health/ready' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F '"version":"010"' .github/workflows/mysql-integration.yml >/dev/null
+          grep -F 'migrations `001` a `010`' PRODUCTION_CHECKLIST.md >/dev/null
+          grep -F 'migration `010_granular_access_control.sql`' MYSQL_CORPORATE_HANDOFF.md >/dev/null
+          grep -F 'E2E — Administrador Master' HOMOLOGATION_EVIDENCE_TEMPLATE.md >/dev/null
+          grep -F 'não é backend alternativo da produção' MYSQL_MIGRATION_PLAN.md >/dev/null
+          grep -F 'não fazem parte do runtime/build ativo' MYSQL_MIGRATION_PLAN.md >/dev/null
+          if grep -F 'o código legado pode continuar disponível' MYSQL_MIGRATION_PLAN.md >/dev/null; then
+            echo "::error::Plano MySQL voltou a descrever fallback legado como ativo"
+            exit 1
+          fi
+          if grep -F 'migrations `001` a `009`' PRODUCTION_CHECKLIST.md >/dev/null; then
+            echo "::error::Checklist de produção voltou a usar faixa antiga de migrations"
+            exit 1
+          fi
+          echo "Hardening final de MySQL do SEGEMPAT validado até a migration 010 com dependências no registro npm oficial."
