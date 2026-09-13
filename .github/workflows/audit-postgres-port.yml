@@ -1,0 +1,28 @@
+name: Audit PostgreSQL API port
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - '.github/workflows/audit-postgres-port.yml'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Supabase edition branch
+        uses: actions/checkout@v4
+        with:
+          ref: supabase/phase-1-foundation
+
+      - name: Report MySQL-specific runtime SQL and configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== MYSQL DIALECT TOKENS ==='
+          grep -RInE --include='*.js' '(UTC_TIMESTAMP|DATE_FORMAT|DATE_SUB|DATE_ADD|JSON_EXTRACT|JSON_UNQUOTE|JSON_ARRAY|JSON_OBJECT|IFNULL|ON[[:space:]]+DUPLICATE[[:space:]]+KEY|INSERT[[:space:]]+IGNORE|LAST_INSERT_ID|FIND_IN_SET|@@SESSION|SHOW[[:space:]]+GRANTS|SHOW[[:space:]]+INDEX|ENGINE=|information_schema)' server/src server/scripts || true
+          echo '=== MYSQL CONFIG/DRIVER TOKENS ==='
+          grep -RInE --include='*.js' --include='*.json' '(MYSQL_|mysql2|\bMySQL\b)' server/src server/scripts server/package.json server/.env.example || true
+          echo '=== COMPLETE ==='
