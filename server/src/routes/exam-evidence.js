@@ -1,8 +1,6 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { Router } from "express";
-import { config } from "../config.js";
 import { query, queryOne } from "../db.js";
+import { storage } from "../storage.js";
 import { requireAdmin } from "../session.js";
 import { asBool, asyncHandler, badRequest, notFound, parseJson } from "../util.js";
 
@@ -46,8 +44,6 @@ examEvidenceRouter.get(
       const year = Number(yearRaw);
       if (!Number.isInteger(year) || year < 2000 || year > 2200) throw badRequest("Ano inválido");
       where = "WHERE a.finished_at >= ? AND a.finished_at < ?";
-      // DATETIMEs são persistidos em UTC. 00:00 em America/Maceio corresponde a 03:00 UTC,
-      // mantendo o mesmo limite anual usado nas consultas do operador e no preview legado.
       params = [`${year}-01-01 03:00:00`, `${year + 1}-01-01 03:00:00`];
     }
 
@@ -134,7 +130,6 @@ examEvidenceRouter.get(
   "/exam-signatures",
   requireAdmin,
   asyncHandler(async (req, res) => {
-    if (config.storage.driver !== "filesystem") throw badRequest("Driver de armazenamento ainda não suportado nesta API");
     const requested = String(req.query["path"] || "").trim();
     if (!requested || requested.includes("..") || !requested.startsWith("exam-signatures/") || !requested.endsWith(".png")) throw badRequest("Caminho de assinatura inválido");
 
@@ -148,16 +143,9 @@ examEvidenceRouter.get(
     );
     if (!evidence || !asBool(evidence.signature_agreed) || !evidence.signed_at) throw notFound("Assinatura não encontrada");
 
-    const storageRoot = path.resolve(config.storage.path);
-    const candidatePath = path.resolve(storageRoot, requested);
-    if (!candidatePath.startsWith(`${storageRoot}${path.sep}`)) throw badRequest("Caminho de assinatura inválido");
-
     try {
-      const [storageRootReal, absolutePath] = await Promise.all([fs.realpath(storageRoot), fs.realpath(candidatePath)]);
-      if (!absolutePath.startsWith(`${storageRootReal}${path.sep}`)) throw badRequest("Caminho de assinatura inválido");
-      const stat = await fs.stat(absolutePath);
-      if (!stat.isFile() || stat.size < MIN_SIGNATURE_BYTES || stat.size > MAX_SIGNATURE_BYTES) throw notFound("Assinatura não encontrada");
-      const bytes = await fs.readFile(absolutePath);
+      const bytes = await storage.read(requested);
+      if (bytes.length < MIN_SIGNATURE_BYTES || bytes.length > MAX_SIGNATURE_BYTES) throw notFound("Assinatura não encontrada");
       if (bytes.length < PNG_SIGNATURE.length || !bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) throw notFound("Assinatura não encontrada");
       res.setHeader("Content-Type", "image/png");
       res.setHeader("Cache-Control", "private, no-store, max-age=0");
