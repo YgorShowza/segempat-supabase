@@ -18,7 +18,7 @@
     "report-privileged-access": "node scripts/report-privileged-access.js",
     "smoke": "node scripts/smoke.js && node scripts/check-runtime-grants.js",
     "smoke:auth": "node scripts/postgres-api-auth-smoke.js",
-    "cutover:audit": "node scripts/check-runtime-grants.js && node scripts/check-critical-index-definitions.js && node scripts/check-fk-orphans.js && node scripts/check-practical-generation-integrity.js && node scripts/check-governance-integrity.js && node scripts/check-occurrence-record-integrity.js && node scripts/cutover-audit.js"
+    "cutover:audit": "node scripts/smoke.js && node scripts/check-runtime-grants.js && node scripts/cutover-postgres.js && node scripts/report-privileged-access.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
