@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Backend SEGEMPAT — API HTTP sobre MySQL 8.0 da empresa",
+  "description": "Backend SEGEMPAT — API HTTP sobre Supabase/PostgreSQL",
   "engines": {
     "node": ">=20"
   },
@@ -25,6 +25,6 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
-    "mysql2": "^3.11.0"
+    "pg": "^8.16.3"
   }
 }
