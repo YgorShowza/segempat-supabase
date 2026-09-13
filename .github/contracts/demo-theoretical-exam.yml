@@ -1,0 +1,42 @@
+name: SEGEMPAT Demo Theoretical Exam
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  demo-theoretical-exam-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate shared theoretical exam demo flow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          STORE="src/lib/demo-exam-store.ts"
+          CLIENT="src/lib/backend/api-client.ts"
+          OPERATOR="src/lib/operator-demo-api.ts"
+
+          test -f "$STORE"
+          grep -Fq 'segempat.demo.exams.shared.v1' "$STORE"
+          grep -Fq 'Avaliação Teórica — Procedimentos de Videomonitoramento' "$STORE"
+          grep -Fq 'status: "Publicada"' "$STORE"
+          grep -Fq 'DEMO_OPERATOR_USER.setor' "$STORE"
+          grep -Fq 'sharedDemoExamApiRequest' "$STORE"
+          grep -Fq 'method === "POST" && pathname === "/api/exams"' "$STORE"
+          grep -Fq 'method === "PATCH" && pathname.startsWith("/api/exams/")' "$STORE"
+          grep -Fq 'method === "DELETE" && pathname.startsWith("/api/exams/")' "$STORE"
+
+          grep -Fq 'isSharedDemoExamPath(path)' "$CLIENT"
+          grep -Fq 'sharedDemoExamApiRequest<T>(path, init)' "$CLIENT"
+
+          grep -Fq 'listSharedDemoExams' "$OPERATOR"
+          grep -Fq 'exam.status === "Publicada"' "$OPERATOR"
+          grep -Fq 'sectorAllowed' "$OPERATOR"
+          grep -Fq '/api/me/exams' "$OPERATOR"
+          grep -Fq '/attempts$/' "$OPERATOR"
+
+          echo "Inspector -> published theoretical exam -> operator demo contract OK"

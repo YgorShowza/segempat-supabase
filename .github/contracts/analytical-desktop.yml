@@ -1,0 +1,34 @@
+name: SEGEMPAT Analytical Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-analytical-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analytical-desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate analytical desktop contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/analytical-desktop.css
+          grep -F 'segempat-analytical-analytics' src/routes/_authenticated/analytics.tsx >/dev/null
+          grep -F 'segempat-analytical-individual' src/routes/_authenticated/individual.tsx >/dev/null
+          grep -F 'segempat-analytical-reports' src/routes/_authenticated/relatorios.tsx >/dev/null
+          grep -F 'max-width: 1536px' src/analytical-desktop.css >/dev/null
+          grep -F 'grid-template-columns: minmax(0, 1.35fr) minmax(380px, 0.65fr)' src/analytical-desktop.css >/dev/null
+          grep -F '@media (min-width: 1536px)' src/analytical-desktop.css >/dev/null
+          grep -F 'analyticalDesktopCss from "../analytical-desktop.css?url"' src/routes/__root.tsx >/dev/null
+          grep -F '{ rel: "stylesheet", href: analyticalDesktopCss }' src/routes/__root.tsx >/dev/null
+          echo "Experiência analítica desktop do SEGEMPAT validada e carregada globalmente."

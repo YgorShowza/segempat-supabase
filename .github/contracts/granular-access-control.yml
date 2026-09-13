@@ -1,0 +1,49 @@
+name: SEGEMPAT Granular Access Control
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-granular-access-control-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  granular-access-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate granular access control contract
+        run: node scripts/check-granular-access-control.mjs
+
+      - name: Validate sensitive administrative read redaction
+        run: node scripts/check-sensitive-read-redaction.mjs
+
+      - name: Validate permission-coherent management insights
+        run: node scripts/check-permission-coherent-insights.mjs
+
+      - name: Validate last Master integrity
+        run: node scripts/check-last-master-integrity.mjs
+
+      - name: Validate backend syntax
+        run: |
+          node --check server/src/authorization.js
+          node --check server/src/sensitive-read-redaction.js
+          node --check server/src/routes/insights.js
+          node --check server/src/routes/authorization.js
+          node --check server/src/routes/employees.js
+          node --check server/scripts/bootstrap-admin.js
+          node --check server/scripts/grant-master-access.js
+          node --check server/scripts/manage-inspector-access.js
+          node --check server/scripts/report-privileged-access.js

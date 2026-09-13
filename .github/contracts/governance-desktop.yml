@@ -1,0 +1,41 @@
+name: SEGEMPAT Governance Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-governance-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governance-desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate governance desktop contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/governance-desktop.css
+          grep -F 'segempat-governance-access' src/routes/_authenticated/acessos.tsx >/dev/null
+          grep -F 'segempat-governance-audit' src/routes/_authenticated/auditoria.tsx >/dev/null
+          grep -F 'segempat-governance-security' src/routes/_authenticated/documento-seguranca.tsx >/dev/null
+          grep -F 'max-width: 1536px' src/governance-desktop.css >/dev/null
+          grep -F 'max-width: 1152px' src/governance-desktop.css >/dev/null
+          grep -F '@media (min-width: 1536px)' src/governance-desktop.css >/dev/null
+          grep -F '@media print' src/governance-desktop.css >/dev/null
+          grep -F 'max-width: none !important' src/governance-desktop.css >/dev/null
+          grep -F 'governanceDesktopCss from "../governance-desktop.css?url"' src/routes/__root.tsx >/dev/null
+          grep -F '{ rel: "stylesheet", href: governanceDesktopCss }' src/routes/__root.tsx >/dev/null
+          grep -F 'O frontend atual não possui fallback de backend' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          if grep -F 'fallback legado permanece' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null; then
+            echo "::error::Documento de Segurança voltou a descrever fallback legado ativo"
+            exit 1
+          fi
+          echo "Experiência desktop de governança do SEGEMPAT validada, impressão preservada e arquitetura atual documentada."

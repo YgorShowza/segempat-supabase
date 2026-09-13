@@ -1,0 +1,25 @@
+name: SEGEMPAT Reports Center
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-reports-center-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reports-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate analytics and reports coherence
+        run: node scripts/check-analytics-reports.mjs

@@ -1,0 +1,27 @@
+/* SEGEMPAT · Operator Desktop
+ * Refina a area de autosservico do Operador somente quando ha espaco real.
+ * Mobile e tablet continuam regidos pelas classes responsivas existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-operator-desktop {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .segempat-operator-desktop[data-operator-route="/painel"] > .max-w-6xl,
+  .segempat-operator-desktop[data-operator-route="/treinamentos"] > .max-w-7xl,
+  .segempat-operator-desktop[data-operator-route="/pratico"] > .max-w-6xl,
+  .segempat-operator-desktop[data-operator-route="/minhas-ocorrencias"] > .max-w-6xl {
+    width: 100%;
+    max-width: 1536px !important;
+  }
+
+  .segempat-operator-desktop[data-operator-route="/pendencias"] > .max-w-5xl,
+  .segempat-operator-desktop[data-operator-route="/progresso"] > .max-w-5xl,
+  .segempat-operator-desktop[data-operator-route="/certificados"] > .max-w-5xl,
+  .segempat-operator-desktop[data-operator-route="/meu-perfil"] > .max-w-5xl {
+    width: 100%;
+    max-width: 1280px !important;
+  }
+}

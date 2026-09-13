@@ -1,0 +1,42 @@
+name: SEGEMPAT Global Search
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-global-search-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  global-search-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate role-aware global search
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=src/components/GlobalSearch.tsx
+          LAYOUT=src/components/AppLayoutV2.tsx
+          test -f "$FILE"
+          grep -F 'Ctrl/Cmd + K' "$FILE" >/dev/null
+          grep -F 'canAccessAdminPath' "$FILE" >/dev/null
+          grep -F 'enabled: open && canSearchPeople' "$FILE" >/dev/null
+          grep -F 'enabled: open && canSearchOccurrences' "$FILE" >/dev/null
+          grep -F 'enabled: open && canSearchKnowledge' "$FILE" >/dev/null
+          grep -F 'canAccessAdminPath(user, item.path)' "$FILE" >/dev/null
+          grep -F 'listEmployees' "$FILE" >/dev/null
+          grep -F 'listOccurrences' "$FILE" >/dev/null
+          grep -F 'listKnowledgeItems' "$FILE" >/dev/null
+          grep -F 'audience: "admin"' "$FILE" >/dev/null
+          grep -F 'audience: "operator"' "$FILE" >/dev/null
+          grep -F 'audience: "all"' "$FILE" >/dev/null
+          grep -F 'path: "/meu-perfil"' "$FILE" >/dev/null
+          grep -F 'Uma fonte de dados está indisponível' "$FILE" >/dev/null
+          grep -F '<GlobalSearch />' "$LAYOUT" >/dev/null
+          echo "Busca Global SEGEMPAT validada com permissões granulares e Meu Perfil."

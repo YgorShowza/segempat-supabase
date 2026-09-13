@@ -1,0 +1,16 @@
+/* SEGEMPAT · Training Management Desktop
+ * Amplia a area util das telas administrativas de capacitacao somente em monitores com espaco real.
+ * Mobile e tablet continuam regidos pelas classes responsivas existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-training-question-bank > div,
+  .segempat-training-cycles > div,
+  .segempat-training-knowledge > div,
+  .segempat-training-signatures > div,
+  .segempat-training-practical > section,
+  .segempat-training-practical > div {
+    width: 100%;
+    max-width: 1536px !important;
+  }
+}

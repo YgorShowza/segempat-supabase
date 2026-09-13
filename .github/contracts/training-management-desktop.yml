@@ -1,0 +1,35 @@
+name: SEGEMPAT Training Management Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-training-management-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  training-management-desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate training management desktop contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/training-management-desktop.css
+          grep -F 'segempat-training-question-bank' src/routes/_authenticated/banco-questoes.tsx >/dev/null
+          grep -F 'segempat-training-cycles' src/routes/_authenticated/ciclos-treinamento.tsx >/dev/null
+          grep -F 'segempat-training-knowledge' src/routes/_authenticated/conteudos.tsx >/dev/null
+          grep -F 'segempat-training-signatures' src/routes/_authenticated/assinaturas-provas.tsx >/dev/null
+          grep -F 'segempat-training-practical' src/routes/_authenticated/avaliacao-pratica.tsx >/dev/null
+          grep -F '@media (min-width: 1280px)' src/training-management-desktop.css >/dev/null
+          grep -F 'max-width: 1536px !important' src/training-management-desktop.css >/dev/null
+          grep -F 'trainingManagementDesktopCss from "../training-management-desktop.css?url"' src/routes/__root.tsx >/dev/null
+          grep -F '{ rel: "stylesheet", href: trainingManagementDesktopCss }' src/routes/__root.tsx >/dev/null
+          echo "Gestão de capacitação desktop do SEGEMPAT validada."

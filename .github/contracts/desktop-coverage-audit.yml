@@ -1,0 +1,22 @@
+name: SEGEMPAT Desktop Coverage Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-desktop-coverage-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop-coverage-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Audit desktop route coverage and consistency
+        run: node scripts/audit-desktop-coverage.mjs

@@ -1,0 +1,47 @@
+/* SEGEMPAT theme contrast safety net.
+   Loaded after styles.css so explicit visual intent wins over legacy global inheritance. */
+
+/* Preserve intentional inverse text on dark/brand surfaces. */
+.text-white { color: #ffffff !important; }
+[class*="text-white/"] { color: rgba(255, 255, 255, 0.72) !important; }
+.text-black { color: #000000 !important; }
+
+/* Preserve common semantic status colors used in operational cards. */
+.text-red-500 { color: #ef4444 !important; }
+.text-red-600 { color: #dc2626 !important; }
+.text-amber-500 { color: #f59e0b !important; }
+.text-amber-600 { color: #d97706 !important; }
+.text-emerald-500 { color: #10b981 !important; }
+.text-emerald-600 { color: #059669 !important; }
+.text-green-500 { color: #22c55e !important; }
+.text-blue-500 { color: #3b82f6 !important; }
+.text-blue-600 { color: #2563eb !important; }
+
+/* Operational navigation drawer.
+   Do not target it by width: the drawer width changes between breakpoints and
+   a generic dialog compatibility rule must never override its theme surface. */
+.segempat-sidebar-sheet[role="dialog"] {
+  background: var(--header-bg) !important;
+  color: var(--text-1) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+.segempat-sidebar-sheet[role="dialog"] > div {
+  background: var(--header-bg) !important;
+}
+
+.segempat-sidebar-sheet[role="dialog"] button[aria-label="Close"],
+.segempat-sidebar-sheet[role="dialog"] button > .lucide-x {
+  color: var(--text-3) !important;
+}
+
+.segempat-sidebar-link[data-active="false"]:hover,
+.segempat-sidebar-section:hover {
+  background: var(--bg-surface-2) !important;
+}
+
+.segempat-sidebar-link[data-active="false"]:focus-visible,
+.segempat-sidebar-section:focus-visible {
+  outline: 2px solid rgba(200, 16, 46, 0.42);
+  outline-offset: 2px;
+}

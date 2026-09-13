@@ -1,0 +1,41 @@
+name: SEGEMPAT Operator Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-operator-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  operator-desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate operator desktop contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/operator-desktop.css
+          grep -F 'OPERATOR_DESKTOP_PATHS' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'segempat-operator-desktop' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'data-operator-route' src/routes/_authenticated/route.tsx >/dev/null
+          for route in /painel /pendencias /provas /progresso /certificados /treinamentos /meu-perfil /pratico /minhas-ocorrencias; do
+            grep -F "\"${route}\"" src/routes/_authenticated/route.tsx >/dev/null
+          done
+          grep -F '{ path: "/provas", label: "Provas", icon: FileText }' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'operatorMenu.slice(0, 5)' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F '@media (min-width: 1280px)' src/operator-desktop.css >/dev/null
+          grep -F 'max-width: 1536px !important' src/operator-desktop.css >/dev/null
+          grep -F 'max-width: 1280px !important' src/operator-desktop.css >/dev/null
+          grep -F 'data-operator-route="/treinamentos"] > .max-w-7xl' src/operator-desktop.css >/dev/null
+          grep -F 'operatorDesktopCss from "../operator-desktop.css?url"' src/routes/__root.tsx >/dev/null
+          grep -F '{ rel: "stylesheet", href: operatorDesktopCss }' src/routes/__root.tsx >/dev/null
+          grep -F 'segempat-training-knowledge' src/routes/_authenticated/conteudos.tsx >/dev/null
+          echo "Experiência desktop do Operador do SEGEMPAT validada com acesso às provas teóricas."

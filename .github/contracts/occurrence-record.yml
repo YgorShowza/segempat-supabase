@@ -1,0 +1,52 @@
+name: SEGEMPAT Occurrence Record
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-occurrence-record-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  occurrence-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate complete occurrence record contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f database/mysql/007_occurrence_operational_record.sql
+          test -f database/mysql/008_occurrence_history_guard.sql
+          grep -F 'people_involved JSON' database/mysql/007_occurrence_operational_record.sql >/dev/null
+          grep -F 'CREATE TABLE occurrence_updates' database/mysql/007_occurrence_operational_record.sql >/dev/null
+          grep -F 'CREATE TABLE occurrence_attachments' database/mysql/007_occurrence_operational_record.sql >/dev/null
+          grep -F 'occurrences_guard_delete' database/mysql/008_occurrence_history_guard.sql >/dev/null
+          grep -F 'occurrences_guard_completed_update' database/mysql/008_occurrence_history_guard.sql >/dev/null
+          grep -F 'current_situation' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'immediate_risk' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'information_source' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'actions_taken' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'support_required' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'OCCURRENCE_EVIDENCE_ADD' server/src/routes/occurrence-integrity.js >/dev/null
+          grep -F 'Pessoas envolvidas' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'Registro fotográfico' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'Evolução da ocorrência' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'hasPermission(user, "occurrences.manage")' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'Prioridade operacional' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'Adicionar evidências' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'Limpar filtros' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          if grep -F 'window.confirm' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null; then
+            echo 'Confirmação nativa de exclusão não é permitida no fluxo refinado de ocorrências.' >&2
+            exit 1
+          fi
+          grep -F 'check-occurrence-record-integrity.js' server/package.json >/dev/null
+          node --check server/src/routes/occurrence-integrity.js
+          node --check server/scripts/check-occurrence-record-integrity.js
+          echo "Registro operacional completo e experiência refinada de ocorrências validados."

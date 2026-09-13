@@ -1,0 +1,30 @@
+{
+  "name": "segempat-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend SEGEMPAT — API HTTP sobre MySQL 8.0 da empresa",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "preflight": "node scripts/preflight.js && node scripts/check-runtime-grants.js",
+    "migrate": "node scripts/migrate-with-ti-credentials.js",
+    "bootstrap-admin": "node scripts/bootstrap-admin.js",
+    "grant-master-access": "node scripts/grant-master-access.js",
+    "manage-inspector-access": "node scripts/manage-inspector-access.js",
+    "report-privileged-access": "node scripts/report-privileged-access.js",
+    "smoke": "node scripts/smoke.js && node scripts/check-runtime-grants.js && node scripts/check-critical-index-definitions.js && node scripts/check-fk-orphans.js && node scripts/check-practical-generation-integrity.js && node scripts/check-governance-integrity.js && node scripts/check-occurrence-record-integrity.js",
+    "cutover:audit": "node scripts/check-runtime-grants.js && node scripts/check-critical-index-definitions.js && node scripts/check-fk-orphans.js && node scripts/check-practical-generation-integrity.js && node scripts/check-governance-integrity.js && node scripts/check-occurrence-record-integrity.js && node scripts/cutover-audit.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "mysql2": "^3.11.0"
+  }
+}

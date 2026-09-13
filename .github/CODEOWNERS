@@ -1,0 +1,4 @@
+# Responsável técnico pelo repositório SEGEMPAT.
+# A exigência de revisão por CODEOWNERS deve ser ativada pela regra do branch main
+# depois que os GitHub Actions estiverem executando normalmente.
+* @YgorShowza

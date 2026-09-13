@@ -1,0 +1,129 @@
+name: SEGEMPAT Privilege Separation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-privilege-separation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  privilege-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate TI, Master and Inspector privilege boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Perfil funcional Inspetor permanece sob controle da TI.
+          grep -F 'Perfil Inspetor é administrado exclusivamente pela TI' server/src/routes/employees.js >/dev/null
+          grep -F 'Privilégio de Inspetor, status e identidade privilegiada são administrados exclusivamente pela TI' server/src/routes/employees.js >/dev/null
+          grep -F 'Cadastro de Inspetor é administrado exclusivamente pela TI' server/src/routes/employees.js >/dev/null
+          grep -F 'linkedLevel === "master"' server/src/routes/employees.js >/dev/null
+          grep -F 'session_epoch = session_epoch + 1' server/src/routes/employees.js >/dev/null
+
+          # Concessão/revogação de Inspetor ocorre por utilitário auditável da TI.
+          grep -F 'CONFIRM_PRIVILEGED_ACCESS' server/scripts/manage-inspector-access.js >/dev/null
+          grep -F 'TI_OPERATOR' server/scripts/manage-inspector-access.js >/dev/null
+          grep -F 'TI_GRANT_INSPECTOR' server/scripts/manage-inspector-access.js >/dev/null
+          grep -F 'TI_REVOKE_INSPECTOR' server/scripts/manage-inspector-access.js >/dev/null
+          grep -F 'previousLevel === "master"' server/scripts/manage-inspector-access.js >/dev/null
+          grep -F 'session_epoch = session_epoch + 1' server/scripts/manage-inspector-access.js >/dev/null
+
+          # Bootstrap de Administrador Master também exige confirmação explícita da TI.
+          grep -F 'CONFIRM_MASTER_ACCESS' server/scripts/grant-master-access.js >/dev/null
+          grep -F 'TI_OPERATOR' server/scripts/grant-master-access.js >/dev/null
+          grep -F 'TI_GRANT_MASTER_ACCESS' server/scripts/grant-master-access.js >/dev/null
+          grep -F 'session_epoch = session_epoch + 1' server/scripts/grant-master-access.js >/dev/null
+
+          # O modelo granular é a fonte de autoridade da aplicação.
+          grep -F 'code: "master", label: "Administrador Master", rank: 100' server/src/authorization.js >/dev/null
+          grep -F 'code: "admin", label: "Administrador", rank: 80' server/src/authorization.js >/dev/null
+          grep -F 'code: "inspector", label: "Inspetor", rank: 60' server/src/authorization.js >/dev/null
+          grep -F 'code: "operator", label: "Operador", rank: 10' server/src/authorization.js >/dev/null
+          grep -F 'code: "access.permissions.manage"' server/src/authorization.js >/dev/null
+          grep -F 'masterOnly: true' server/src/authorization.js >/dev/null
+          grep -F 'if (levelCode === "master") return [...ALL_PERMISSION_CODES]' server/src/authorization.js >/dev/null
+
+          # Sessões e scripts operacionais permanecem protegidos.
+          grep -F 'u.session_epoch' server/src/session.js >/dev/null
+          grep -F 'credential-version:${passwordHash}:epoch:' server/src/session.js >/dev/null
+          grep -F '"manage-inspector-access"' server/package.json >/dev/null
+          grep -F '"grant-master-access"' server/package.json >/dev/null
+          grep -F '"report-privileged-access"' server/package.json >/dev/null
+          grep -F '"migrate": "node scripts/migrate-with-ti-credentials.js"' server/package.json >/dev/null
+          grep -F 'check-runtime-grants.js' server/package.json >/dev/null
+          grep -F 'MYSQL_MIGRATION_USER' server/scripts/migrate-with-ti-credentials.js >/dev/null
+          grep -F 'deve ser diferente de MYSQL_USER em produção' server/scripts/migrate-with-ti-credentials.js >/dev/null
+          grep -F 'MYSQL_MIGRATION_PASSWORD' server/.env.example >/dev/null
+
+          # Auditoria append-only e governança MySQL.
+          grep -F 'check-governance-integrity.js' server/package.json >/dev/null
+          grep -F 'audit_logs_block_update' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
+          grep -F 'audit_logs_block_delete' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
+          grep -F 'ADD COLUMN session_epoch BIGINT UNSIGNED NOT NULL DEFAULT 0' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
+
+          # A tela de equipe não pode conceder privilégio funcional.
+          grep -F 'export const PERFIS = ["Operacional"]' src/lib/employees.ts >/dev/null
+          grep -F 'component: TeamManagementWorkspace' src/routes/_authenticated/equipe.tsx >/dev/null
+          grep -F 'Inspetor · TI' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+          grep -F 'disabled={editingPrivileged}' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+
+          node --check server/src/routes/employees.js
+          node --check server/src/session.js
+          node --check server/src/authorization.js
+          node --check server/src/runtime-grants.js
+          node --check server/scripts/manage-inspector-access.js
+          node --check server/scripts/grant-master-access.js
+          node --check server/scripts/report-privileged-access.js
+          node --check server/scripts/check-governance-integrity.js
+          node --check server/scripts/check-runtime-grants.js
+          node --check server/scripts/migrate-with-ti-credentials.js
+
+          # Produção nunca pode executar migration com a credencial de runtime.
+          if NODE_ENV=production MYSQL_USER=segempat_app MYSQL_PASSWORD=runtime node server/scripts/migrate-with-ti-credentials.js >/tmp/migrate-gate.log 2>&1; then
+            echo "::error::Migration de produção foi aceita sem credencial separada da TI"
+            exit 1
+          fi
+          grep -F 'produção exige credencial de migration controlada pela TI' /tmp/migrate-gate.log >/dev/null
+
+          if NODE_ENV=production MYSQL_USER=segempat_app MYSQL_PASSWORD=runtime MYSQL_MIGRATION_USER=segempat_app MYSQL_MIGRATION_PASSWORD=migration node server/scripts/migrate-with-ti-credentials.js >/tmp/migrate-same-user.log 2>&1; then
+            echo "::error::Migration de produção aceitou o mesmo usuário da API"
+            exit 1
+          fi
+          grep -F 'deve ser diferente de MYSQL_USER em produção' /tmp/migrate-same-user.log >/dev/null
+
+          # Runtime MySQL aceita somente o conjunto mínimo previsto.
+          node --input-type=module <<'NODE'
+          const { validateRuntimeGrantStatements } = await import('./server/src/runtime-grants.js');
+          const safe = [
+            "GRANT USAGE ON *.* TO `segempat_app`@`%`",
+            "GRANT SELECT, INSERT, UPDATE, DELETE ON `segempat`.* TO `segempat_app`@`%`",
+          ];
+          if (validateRuntimeGrantStatements(safe, 'segempat').length !== 0) {
+            throw new Error('Política rejeitou grants mínimos válidos');
+          }
+          const unsafeSets = [
+            ["GRANT ALL PRIVILEGES ON `segempat`.* TO `segempat_app`@`%`"],
+            ["GRANT CREATE, SELECT ON `segempat`.* TO `segempat_app`@`%`"],
+            ["GRANT SELECT ON *.* TO `segempat_app`@`%`"],
+            ["GRANT SELECT ON `outro_banco`.* TO `segempat_app`@`%`"],
+            ["GRANT SELECT ON `segempat`.* TO `segempat_app`@`%` WITH GRANT OPTION"],
+          ];
+          for (const grants of unsafeSets) {
+            if (validateRuntimeGrantStatements(grants, 'segempat').length === 0) {
+              throw new Error(`Política aceitou grant inseguro: ${grants[0]}`);
+            }
+          }
+          console.log('Política de grants mínimos validada.');
+          NODE
+
+          echo "Segregação TI x Master x Inspetoria, auditoria, migrations e grants mínimos validados."

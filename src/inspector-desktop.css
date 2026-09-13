@@ -1,0 +1,26 @@
+/* SEGEMPAT · Inspector Desktop Coverage
+ * Fecha a cobertura desktop das telas exclusivas da Inspetoria que nao pertencem
+ * integralmente as camadas Operational, Analytical, Governance ou Training Management.
+ * Mobile e tablet continuam regidos pelas classes responsivas existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-inspector-desktop {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .segempat-inspector-desktop[data-inspector-route="/atencao"] > div,
+  .segempat-inspector-desktop[data-inspector-route="/risco"] > div,
+  .segempat-inspector-desktop[data-inspector-route="/ia-base"] > div,
+  .segempat-inspector-desktop[data-inspector-route="/modulos-treinamento"] > div,
+  .segempat-inspector-desktop[data-inspector-route="/validar-certificados"] > div {
+    width: 100%;
+    max-width: 1536px !important;
+  }
+
+  .segempat-inspector-desktop[data-inspector-route="/provas-criar"] > div {
+    width: 100%;
+    max-width: 1280px !important;
+  }
+}

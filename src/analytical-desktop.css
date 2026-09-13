@@ -1,0 +1,28 @@
+/* SEGEMPAT · Analytical Desktop
+ * Amplia a área útil das telas analíticas somente em monitores com espaço real.
+ * Mobile e tablet continuam regidos pelas classes responsivas já existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-analytical-analytics,
+  .segempat-analytical-reports,
+  .segempat-analytical-individual > div,
+  .segempat-analytical-monthly-report > div {
+    max-width: 1536px !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .segempat-analytical-analytics > .grid.gap-4.lg\:grid-cols-2 {
+    grid-template-columns: minmax(0, 1.35fr) minmax(380px, 0.65fr);
+  }
+
+  .segempat-analytical-analytics > .grid.grid-cols-2.gap-3.lg\:grid-cols-5 > *,
+  .segempat-analytical-reports .grid.grid-cols-2.gap-3.lg\:grid-cols-4 > * {
+    min-width: 0;
+  }
+
+  .segempat-analytical-reports table {
+    min-width: 820px;
+  }
+}

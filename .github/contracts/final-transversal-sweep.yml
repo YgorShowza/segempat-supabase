@@ -1,0 +1,77 @@
+name: Final transversal experience contract
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  final-transversal-experience:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate final cross-device experience guarantees
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+
+          const root = fs.readFileSync('src/routes/__root.tsx', 'utf8');
+          const css = fs.readFileSync('src/final-experience.css', 'utf8');
+          const button = fs.readFileSync('src/components/ui/button.tsx', 'utf8');
+          const dialog = fs.readFileSync('src/components/ui/dialog.tsx', 'utf8');
+          const sheet = fs.readFileSync('src/components/ui/sheet.tsx', 'utf8');
+          const table = fs.readFileSync('src/components/ui/table.tsx', 'utf8');
+          const input = fs.readFileSync('src/components/ui/input.tsx', 'utf8');
+          const textarea = fs.readFileSync('src/components/ui/textarea.tsx', 'utf8');
+          const select = fs.readFileSync('src/components/ui/select.tsx', 'utf8');
+
+          function requireText(source, needle, label) {
+            if (!source.includes(needle)) {
+              console.error(`[final-transversal] ausente: ${label}`);
+              process.exitCode = 1;
+            }
+          }
+
+          requireText(root, '{ rel: "stylesheet", href: finalExperienceCss }', 'camada final carregada globalmente');
+          if (root.indexOf('finalExperienceCss') > root.indexOf('inspectorDesktopCss') && root.indexOf('{ rel: "stylesheet", href: finalExperienceCss }') < root.indexOf('{ rel: "stylesheet", href: inspectorDesktopCss }')) {
+            console.error('[final-transversal] camada final deve ser carregada depois das camadas desktop');
+            process.exitCode = 1;
+          }
+
+          requireText(css, '100dvh', 'viewport dinâmico para navegadores móveis');
+          requireText(css, 'env(safe-area-inset-bottom)', 'safe-area inferior preservada');
+          requireText(css, 'env(safe-area-inset-left)', 'safe-area lateral preservada');
+          requireText(css, '@media (pointer: coarse)', 'acabamento para toque');
+          requireText(css, '@media (prefers-contrast: more)', 'preferência de alto contraste');
+          requireText(css, '@media (prefers-reduced-motion: reduce)', 'movimento reduzido');
+          requireText(css, 'overflow-wrap: break-word', 'textos longos não estouram layouts');
+          requireText(css, 'scrollbar-gutter: stable', 'rolagem sem salto visual');
+          requireText(css, 'max-width: 100vw', 'popovers limitados à viewport');
+
+          requireText(button, 'whitespace-normal', 'botões podem quebrar texto no mobile');
+          requireText(button, 'sm:whitespace-nowrap', 'botões mantêm densidade no desktop');
+          requireText(button, 'min-h-9 h-auto', 'botões acomodam rótulos sem corte');
+
+          requireText(dialog, 'segempat-dialog-content', 'diálogos usam acabamento transversal');
+          requireText(dialog, 'max-h-[92dvh]', 'diálogos respeitam viewport dinâmica');
+          requireText(dialog, 'segempat-dialog-close', 'fechar diálogo possui alvo refinado');
+          requireText(dialog, '>Fechar<', 'controle de fechar diálogo em português');
+
+          requireText(sheet, 'segempat-sheet-content', 'sheets usam acabamento transversal');
+          requireText(sheet, 'h-dvh', 'sheets laterais respeitam viewport dinâmica');
+          requireText(sheet, 'segempat-sheet-close', 'fechar sheet possui alvo refinado');
+          requireText(sheet, '>Fechar<', 'controle de fechar sheet em português');
+
+          requireText(table, 'segempat-table-scroll', 'tabelas possuem contêiner responsivo');
+          requireText(table, 'overflow-x-auto', 'tabelas preservam rolagem horizontal controlada');
+
+          requireText(input, 'min-w-0', 'inputs podem encolher em grids/flex');
+          requireText(input, 'aria-invalid:border-destructive', 'inputs comunicam validação visual');
+          requireText(textarea, 'resize-y', 'textarea preserva redimensionamento vertical');
+          requireText(textarea, 'min-h-20', 'textarea possui área mínima confortável');
+          requireText(select, 'max-w-[calc(100vw-1rem)]', 'menus select não extrapolam viewport');
+          requireText(select, 'aria-invalid:border-destructive', 'select comunica validação visual');
+
+          if (process.exitCode) process.exit(process.exitCode);
+          console.log('SEGEMPAT final transversal experience contract: OK');
+          NODE

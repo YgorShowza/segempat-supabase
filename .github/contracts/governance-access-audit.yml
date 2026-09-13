@@ -1,0 +1,52 @@
+name: SEGEMPAT Access and Audit Governance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-access-audit-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  access-audit-governance-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate access and audit governance
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACCESS=src/routes/_authenticated/acessos.tsx
+          AUDIT=src/routes/_authenticated/auditoria.tsx
+          OPS=src/lib/operations.ts
+          AUTH=server/src/authorization.js
+          PERMISSIONS=src/components/access/PermissionAdministrationPolished.tsx
+
+          test -f "$PERMISSIONS"
+          grep -F 'PermissionAdministrationPolished' "$ACCESS" >/dev/null
+          grep -F 'Governança de identidade' "$ACCESS" >/dev/null
+          grep -F 'Abrir auditoria' "$ACCESS" >/dev/null
+          grep -F 'Salvar e revogar sessões' "$PERMISSIONS" >/dev/null
+          grep -F 'Conta atual · protegida' "$PERMISSIONS" >/dev/null
+          grep -F 'Restaurar padrão do nível' "$PERMISSIONS" >/dev/null
+
+          grep -F '/api/access/audit?limit=' "$OPS" >/dev/null
+          if grep -F '/api/operations/audit?limit=' "$OPS" >/dev/null; then
+            echo 'Frontend não pode voltar a consultar a rota operacional genérica de auditoria.' >&2
+            exit 1
+          fi
+          grep -F 'path.startsWith("/api/access/audit") || path.startsWith("/api/operations/audit")' "$AUTH" >/dev/null
+          grep -F 'return requireForRequest(req, next, "audit.view")' "$AUTH" >/dev/null
+          grep -F 'audit.view' "$AUDIT" >/dev/null
+          grep -F 'actor_name' "$AUDIT" >/dev/null
+          grep -F 'Sistema / processo técnico' "$AUDIT" >/dev/null
+          grep -F 'Há eventos anteriores fora da janela carregada.' "$AUDIT" >/dev/null
+
+          node --check server/src/authorization.js
+          echo 'Governança de Acessos e Auditoria validada com menor privilégio e rastreabilidade de autoria.'

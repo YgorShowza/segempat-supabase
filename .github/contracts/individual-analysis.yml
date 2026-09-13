@@ -1,0 +1,54 @@
+name: SEGEMPAT Individual Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-individual-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  individual-analysis-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate polished individual analysis contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          route=src/routes/_authenticated/individual.tsx
+          page=src/components/individual-analysis/IndividualAnalysisPolished.tsx
+          model=src/lib/individual-analysis.ts
+          demo=src/lib/backend/admin-attempts.ts
+
+          test -f "$route"
+          test -f "$page"
+          test -f "$model"
+          grep -F 'IndividualAnalysisPolished' "$route" >/dev/null
+          grep -F 'Evolução de desempenho' "$page" >/dev/null
+          grep -F 'Oportunidades de reforço' "$page" >/dev/null
+          grep -F 'Pontos fortes' "$page" >/dev/null
+          grep -F 'Execução do cronograma' "$page" >/dev/null
+          grep -F 'Histórico de atividades' "$page" >/dev/null
+          grep -F 'Aprovações e evidências' "$page" >/dev/null
+          grep -F 'Resposta do colaborador' "$page" >/dev/null
+          grep -F 'Referência de correção' "$page" >/dev/null
+          grep -F 'PerformanceChart' "$page" >/dev/null
+          grep -F 'getIndividualAttemptEvidence' "$page" >/dev/null
+          grep -F 'normalizeMatricula' "$page" >/dev/null
+          grep -F 'normalizeText' "$page" >/dev/null
+          grep -F 'Requer acompanhamento' "$page" >/dev/null
+          grep -F 'Indicadores respeitam o período e o tema selecionados.' "$page" >/dev/null
+          grep -F 'Uma aprovação não significa, isoladamente, que o certificado foi formalmente emitido.' "$page" >/dev/null
+          grep -F 'Leitura automatizada' "$page" >/dev/null
+          grep -F 'correct_answer' "$model" >/dev/null
+          grep -F 'getInsightExamAttemptEvidence' "$model" >/dev/null
+          grep -F 'normalizeDemoScore' "$demo" >/dev/null
+          grep -F 'demo-attempt-perf-04' "$demo" >/dev/null
+          echo "Contrato da Análise Individual polida validado."

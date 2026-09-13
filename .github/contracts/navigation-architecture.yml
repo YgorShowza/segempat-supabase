@@ -1,0 +1,48 @@
+name: SEGEMPAT Navigation Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-navigation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  navigation-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate inspector navigation groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=src/components/AppLayout.tsx
+          grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null
+          grep -F 'section: "Equipe & Desempenho"' "$FILE" >/dev/null
+          grep -F 'section: "Operação"' "$FILE" >/dev/null
+          grep -F 'section: "Capacitação"' "$FILE" >/dev/null
+          grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null
+          grep -F 'section: "Governança"' "$FILE" >/dev/null
+          for route in /admin /atencao /analytics /equipe /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
+            grep -F "path: \"$route\"" "$FILE" >/dev/null || { echo "Rota ausente do menu do Inspetor: $route"; exit 1; }
+          done
+          grep -F 'label: "Central de Relatórios"' "$FILE" >/dev/null
+          if grep -F 'path: "/relatorio-mensal"' "$FILE" >/dev/null; then
+            echo "Relatório Mensal voltou a ocupar entrada separada no menu"; exit 1
+          fi
+          grep -F 'path: "/treinamentos", label: "Academia SEGEMPAT"' "$FILE" >/dev/null
+          for redundant in /teste-rapido /simulador /stress-test /desafio-diario; do
+            if grep -F "path: \"$redundant\"" "$FILE" >/dev/null; then
+              echo "Ferramenta de prática voltou ao menu principal do Operador: $redundant"; exit 1
+            fi
+          done
+          grep -F 'function AdminNavItems' "$FILE" >/dev/null
+          grep -F 'aria-expanded={isOpen}' "$FILE" >/dev/null
+          grep -F '<GlobalSearch />' "$FILE" >/dev/null
+          echo "Arquitetura de navegação consolidada validada."

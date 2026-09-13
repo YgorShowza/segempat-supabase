@@ -1,0 +1,43 @@
+# Instalação sem container (Linux + systemd)
+#
+#   sudo useradd --system --home /opt/segempat --shell /usr/sbin/nologin segempat
+#   sudo mkdir -p /opt/segempat /var/lib/segempat/storage
+#   sudo rsync -a ./ /opt/segempat/            # repositório completo (server/ + database/)
+#   cd /opt/segempat/server && sudo -u segempat npm ci --omit=dev
+#   sudo install -m 600 -o segempat -g segempat server/.env /etc/segempat/api.env
+#   sudo cp server/deploy/segempat-api.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now segempat-api
+
+[Unit]
+Description=API SEGEMPAT (MySQL corporativo)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=segempat
+Group=segempat
+WorkingDirectory=/opt/segempat/server
+EnvironmentFile=/etc/segempat/api.env
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+
+# Endurecimento do serviço
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/segempat/storage
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=segempat-api
+
+[Install]
+WantedBy=multi-user.target

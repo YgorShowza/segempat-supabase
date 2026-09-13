@@ -1,0 +1,5 @@
+@media (min-width: 1280px) {
+  .tv-operational-final main {
+    grid-template-rows: 7.8vh 18.5vh 38vh 30vh !important;
+  }
+}

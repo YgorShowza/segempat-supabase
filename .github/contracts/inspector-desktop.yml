@@ -1,0 +1,38 @@
+name: SEGEMPAT Inspector Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-inspector-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspector-desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate inspector desktop coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/inspector-desktop.css
+          grep -F 'INSPECTOR_DESKTOP_PATHS' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'segempat-inspector-desktop' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'data-inspector-route' src/routes/_authenticated/route.tsx >/dev/null
+          for route in /atencao /risco /ia-base /provas-criar /modulos-treinamento /validar-certificados; do
+            grep -F "\"${route}\"" src/routes/_authenticated/route.tsx >/dev/null
+            grep -F "data-inspector-route=\"${route}\"" src/inspector-desktop.css >/dev/null
+          done
+          grep -F '@media (min-width: 1280px)' src/inspector-desktop.css >/dev/null
+          grep -F 'max-width: 1536px !important' src/inspector-desktop.css >/dev/null
+          grep -F 'max-width: 1280px !important' src/inspector-desktop.css >/dev/null
+          grep -F 'inspectorDesktopCss from "../inspector-desktop.css?url"' src/routes/__root.tsx >/dev/null
+          grep -F '{ rel: "stylesheet", href: inspectorDesktopCss }' src/routes/__root.tsx >/dev/null
+          echo "Cobertura desktop complementar da Inspetoria validada sem alterar o contrato responsivo existente."

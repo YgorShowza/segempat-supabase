@@ -1,0 +1,62 @@
+name: Profile and final experience contract
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  profile-final-experience:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate profile and final experience guarantees
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+
+          const profile = fs.readFileSync('src/components/profile/MyProfileWorkspace.tsx', 'utf8');
+          const root = fs.readFileSync('src/routes/__root.tsx', 'utf8');
+          const css = fs.readFileSync('src/final-experience.css', 'utf8');
+          const route = fs.readFileSync('src/routes/_authenticated/meu-perfil.tsx', 'utf8');
+          const shell = fs.readFileSync('src/components/AppLayoutV2.tsx', 'utf8');
+          const search = fs.readFileSync('src/components/GlobalSearch.tsx', 'utf8');
+
+          function requireText(source, needle, label) {
+            if (!source.includes(needle)) {
+              console.error(`[profile-final-experience] ausente: ${label}`);
+              process.exitCode = 1;
+            }
+          }
+
+          requireText(route, 'MyProfileWorkspace', 'rota Meu Perfil usa o workspace refinado');
+          requireText(profile, 'criticalError', 'perfil distingue falha de dados de estado vazio');
+          requireText(profile, 'employee.isError', 'falha do cadastro é tratada explicitamente');
+          requireText(profile, 'attempts.isError', 'falha do histórico de provas é tratada explicitamente');
+          requireText(profile, 'activities.isError', 'falha do histórico de treinamentos é tratada explicitamente');
+          requireText(profile, 'cycle.isError', 'falha do ciclo é tratada explicitamente');
+          requireText(profile, 'ProfileLoading', 'perfil possui estado de carregamento dedicado');
+          requireText(profile, 'retryAll', 'perfil oferece nova tentativa sem mostrar zeros falsos');
+          requireText(profile, 'aria-busy="true"', 'carregamento acessível do perfil');
+          requireText(profile, 'segempat-profile-history-grid', 'históricos responsivos preservados');
+          requireText(profile, 'Dados de identificação protegidos', 'origem do cadastro comunicada ao usuário');
+
+          requireText(shell, 'to="/meu-perfil"', 'shell oferece acesso direto ao Meu Perfil');
+          requireText(shell, 'section: "Conta", label: "Meu Perfil"', 'cabeçalho identifica corretamente Meu Perfil também para contas administrativas');
+          requireText(search, 'path: "/meu-perfil"', 'Busca Global encontra Meu Perfil');
+          requireText(search, 'canAccessAdminPath(user, item.path)', 'Busca Global filtra navegação administrativa pela permissão efetiva');
+          requireText(search, 'canSearchPeople', 'Busca Global evita consultas dinâmicas sem autorização coerente');
+
+          requireText(root, 'finalExperienceCss', 'camada global de experiência importada');
+          requireText(root, '{ rel: "stylesheet", href: finalExperienceCss }', 'camada global de experiência carregada');
+
+          requireText(css, '@media (max-width: 767px)', 'acabamento mobile dedicado');
+          requireText(css, 'font-size: 16px !important', 'prevenção de zoom involuntário em formulários mobile');
+          requireText(css, '@media (min-width: 1280px)', 'acabamento desktop dedicado');
+          requireText(css, 'max-width: 1440px', 'largura de leitura refinada do perfil em desktop');
+          requireText(css, ':focus-visible', 'foco visível preservado');
+          requireText(css, '@media (prefers-reduced-motion: reduce)', 'preferência de movimento reduzido respeitada');
+
+          if (process.exitCode) process.exit(process.exitCode);
+          console.log('SEGEMPAT profile/final experience contract: OK');
+          NODE

@@ -1,0 +1,48 @@
+/* SEGEMPAT · Governance Desktop
+ * Amplia a area util das telas administrativas de governanca somente quando ha espaco real.
+ * Mobile e tablet continuam regidos pelas classes responsivas existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-governance-access > div,
+  .segempat-governance-security > div,
+  .segempat-governance-audit {
+    width: 100%;
+  }
+
+  .segempat-governance-access > div,
+  .segempat-governance-audit {
+    max-width: 1536px !important;
+  }
+
+  .segempat-governance-security > div {
+    max-width: 1152px !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .segempat-governance-access > div > .space-y-3,
+  .segempat-governance-audit > .space-y-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+
+  .segempat-governance-access > div > .space-y-3 > *,
+  .segempat-governance-audit > .space-y-2 > * {
+    margin-top: 0 !important;
+    min-width: 0;
+  }
+
+  .segempat-governance-access > div > .space-y-3 > :only-child,
+  .segempat-governance-audit > .space-y-2 > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media print {
+  .segempat-governance-security > div {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}

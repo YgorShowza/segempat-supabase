@@ -1,0 +1,66 @@
+name: SEGEMPAT TV Dashboard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-tv-dashboard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tv-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate operational TV contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/components/tv/TvOperationalDashboard.tsx
+          test -f src/components/tv/TvOperationalDashboardDistance.tsx
+          test -f src/components/tv/tv-operational-final.css
+          test -f src/lib/tv-dashboard.ts
+          grep -F 'TvOperationalDashboardDistance' src/components/tv/TvOperationalDashboard.tsx >/dev/null
+          grep -F 'tv-operational-final' src/components/tv/TvOperationalDashboard.tsx >/dev/null
+          grep -F 'grid-template-rows: 7.8vh 18.5vh 38vh 30vh' src/components/tv/tv-operational-final.css >/dev/null
+          grep -F 'const key = month.month;' src/lib/tv-dashboard.ts >/dev/null
+          if grep -F 'const key = `${year}-${String(month.month).padStart(2, "0")}`;' src/lib/tv-dashboard.ts; then
+            echo 'Painel TV não pode reconstruir uma chave mensal que já vem normalizada.' >&2
+            exit 1
+          fi
+          grep -F 'Sala Operacional' src/routes/_authenticated/tv.tsx >/dev/null
+          grep -F 'canonicalPath === "/tv"' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'to="/tv"' src/routes/_authenticated/analytics.tsx >/dev/null
+          grep -F 'Painel TV' src/routes/_authenticated/analytics.tsx >/dev/null
+          grep -F 'PAINEL SITUACIONAL' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Sem exposição de dados individuais' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'refetchInterval: 60_000' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'refetchIntervalInBackground: true' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'requestFullscreen' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Exibindo último consolidado válido' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Situação operacional' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Radar Operacional' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Ritmo Operacional' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Linha do tempo · últimos 6 meses' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Meses sem avaliação não entram na taxa de aprovação' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Aprovação no mês' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Saúde da Equipe' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Desempenho' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Execução por Setor' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Menores execuções aparecem primeiro' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Sem histórico de avaliações suficiente' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'Atualização automática a cada 60 s' src/components/tv/TvOperationalDashboardDistance.tsx >/dev/null
+          grep -F 'listOccurrences()' src/lib/tv-dashboard.ts >/dev/null
+          grep -F 'listPracticalEvaluations()' src/lib/tv-dashboard.ts >/dev/null
+          grep -F 'employeeRisk(snapshot)' src/lib/tv-dashboard.ts >/dev/null
+          if grep -E 'employee_name|employee_matricula|\.matricula|\.full_name' src/components/tv/TvOperationalDashboardDistance.tsx; then
+            echo 'Painel TV não pode expor identificação individual.' >&2
+            exit 1
+          fi
+          echo 'Contrato do Painel TV operacional validado.'

@@ -1,0 +1,41 @@
+name: SEGEMPAT Desktop Experience
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-desktop-experience-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate desktop-first interface contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/components/AppLayoutV2.tsx
+          test -f src/components/dashboard/AdminDashboardV2.tsx
+          test -f src/components/team/TeamManagementWorkspace.tsx
+          grep -F 'AppLayoutV2' src/routes/_authenticated/route.tsx >/dev/null
+          grep -F 'max-w-[1536px]' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'Central de Atenção' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'Painel TV' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'w-[19rem]' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'currentLocation' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'max-h-[62vh]' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+          grep -F '<table' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+          grep -F 'lg:hidden' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+          grep -F 'sm:max-w-2xl' src/components/team/TeamManagementWorkspace.tsx >/dev/null
+          grep -F 'max-h-[92dvh]' src/components/ui/dialog.tsx >/dev/null
+          grep -F 'focus-visible:ring-2' src/components/ui/button.tsx >/dev/null
+          grep -F 'focus-visible:ring-2' src/components/ui/input.tsx >/dev/null
+          echo "Experiência desktop-first do SEGEMPAT validada com viewport dinâmica."

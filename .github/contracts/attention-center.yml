@@ -1,0 +1,38 @@
+name: SEGEMPAT Attention Center
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-attention-center-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  attention-center-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Inspector Attention Center
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/lib/attention-center.ts
+          test -f src/routes/_authenticated/atencao.tsx
+          grep -F 'Central de Atenção' src/components/AppLayout.tsx >/dev/null
+          grep -F 'getOperationalSnapshot' src/lib/attention-center.ts >/dev/null
+          grep -F 'listOccurrences' src/lib/attention-center.ts >/dev/null
+          grep -F 'listPracticalEvaluations' src/lib/attention-center.ts >/dev/null
+          grep -F 'listCertificateRecords' src/lib/attention-center.ts >/dev/null
+          grep -F 'listTrainingSchedules' src/lib/attention-center.ts >/dev/null
+          grep -F 'priority: "critical"' src/lib/attention-center.ts >/dev/null
+          grep -F 'Consolidação parcial' src/routes/_authenticated/atencao.tsx >/dev/null
+          grep -F 'Ações críticas' src/routes/_authenticated/atencao.tsx >/dev/null
+          grep -F 'Radar de prioridades' src/routes/_authenticated/atencao.tsx >/dev/null
+          grep -F 'refetchInterval: 120_000' src/routes/_authenticated/atencao.tsx >/dev/null
+          echo "Central de Atenção do Inspetor validada."

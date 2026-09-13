@@ -1,0 +1,36 @@
+name: SEGEMPAT Corporate Privacy Governance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-corporate-privacy-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  corporate-privacy-governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate repository readiness for public TI review
+        run: node scripts/check-public-review-readiness.mjs
+
+      - name: Validate corporate privacy governance
+        run: node scripts/check-corporate-privacy-governance.mjs
+
+      - name: Validate root route syntax contract source
+        run: test -f src/routes/__root.tsx

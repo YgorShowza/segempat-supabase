@@ -1,0 +1,43 @@
+/* SEGEMPAT · Operational Desktop
+ * Amplia a densidade das telas operacionais apenas quando há espaço real.
+ * O comportamento mobile/tablet permanece controlado pelas classes Tailwind existentes.
+ */
+
+@media (min-width: 1280px) {
+  .segempat-operational-cronograma > div,
+  .segempat-operational-cronograma-management > div {
+    max-width: 1536px !important;
+  }
+
+  .segempat-operational-occurrences > div {
+    max-width: 1536px !important;
+  }
+
+  .segempat-operational-provas {
+    max-width: 1536px !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .segempat-operational-occurrences > div > .space-y-3,
+  .segempat-operational-provas > .space-y-3 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+
+  .segempat-operational-occurrences > div > .space-y-3 > *,
+  .segempat-operational-provas > .space-y-3 > * {
+    margin-top: 0 !important;
+    min-width: 0;
+  }
+
+  .segempat-operational-occurrences > div > .space-y-3 > :only-child,
+  .segempat-operational-provas > .space-y-3 > :only-child {
+    grid-column: 1 / -1;
+  }
+
+  .segempat-operational-occurrences > div > .grid.grid-cols-1.sm\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

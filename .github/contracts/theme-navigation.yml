@@ -1,0 +1,56 @@
+name: SEGEMPAT Theme Navigation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-theme-navigation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  theme-navigation-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate active theme-aware sidebar and desktop navigation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          LAYOUT="src/components/AppLayoutV2.tsx"
+          ROUTE="src/routes/_authenticated/route.tsx"
+
+          grep -F 'import { AppLayoutV2 } from "@/components/AppLayoutV2"' "$ROUTE" >/dev/null
+          grep -F '<AppLayoutV2>' "$ROUTE" >/dev/null
+
+          grep -F 'segempat-sidebar-sheet' "$LAYOUT" >/dev/null
+          grep -F 'w-[86vw] max-w-[340px]' "$LAYOUT" >/dev/null
+          grep -F 'hidden w-[19rem] flex-col lg:flex' "$LAYOUT" >/dev/null
+          grep -F 'lg:ml-[19rem]' "$LAYOUT" >/dev/null
+          grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
+          grep -F 'background: "var(--header-bg)"' "$LAYOUT" >/dev/null
+          grep -F 'color: isActive ? "#fff" : "var(--text-2)"' "$LAYOUT" >/dev/null
+          grep -F 'color: isActive ? "#fff" : "var(--text-3)"' "$LAYOUT" >/dev/null
+          grep -F 'Tema da interface' "$LAYOUT" >/dev/null
+
+          grep -F '.segempat-sidebar-sheet[role="dialog"]' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'background: var(--header-bg) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'color: var(--text-1) !important' src/theme-contrast-fixes.css >/dev/null
+
+          if grep -F '[class*="w-[280px]"]' src/theme-contrast-fixes.css >/dev/null; then
+            echo 'ERRO: proteção de tema não pode depender da largura histórica do drawer.' >&2
+            exit 1
+          fi
+
+          if grep -F 'rgba(255,255,255,0.62)' "$LAYOUT" >/dev/null; then
+            echo 'ERRO: link inativo da sidebar voltou a depender de texto branco fixo.' >&2
+            exit 1
+          fi
+
+          echo 'AppLayoutV2 ativo: tema claro/escuro e navegação desktop/mobile protegidos.'
