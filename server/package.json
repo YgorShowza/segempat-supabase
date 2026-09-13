@@ -16,7 +16,8 @@
     "grant-master-access": "node scripts/grant-master-access.js",
     "manage-inspector-access": "node scripts/manage-inspector-access.js",
     "report-privileged-access": "node scripts/report-privileged-access.js",
-    "smoke": "node scripts/smoke.js && node scripts/check-runtime-grants.js && node scripts/check-critical-index-definitions.js && node scripts/check-fk-orphans.js && node scripts/check-practical-generation-integrity.js && node scripts/check-governance-integrity.js && node scripts/check-occurrence-record-integrity.js",
+    "smoke": "node scripts/smoke.js && node scripts/check-runtime-grants.js",
+    "smoke:auth": "node scripts/postgres-api-auth-smoke.js",
     "cutover:audit": "node scripts/check-runtime-grants.js && node scripts/check-critical-index-definitions.js && node scripts/check-fk-orphans.js && node scripts/check-practical-generation-integrity.js && node scripts/check-governance-integrity.js && node scripts/check-occurrence-record-integrity.js && node scripts/cutover-audit.js"
   },
   "dependencies": {
