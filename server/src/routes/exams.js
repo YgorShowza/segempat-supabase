@@ -1,8 +1,7 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { Router } from "express";
 import { config } from "../config.js";
 import { query, queryOne, withTransaction } from "../db.js";
+import { storage } from "../storage.js";
 import { audit } from "../audit.js";
 import { requireAdmin, requireAuth } from "../session.js";
 import {
@@ -376,7 +375,6 @@ myExamsRouter.post("/exams/:id/attempts", requireAuth, asyncHandler(async (req, 
 }));
 
 myExamsRouter.post("/exam-attempts/:attemptId/signature", requireAuth, asyncHandler(async (req, res) => {
-  if (config.storage.driver !== "filesystem") throw badRequest("Driver de armazenamento ainda não suportado nesta API");
   const attempt = await queryOne(
     `SELECT a.*, e.title AS exam_title FROM exam_attempts a JOIN exams e ON e.id = a.exam_id WHERE a.id = ? AND a.user_id = ?`,
     [req.params.attemptId, req.user.id],
@@ -398,12 +396,8 @@ myExamsRouter.post("/exam-attempts/:attemptId/signature", requireAuth, asyncHand
   if (bytes[0] !== 0x89 || bytes[1] !== 0x50 || bytes[2] !== 0x4e || bytes[3] !== 0x47) throw badRequest("Conteúdo da assinatura não é PNG válido");
 
   const fileName = `${attempt.id}-${Date.now()}-${uuid().slice(0, 8)}.png`;
-  const relativePath = path.posix.join("exam-signatures", req.user.id, fileName);
-  const absolutePath = path.resolve(config.storage.path, relativePath);
-  const storageRoot = path.resolve(config.storage.path);
-  if (!absolutePath.startsWith(`${storageRoot}${path.sep}`)) throw badRequest("Caminho de assinatura inválido");
-  await fs.mkdir(path.dirname(absolutePath), { recursive: true });
-  await fs.writeFile(absolutePath, bytes, { mode: 0o600, flag: "wx" });
+  const relativePath = `exam-signatures/${req.user.id}/${fileName}`;
+  await storage.write(relativePath, bytes, { contentType: "image/png" });
 
   try {
     await withTransaction(async (connection) => {
@@ -449,10 +443,11 @@ myExamsRouter.post("/exam-attempts/:attemptId/signature", requireAuth, asyncHand
         signature_path: relativePath,
         signer_derived_server_side: true,
         evidence_immutable_after_issuance: true,
+        storage_driver: storage.driver,
       }, connection);
     });
   } catch (error) {
-    await fs.unlink(absolutePath).catch(() => {});
+    await storage.remove(relativePath).catch(() => {});
     throw error;
   }
 
