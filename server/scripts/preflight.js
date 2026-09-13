@@ -1,8 +1,7 @@
-import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
 import { config } from "../src/config.js";
 import { pool, queryOne } from "../src/db.js";
+import { storage } from "../src/storage.js";
 
 function fail(message) {
   throw new Error(`[preflight] ${message}`);
@@ -77,31 +76,22 @@ async function checkDatabase() {
 }
 
 async function checkStorage() {
-  const root = path.resolve(config.storage.path);
-  const stat = await fs.stat(root);
-  if (!stat.isDirectory()) fail(`SEGEMPAT_STORAGE_PATH não é diretório: ${root}`);
-
-  const token = crypto.randomBytes(16).toString("hex");
-  const probePath = path.join(root, `.segempat-preflight-${process.pid}-${Date.now()}`);
-  try {
-    await fs.writeFile(probePath, token, { encoding: "utf8", mode: 0o600, flag: "wx" });
-    const readBack = await fs.readFile(probePath, "utf8");
-    if (readBack !== token) fail("storage escreveu conteúdo diferente do esperado");
-  } finally {
-    await fs.unlink(probePath).catch(() => {});
+  await storage.readinessProbe();
+  if (config.storage.driver === "supabase") {
+    return `supabase:${config.storage.bucket}`;
   }
-  return root;
+  return `filesystem:${path.resolve(config.storage.path)}`;
 }
 
 async function main() {
   try {
     const database = await checkDatabase();
-    const storage = await checkStorage();
+    const storageStatus = await checkStorage();
     console.log("[preflight] OK");
     console.log(`[preflight] node_env=${config.nodeEnv}`);
     console.log(`[preflight] postgresql=${database.version} database=${database.database} server=${database.server} tls=${database.tls}`);
     console.log(`[preflight] role=${database.role} schema=${database.schema} timezone=${database.timezone} encoding=${database.encoding}`);
-    console.log(`[preflight] storage=${storage}`);
+    console.log(`[preflight] storage=${storageStatus}`);
     console.log(`[preflight] cors_origins=${config.allowedOrigins.length}`);
   } finally {
     await pool.end().catch(() => {});
