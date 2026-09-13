@@ -1,0 +1,69 @@
+name: Generate PostgreSQL baseline
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - 'scripts/generate-postgres-baseline.mjs'
+      - '.github/workflows/generate-postgres-baseline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: segempat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d segempat_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+    steps:
+      - name: Checkout Supabase edition branch
+        uses: actions/checkout@v4
+        with:
+          ref: supabase/phase-1-foundation
+          fetch-depth: 0
+
+      - name: Replace legacy Supabase migrations with API-owned baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf supabase/migrations
+          node scripts/generate-postgres-baseline.mjs
+
+      - name: Validate baseline on PostgreSQL 16
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -h 127.0.0.1 -U postgres -d segempat_test -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20260913010000_api_owned_baseline.sql
+          psql -h 127.0.0.1 -U postgres -d segempat_test -Atc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"
+
+      - name: Commit generated baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A supabase/migrations
+          if git diff --cached --quiet; then
+            echo "Baseline já está atualizado."
+            exit 0
+          fi
+          git commit -m "Generate API-owned PostgreSQL baseline"
+          git push origin HEAD:supabase/phase-1-foundation
