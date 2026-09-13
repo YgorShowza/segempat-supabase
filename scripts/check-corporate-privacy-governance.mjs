@@ -25,7 +25,7 @@ const security = read("SECURITY_AUDIT.md");
 const lgpd = read("LGPD_GOVERNANCE.md");
 
 requireText(robots, "User-agent: *", "robots.txt cobre todos os crawlers");
-requireText(robots, "Disallow: /", "robots.txt bloqueia indexação do sistema corporativo");
+requireText(robots, "Disallow: /", "robots.txt bloqueia indexação do sistema");
 forbidText(robots, "Allow: /", "robots.txt não deve autorizar indexação pública");
 
 requireText(root, 'name: "robots", content: "noindex, nofollow, noarchive, nosnippet, noimageindex"', "meta robots noindex");
@@ -39,8 +39,9 @@ for (const [name, source] of [["README", readme], ["SECURITY_AUDIT", security], 
 }
 
 requireText(readme, "access.permissions.manage", "README documenta permissão exclusiva do Master");
-requireText(readme, "010_granular_access_control.sql", "README documenta migration 010");
+requireText(readme, "20260913020000_current_hardening.sql", "README documenta hardening PostgreSQL atual");
 requireText(readme, "Disallow: /", "README documenta bloqueio de indexação");
+requireText(readme, "DATABASE_URL", "README documenta configuração PostgreSQL somente no backend");
 
 requireText(security, "último Master realmente utilizável", "auditoria documenta proteção do último Master utilizável");
 requireText(security, "Leituras gerenciais", "auditoria documenta redaction/coerência de leitura");
@@ -53,4 +54,4 @@ requireText(lgpd, "recuperação somente pela TI", "LGPD documenta proteção de
 requireText(lgpd, "não substituem controle de acesso", "LGPD deixa claro que noindex não é autenticação");
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log("SEGEMPAT corporate privacy governance contract: OK");
+console.log("SEGEMPAT privacy governance contract: OK");

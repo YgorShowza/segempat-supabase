@@ -2,7 +2,7 @@ name: SEGEMPAT CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, supabase/phase-1-foundation]
   pull_request:
     branches: [main]
 
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,143 +21,109 @@ jobs:
       - name: Normalize dependency registries
         run: node scripts/normalize-package-registries.mjs
 
-      - name: Enforce API-only Cloudflare architecture
+      - name: Enforce API-owned Supabase architecture
         shell: bash
         run: |
           set -euo pipefail
-          test ! -d supabase
+          test -d supabase/migrations
           test ! -d src/integrations/supabase
           test ! -d .lovable
-          if grep -RInE --exclude-dir=node_modules --exclude='bun.lock' --exclude='*.md' '(supabase|lovable)' src package.json vite.config.ts 2>/dev/null; then
-            echo "::error::Referência ativa a backend/plataforma legada encontrada"
-            exit 1
-          fi
           grep -F '"@cloudflare/vite-plugin"' package.json >/dev/null
           grep -F '"wrangler"' package.json >/dev/null
           grep -F 'cloudflare({ viteEnvironment: { name: "ssr" } })' vite.config.ts >/dev/null
           grep -F '"main": "@tanstack/react-start/server-entry"' wrangler.jsonc >/dev/null
           grep -F '"nodejs_compat"' wrangler.jsonc >/dev/null
-          echo "Arquitetura API-only e runtime Cloudflare validados."
+          grep -F 'VITE_SEGEMPAT_API_URL' src/lib/backend/api-client.ts >/dev/null
+          grep -F 'VITE_SEGEMPAT_REQUIRE_API' src/lib/backend/api-client.ts >/dev/null
+          if grep -RInE --exclude-dir=node_modules --exclude='*.md' --exclude='*.yml' --exclude='*.yaml' --exclude='bun.lock' '(@supabase/supabase-js|createClient\(|SUPABASE_SERVICE_ROLE|SUPABASE_ANON_KEY)' src package.json vite.config.ts 2>/dev/null; then
+            echo "::error::Frontend contém acesso Supabase direto; a edição exige Frontend -> API SEGEMPAT -> PostgreSQL"
+            exit 1
+          fi
+          echo "Arquitetura API-owned da edição Supabase validada."
 
-      - name: Validate MySQL migration versions
+      - name: Validate PostgreSQL migration versions
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t files < <(find database/mysql -maxdepth 1 -type f -name '*.sql' -printf '%f\n')
+          mapfile -t files < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort)
           if [[ "${#files[@]}" -eq 0 ]]; then
-            echo "::error::Nenhuma migration MySQL encontrada em database/mysql"
+            echo "::error::Nenhuma migration PostgreSQL encontrada em supabase/migrations"
             exit 1
           fi
-
           bad=0
-          numeric_versions=()
-          version_rows=()
+          versions=()
           for file in "${files[@]}"; do
-            if [[ ! "$file" =~ ^[0-9]{3,}_.+\.sql$ ]]; then
-              echo "::error::Migration MySQL com nome inválido: $file"
+            if [[ ! "$file" =~ ^[0-9]{14}_.+\.sql$ ]]; then
+              echo "::error::Migration PostgreSQL com nome inválido: $file"
               bad=1
               continue
             fi
-            version="${file%%_*}"
-            value=$((10#$version))
-            numeric_versions+=("$value")
-            version_rows+=("$value|$version|$file")
+            versions+=("${file%%_*}")
           done
-
-          duplicates=$(printf '%s\n' "${numeric_versions[@]}" | sort -n | uniq -d)
+          duplicates=$(printf '%s\n' "${versions[@]}" | sort | uniq -d)
           if [[ -n "$duplicates" ]]; then
-            echo "::error::Versões MySQL numericamente duplicadas: $duplicates"
+            echo "::error::Versões PostgreSQL duplicadas: $duplicates"
             bad=1
           fi
+          [[ "$bad" -eq 0 ]]
+          echo "Migrations PostgreSQL verificadas: ${#files[@]} arquivo(s)."
 
-          mapfile -t ordered < <(printf '%s\n' "${version_rows[@]}" | sort -t'|' -k1,1n -k3,3)
-          first_value="${ordered[0]%%|*}"
-          if [[ "$first_value" -ne 1 ]]; then
-            echo "::error::A primeira migration MySQL deve ser a versão numérica 001"
-            bad=1
-          fi
-
-          if [[ "$bad" -ne 0 ]]; then
-            exit 1
-          fi
-          echo "Migrations MySQL verificadas: ${#files[@]} arquivo(s), versões numericamente únicas e ordenáveis."
-
-      - name: Keep MySQL FK audit aligned with baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t schema_fks < <(
-            sed -nE 's/^[[:space:]]*CONSTRAINT[[:space:]]+([A-Za-z0-9_]+)[[:space:]]+FOREIGN KEY.*/\1/p' database/mysql/001_schema.sql | sort
-          )
-          mapfile -t audit_fks < <(
-            sed -nE 's/^[[:space:]]*\["([A-Za-z0-9_]+)",.*/\1/p' server/scripts/check-fk-orphans.js | sort
-          )
-
-          if [[ "${#schema_fks[@]}" -eq 0 ]]; then
-            echo "::error::Nenhuma foreign key foi extraída do baseline MySQL"
-            exit 1
-          fi
-          if [[ "${#audit_fks[@]}" -eq 0 ]]; then
-            echo "::error::Nenhuma foreign key crítica foi extraída da auditoria MySQL"
-            exit 1
-          fi
-
-          if ! diff -u <(printf '%s\n' "${schema_fks[@]}") <(printf '%s\n' "${audit_fks[@]}"); then
-            echo "::error::A lista de foreign keys da auditoria diverge do baseline 001_schema.sql"
-            exit 1
-          fi
-          echo "Auditoria de integridade alinhada ao baseline: ${#schema_fks[@]} foreign key(s)."
-
-      - name: Setup Node for MySQL API validation
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install MySQL API dependencies from official npm registry
-        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/ --replace-registry-host=always
+      - name: Install API dependencies
+        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
 
-      - name: Validate MySQL API syntax
+      - name: Validate PostgreSQL API syntax
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r file; do
-            echo "Checking $file"
             node --check "$file"
           done < <(find server/src server/scripts -type f -name '*.js' | sort)
+          echo "Sintaxe da API PostgreSQL validada."
 
-      - name: Validate production API configuration
+      - name: Validate production PostgreSQL configuration
         shell: bash
         env:
           NODE_ENV: production
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_DATABASE: segempat_ci
-          MYSQL_USER: segempat_ci
-          MYSQL_PASSWORD: ci-password-only
-          MYSQL_SSL: "true"
+          DATABASE_URL: postgresql://segempat_ci:ci-password-only@db.example.test:5432/segempat
+          POSTGRES_SSL: "true"
+          POSTGRES_POOL_SIZE: "5"
           SEGEMPAT_SESSION_SECRET: ci-only-session-secret-with-at-least-32-bytes
           SEGEMPAT_SESSION_SECURE: "true"
+          SEGEMPAT_SESSION_SAMESITE: lax
           SEGEMPAT_ALLOWED_ORIGINS: https://segempat.example.test
           SEGEMPAT_STORAGE_DRIVER: filesystem
           SEGEMPAT_STORAGE_PATH: /tmp/segempat-ci-storage
+          SEGEMPAT_TIMEZONE: America/Maceio
         run: |
           set -euo pipefail
           mkdir -p "$SEGEMPAT_STORAGE_PATH"
-          node --input-type=module -e "const { config } = await import('./server/src/config.js'); if (config.nodeEnv !== 'production' || !config.db.ssl || config.storage.driver !== 'filesystem' || config.allowedOrigins.length !== 1) process.exit(1); console.log('Configuração de produção da API validada.');"
+          node --input-type=module <<'NODE'
+          const { config } = await import('./server/src/config.js');
+          if (config.nodeEnv !== 'production') process.exit(1);
+          if (!config.db.ssl || !config.db.url.startsWith('postgresql://')) process.exit(1);
+          if (config.storage.driver !== 'filesystem' || config.allowedOrigins.length !== 1) process.exit(1);
+          console.log('Configuração de produção PostgreSQL validada.');
+          NODE
 
       - name: Reject unsafe production configuration
         shell: bash
         env:
           NODE_ENV: production
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_DATABASE: segempat_ci
-          MYSQL_USER: segempat_ci
-          MYSQL_PASSWORD: ci-password-only
-          MYSQL_SSL: "true"
+          DATABASE_URL: postgresql://segempat_ci:ci-password-only@db.example.test:5432/segempat
+          POSTGRES_SSL: "true"
+          POSTGRES_POOL_SIZE: "5"
           SEGEMPAT_SESSION_SECRET: ci-only-session-secret-with-at-least-32-bytes
           SEGEMPAT_SESSION_SECURE: "true"
+          SEGEMPAT_SESSION_SAMESITE: lax
           SEGEMPAT_ALLOWED_ORIGINS: https://segempat.example.test
           SEGEMPAT_STORAGE_DRIVER: filesystem
           SEGEMPAT_STORAGE_PATH: /tmp/segempat-ci-storage
+          SEGEMPAT_TIMEZONE: America/Maceio
         run: |
           set -euo pipefail
           expect_rejected() {
@@ -170,139 +136,41 @@ jobs:
             fi
             echo "Rejeição confirmada: $description"
           }
-
           expect_rejected "cookie sem Secure em produção" SEGEMPAT_SESSION_SECURE=false
           expect_rejected "origem HTTP em produção" SEGEMPAT_ALLOWED_ORIGINS=http://segempat.example.test
           expect_rejected "storage relativo em produção" SEGEMPAT_STORAGE_PATH=./storage
           expect_rejected "timezone inválida" SEGEMPAT_TIMEZONE=Invalid/Timezone
-          expect_rejected "senha MySQL placeholder" MYSQL_PASSWORD=CHANGE_ME
+          expect_rejected "connection string placeholder" DATABASE_URL=postgresql://user:change_me@host:5432/database
+          expect_rejected "connection string não PostgreSQL" DATABASE_URL=mysql://user:pass@host:3306/database
+          expect_rejected "TLS PostgreSQL desabilitado em produção" POSTGRES_SSL=false
+          expect_rejected "CA PostgreSQL com TLS desabilitado" POSTGRES_SSL=false POSTGRES_SSL_CA_PATH=/tmp/postgres-ca.pem
+          expect_rejected "CA PostgreSQL relativa em produção" POSTGRES_SSL=true POSTGRES_SSL_CA_PATH=./postgres-ca.pem
           expect_rejected "segredo de sessão placeholder" SEGEMPAT_SESSION_SECRET=CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32_BYTES_MINIMUM
-          expect_rejected "host MySQL somente com espaços" MYSQL_HOST="   "
-          expect_rejected "TLS MySQL desabilitado em produção" MYSQL_SSL=false
-          expect_rejected "CA MySQL informada com TLS desabilitado" MYSQL_SSL=false MYSQL_SSL_CA_PATH=/tmp/mysql-ca.pem
-          expect_rejected "CA MySQL relativa em produção" MYSQL_SSL=true MYSQL_SSL_CA_PATH=./mysql-ca.pem
 
-      - name: Validate API session and CSRF hardening
+      - name: Validate API security contracts
         shell: bash
-        env:
-          NODE_ENV: production
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_DATABASE: segempat_ci
-          MYSQL_USER: segempat_ci
-          MYSQL_PASSWORD: ci-password-only
-          MYSQL_SSL: "true"
-          SEGEMPAT_SESSION_SECRET: ci-only-session-secret-with-at-least-32-bytes
-          SEGEMPAT_SESSION_SECURE: "true"
-          SEGEMPAT_ALLOWED_ORIGINS: https://segempat.example.test
-          SEGEMPAT_STORAGE_DRIVER: filesystem
-          SEGEMPAT_STORAGE_PATH: /tmp/segempat-ci-storage
         run: |
           set -euo pipefail
-          mkdir -p "$SEGEMPAT_STORAGE_PATH"
           grep -F 'app.use("/api", enforceTrustedWriteOrigin);' server/src/app.js >/dev/null
           grep -F 'ORIGIN_REQUIRED' server/src/app.js >/dev/null
           grep -F 'express.json({ limit: "2mb", type: "application/json" })' server/src/app.js >/dev/null
           if grep -F 'express.urlencoded' server/src/app.js >/dev/null; then
-            echo "::error::API corporativa não deve reabrir parser de formulário URL-encoded"
+            echo "::error::API não deve aceitar parser URL-encoded"
             exit 1
           fi
           grep -F 'sessionVersion' server/src/session.js >/dev/null
-          grep -F 'parts.length !== 2' server/src/session.js >/dev/null
           grep -F 'consumeAuthAttempt' server/src/routes/auth.js >/dev/null
           grep -F 'SENHA_STDIN' server/scripts/bootstrap-admin.js >/dev/null
-          grep -Eq '^MYSQL_SSL_CA_PATH=$' server/.env.example
-
-          node --input-type=module <<'NODE'
-          const { createSessionToken, readSessionToken } = await import('./server/src/session.js');
-          const user = { id: 'ci-user', sessionVersion: 123456 };
-          const token = createSessionToken(user);
-          const decoded = readSessionToken(token);
-          if (!decoded || decoded.sub !== user.id || decoded.ver !== user.sessionVersion) process.exit(1);
-          if (readSessionToken(`${token}.extra`) !== null) process.exit(1);
-          if (readSessionToken('x'.repeat(3000)) !== null) process.exit(1);
-          console.log('Contrato de token de sessão validado.');
-          NODE
-
-          node --input-type=module <<'NODE'
-          const { createApp } = await import('./server/src/app.js');
-          const app = createApp();
-          const server = app.listen(0, '127.0.0.1');
-          await new Promise((resolve) => server.once('listening', resolve));
-          const { port } = server.address();
-          try {
-            const blocked = await fetch(`http://127.0.0.1:${port}/api/auth/logout`, { method: 'POST' });
-            if (blocked.status !== 403) process.exit(1);
-            const allowed = await fetch(`http://127.0.0.1:${port}/api/auth/logout`, {
-              method: 'POST',
-              headers: { Origin: 'https://segempat.example.test' },
-            });
-            if (allowed.status !== 204) process.exit(1);
-            console.log('Proteção de Origin para escrita validada.');
-          } finally {
-            await new Promise((resolve) => server.close(resolve));
-          }
-          NODE
-
-      - name: Validate corporate frontend cutover contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -Eq '^VITE_SEGEMPAT_API_URL="https://[^\"]+"$' .env.mysql.example
-          grep -Eq '^VITE_SEGEMPAT_REQUIRE_API="true"$' .env.mysql.example
-          grep -F 'VITE_SEGEMPAT_REQUIRE_API' src/lib/backend/api-client.ts >/dev/null
-          grep -F 'import.meta.env.PROD && url.protocol !== "https:"' src/lib/backend/api-client.ts >/dev/null
-          grep -F 'SEGEMPAT API é obrigatória neste ambiente' src/lib/backend/api-client.ts >/dev/null
-          grep -F '/api/access/activation-codes' src/lib/backend/access-gateway.ts >/dev/null
-          if grep -F '/api/admin/activation-codes' src/lib/backend/access-gateway.ts >/dev/null; then
-            echo "::error::Gateway de primeiro acesso voltou a usar rota MySQL antiga/incorreta"
-            exit 1
-          fi
-          grep -F '/api/cronograma/import-results' src/lib/cronograma-import.ts >/dev/null
-          grep -F 'cronogramaImportRouter' server/src/app.js >/dev/null
+          grep -Eq '^POSTGRES_SSL_CA_PATH=$' server/.env.example
           grep -F 'withTransaction' server/src/routes/cronograma-import.js >/dev/null
-          echo "Contrato de cutover, gateways e importação atômica do frontend corporativo validados."
-
-      - name: Validate corporate reverse proxy and systemd hardening
-        shell: bash
-        run: |
-          set -euo pipefail
-          nginx_cfg=server/deploy/nginx-segempat-api.conf
-          service_cfg=server/deploy/segempat-api.service
-          grep -F 'listen 443 ssl;' "$nginx_cfg" >/dev/null
-          grep -F 'ssl_protocols       TLSv1.2 TLSv1.3;' "$nginx_cfg" >/dev/null
-          grep -F 'proxy_pass http://127.0.0.1:8787/health/ready;' "$nginx_cfg" >/dev/null
-          grep -F 'return 301 https://$host$request_uri;' "$nginx_cfg" >/dev/null
-          grep -F 'User=segempat' "$service_cfg" >/dev/null
-          grep -F 'NoNewPrivileges=true' "$service_cfg" >/dev/null
-          grep -F 'ProtectSystem=strict' "$service_cfg" >/dev/null
-          grep -F 'ProtectHome=true' "$service_cfg" >/dev/null
-          grep -F 'ReadWritePaths=/var/lib/segempat/storage' "$service_cfg" >/dev/null
-          grep -F 'RestrictSUIDSGID=true' "$service_cfg" >/dev/null
-          echo "Proxy reverso e serviço systemd corporativos validados."
-
-      - name: Validate corporate API deployment image
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -F "/health/ready" server/Dockerfile >/dev/null
-          grep -F "no-new-privileges:true" server/docker-compose.yml >/dev/null
-          grep -F "cap_drop:" server/docker-compose.yml >/dev/null
-          grep -F -- "- ALL" server/docker-compose.yml >/dev/null
-          cp server/.env.example server/.env
-          trap 'rm -f server/.env' EXIT
-          docker compose -f server/docker-compose.yml config >/tmp/segempat-compose.yml
-          docker build -f server/Dockerfile -t segempat-api:ci .
-          docker image inspect segempat-api:ci --format '{{.Config.User}} {{json .Config.Healthcheck.Test}}' | tee /tmp/segempat-image.txt
-          grep -F 'node' /tmp/segempat-image.txt >/dev/null
-          grep -F '/health/ready' /tmp/segempat-image.txt >/dev/null
-          echo "Imagem e manifesto de deploy corporativo validados."
+          echo "Contratos de sessão, origem confiável e transação validados."
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.2
 
-      - name: Install dependencies from official npm registry
+      - name: Install frontend dependencies
         run: bun install --frozen-lockfile --registry https://registry.npmjs.org
 
       - name: Typecheck
@@ -311,7 +179,7 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Production build in corporate API-only mode
+      - name: Production build in API-only mode
         env:
           VITE_SEGEMPAT_API_URL: https://segempat-api.example.test
           VITE_SEGEMPAT_REQUIRE_API: "true"

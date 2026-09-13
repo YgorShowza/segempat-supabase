@@ -33,7 +33,7 @@ import { myPracticalRouter } from "./routes/practical-self.js";
 import { HttpError } from "./util.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const migrationsDir = path.resolve(here, "../../database/mysql");
+const migrationsDir = path.resolve(here, "../../supabase/migrations");
 
 const READINESS_TABLES = [
   "app_users",
@@ -61,6 +61,8 @@ const READINESS_TABLES = [
   "practical_eval_templates",
   "practical_evaluations",
   "occurrences",
+  "occurrence_updates",
+  "occurrence_attachments",
   "audit_logs",
 ];
 
@@ -83,7 +85,7 @@ async function expectedMigrations() {
           const right = BigInt(b.version);
           return left < right ? -1 : left > right ? 1 : a.fileName.localeCompare(b.fileName, "en");
         });
-      if (migrations.length === 0) throw new Error("Nenhuma migration MySQL versionada encontrada no deploy");
+      if (migrations.length === 0) throw new Error("Nenhuma migration PostgreSQL versionada encontrada no deploy");
 
       return Promise.all(
         migrations.map(async (migration) => {
@@ -107,7 +109,7 @@ async function verifyMigrationReadiness() {
   const applied = await query(
     `SELECT version, file_name, checksum_sha256, applied_at
        FROM schema_migrations
-      ORDER BY CAST(version AS UNSIGNED) ASC, version ASC`,
+      ORDER BY version ASC`,
   );
 
   if (applied.length !== expected.length) {
@@ -206,8 +208,12 @@ export function createApp() {
       await healthcheck();
 
       phase = "database-tls";
-      const sslStatus = await queryOne("SHOW SESSION STATUS LIKE 'Ssl_cipher'");
-      const sslCipher = String(sslStatus?.Value ?? sslStatus?.value ?? "").trim();
+      const sslStatus = await queryOne(
+        `SELECT ssl, COALESCE(cipher, '') AS cipher
+           FROM pg_stat_ssl
+          WHERE pid = pg_backend_pid()`,
+      );
+      const sslCipher = sslStatus?.ssl ? String(sslStatus?.cipher ?? "").trim() : "";
       if (config.db.ssl && !sslCipher) {
         return res.status(503).json({ ok: false, service: "segempat-api", database: "connected", tls: "not-negotiated" });
       }
@@ -233,7 +239,7 @@ export function createApp() {
       const schema = await queryOne(
         `SELECT COUNT(*) AS total
            FROM information_schema.tables
-          WHERE table_schema = DATABASE()
+          WHERE table_schema = 'public'
             AND table_name IN (${placeholders})`,
         READINESS_TABLES,
       );

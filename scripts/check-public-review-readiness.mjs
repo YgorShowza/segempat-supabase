@@ -5,11 +5,13 @@ import { execFileSync } from "node:child_process";
 const root = process.cwd();
 const failures = [];
 const auditedHistoricalSensitiveBlobs = new Map([
-  // Antigo .env removido em 2026-09-07. O blob contém somente identificadores,
-  // URL e chave Supabase publishable destinados ao cliente; não contém service
-  // role, senha, chave privada ou credencial MySQL. A exceção é pelo SHA exato:
-  // qualquer outro .env histórico continua bloqueando a publicação.
+  // Antigo .env removido antes desta edição. O blob conhecido foi auditado e
+  // continha apenas configuração cliente histórica; qualquer outro .env no
+  // histórico continua bloqueando a revisão pública.
   ["9a2788223df6456976423af36eae73443345b5aa", ".env"],
+  // Exemplo MySQL removido da edição Supabase. O blob possuía somente valores
+  // vazios/de exemplo e é aceito exclusivamente por SHA + caminho históricos.
+  ["b0b1c2415bb5197d2857523ee741437a0bd05504", ".env.mysql.example"],
 ]);
 const auditedHistoricalHits = [];
 
@@ -34,9 +36,10 @@ function isForbiddenSensitivePath(file) {
   const value = normalize(file);
   const base = path.posix.basename(value).toLowerCase();
 
-  if (/\.env(?:\.|$)/i.test(base) && base !== ".env.example" && base !== ".env.mysql.example") return true;
+  const allowedExamples = new Set([".env.example", ".env.supabase.example"]);
+  if (/\.env(?:\.|$)/i.test(base) && !allowedExamples.has(base)) return true;
   if (/\.(?:pem|key|p12|pfx|jks|keystore|der)$/i.test(base)) return true;
-  if (["id_rsa", "id_ed25519", "mysql-client.cnf", "my.cnf"].includes(base)) return true;
+  if (["id_rsa", "id_ed25519", "pgpass", ".pgpass"].includes(base)) return true;
   return false;
 }
 
@@ -55,6 +58,7 @@ const secretPatterns = [
   [/\bAKIA[0-9A-Z]{16}\b/g, "AWS access key"],
   [/\bAIza[0-9A-Za-z_-]{30,}\b/g, "Google API key"],
   [/\bsb_secret_[A-Za-z0-9_-]{20,}\b/g, "Supabase secret key"],
+  [/\bservice_role\b\s*[:=]\s*[A-Za-z0-9._-]{20,}/gi, "Supabase service-role credential"],
 ];
 
 function scanText(text, label) {
@@ -91,9 +95,6 @@ for (const file of trackedFiles) {
   scanText(data.toString("utf8"), `HEAD ${file}`);
 }
 
-// A publicação expõe também o histórico Git. Arquivos sensíveis históricos só
-// podem ser aceitos quando o blob E o caminho correspondem exatamente a uma
-// exceção previamente auditada. Não existe liberação genérica para .env.
 try {
   const historyObjects = git(["rev-list", "--objects", "--all"]);
   for (const line of historyObjects.split("\n")) {
@@ -114,9 +115,6 @@ try {
   fail("não foi possível examinar os nomes de arquivos do histórico Git");
 }
 
-// Procura padrões de segredo no patch de todo o histórico. A exceção de caminho
-// acima não desliga esta varredura: um segredo conhecido dentro de qualquer patch
-// continua fazendo o gate falhar.
 try {
   const historyPatch = git([
     "log",
@@ -138,19 +136,32 @@ for (const expected of [".env", ".env.*", "*.pem", "*.key", "*.crt", ".dev.vars"
   if (!gitignore.includes(expected)) fail(`.gitignore não protege ${expected}`);
 }
 
-const mysqlExample = fs.readFileSync(path.join(root, ".env.mysql.example"), "utf8");
-if (!/MYSQL_PASSWORD=""/.test(mysqlExample)) fail(".env.mysql.example deve manter MYSQL_PASSWORD vazio");
-if (!/SEGEMPAT_SESSION_SECRET=""/.test(mysqlExample)) fail(".env.mysql.example deve manter SEGEMPAT_SESSION_SECRET vazio");
-if (/supabase/i.test(mysqlExample)) fail(".env.mysql.example ainda contém referência ao Supabase");
-if (/backend legado/i.test(mysqlExample)) fail(".env.mysql.example ainda contém referência a backend legado");
+const frontendExamplePath = path.join(root, ".env.supabase.example");
+if (!fs.existsSync(frontendExamplePath)) {
+  fail(".env.supabase.example está ausente");
+} else {
+  const frontendExample = fs.readFileSync(frontendExamplePath, "utf8");
+  if (!/VITE_SEGEMPAT_API_URL="https:\/\//.test(frontendExample)) {
+    fail(".env.supabase.example deve configurar VITE_SEGEMPAT_API_URL com HTTPS");
+  }
+  if (!/VITE_SEGEMPAT_REQUIRE_API="true"/.test(frontendExample)) {
+    fail(".env.supabase.example deve exigir a API SEGEMPAT");
+  }
+  for (const forbidden of ["DATABASE_URL=", "POSTGRES_PASSWORD=", "SEGEMPAT_SESSION_SECRET=", "SUPABASE_SERVICE_ROLE", "SUPABASE_SECRET_KEY"]) {
+    if (frontendExample.includes(forbidden)) fail(`.env.supabase.example não pode expor ${forbidden.replace("=", "")}`);
+  }
+}
 
 const serverExample = fs.readFileSync(path.join(root, "server/.env.example"), "utf8");
-if (!/MYSQL_PASSWORD=CHANGE_ME/.test(serverExample)) fail("server/.env.example deve usar placeholder para MYSQL_PASSWORD");
+if (!/DATABASE_URL=postgresql:\/\/user:CHANGE_ME@host:5432\/database/.test(serverExample)) {
+  fail("server/.env.example deve usar placeholder seguro para DATABASE_URL PostgreSQL");
+}
+if (!/POSTGRES_SSL=true/.test(serverExample)) fail("server/.env.example deve exigir TLS PostgreSQL em produção");
 if (!/SEGEMPAT_SESSION_SECRET=CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32_BYTES_MINIMUM/.test(serverExample)) {
   fail("server/.env.example deve usar placeholder para SEGEMPAT_SESSION_SECRET");
 }
 
-for (const required of ["SECURITY.md", "TI_REVIEW.md", ".github/CODEOWNERS"]) {
+for (const required of ["SECURITY.md", "TI_REVIEW.md", ".github/CODEOWNERS", "SUPABASE_EDITION.md"]) {
   if (!trackedFiles.includes(required)) fail(`arquivo obrigatório para revisão pública ausente: ${required}`);
 }
 
@@ -164,4 +175,4 @@ console.log(`SEGEMPAT public review readiness: OK (${trackedFiles.length} arquiv
 if (auditedHistoricalHits.length) {
   console.log(`Histórico sensível conhecido e auditado por SHA exato: ${auditedHistoricalHits.join(", ")}.`);
 }
-console.log("Observação: este gate complementa, mas não substitui, secret scanning e política de segurança da TI.");
+console.log("Observação: este gate complementa, mas não substitui, secret scanning e política de segurança do ambiente.");

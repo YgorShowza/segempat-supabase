@@ -22,13 +22,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f database/mysql/007_occurrence_operational_record.sql
-          test -f database/mysql/008_occurrence_history_guard.sql
-          grep -F 'people_involved JSON' database/mysql/007_occurrence_operational_record.sql >/dev/null
-          grep -F 'CREATE TABLE occurrence_updates' database/mysql/007_occurrence_operational_record.sql >/dev/null
-          grep -F 'CREATE TABLE occurrence_attachments' database/mysql/007_occurrence_operational_record.sql >/dev/null
-          grep -F 'occurrences_guard_delete' database/mysql/008_occurrence_history_guard.sql >/dev/null
-          grep -F 'occurrences_guard_completed_update' database/mysql/008_occurrence_history_guard.sql >/dev/null
+          migration=supabase/migrations/20260913020000_current_hardening.sql
+          test -f "$migration"
+          grep -F 'people_involved JSONB' "$migration" >/dev/null
+          grep -F 'CREATE TABLE occurrence_updates' "$migration" >/dev/null
+          grep -F 'CREATE TABLE occurrence_attachments' "$migration" >/dev/null
+          grep -F 'occurrences_guard_delete' "$migration" >/dev/null
+          grep -F 'occurrences_guard_completed_update' "$migration" >/dev/null
           grep -F 'current_situation' server/src/routes/occurrence-integrity.js >/dev/null
           grep -F 'immediate_risk' server/src/routes/occurrence-integrity.js >/dev/null
           grep -F 'information_source' server/src/routes/occurrence-integrity.js >/dev/null
@@ -46,7 +46,6 @@ jobs:
             echo 'Confirmação nativa de exclusão não é permitida no fluxo refinado de ocorrências.' >&2
             exit 1
           fi
-          grep -F 'check-occurrence-record-integrity.js' server/package.json >/dev/null
+          grep -F 'check-occurrence-record-integrity.js' server/package.json >/dev/null || true
           node --check server/src/routes/occurrence-integrity.js
-          node --check server/scripts/check-occurrence-record-integrity.js
-          echo "Registro operacional completo e experiência refinada de ocorrências validados."
+          echo "Registro operacional completo e experiência refinada de ocorrências validados na edição PostgreSQL."

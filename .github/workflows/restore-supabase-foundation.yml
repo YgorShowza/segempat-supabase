@@ -1,0 +1,46 @@
+name: Restore Supabase foundation
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - '.github/workflows/restore-supabase-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Supabase edition branch
+        uses: actions/checkout@v4
+        with:
+          ref: supabase/phase-1-foundation
+          fetch-depth: 0
+
+      - name: Fetch last historical Supabase migration tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/segempat-history
+          git clone --no-tags https://github.com/YgorShowza/app-reimagined.git /tmp/segempat-history
+          git -C /tmp/segempat-history checkout 79871bd90712ee9db068fd5efff05bf2086ac0bc
+
+      - name: Restore Supabase config and migrations only
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf supabase
+          cp -a /tmp/segempat-history/supabase ./supabase
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase
+          if git diff --cached --quiet; then
+            echo "Supabase foundation already restored."
+            exit 0
+          fi
+          git commit -m "Restore historical Supabase migration foundation"
+          git push origin HEAD:supabase/phase-1-foundation

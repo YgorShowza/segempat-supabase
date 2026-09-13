@@ -33,8 +33,8 @@ async function main() {
             latest.action AS last_privileged_action,
             latest.created_at AS last_privileged_action_at,
             COALESCE(
-              JSON_UNQUOTE(JSON_EXTRACT(latest.details, '$.executed_by_ti')),
-              JSON_UNQUOTE(JSON_EXTRACT(latest.details, '$.via'))
+              latest.details ->> 'executed_by_ti',
+              latest.details ->> 'via'
             ) AS last_privileged_actor
        FROM employees e
        LEFT JOIN app_users u
@@ -49,13 +49,13 @@ async function main() {
              FROM audit_logs al
             WHERE (
                     al.entity = 'employees'
-                AND al.entity_id = e.id
+                AND al.entity_id = e.id::text
                 AND al.action IN ('TI_GRANT_INSPECTOR', 'TI_REVOKE_INSPECTOR')
                   )
                OR (
                     u.id IS NOT NULL
                 AND al.entity = 'app_users'
-                AND al.entity_id = u.id
+                AND al.entity_id = u.id::text
                 AND al.action IN ('UPDATE_ACCESS_CONTROL', 'BOOTSTRAP_ADMIN', 'TI_GRANT_MASTER_ACCESS')
                   )
             ORDER BY al.created_at DESC, al.id DESC
@@ -104,21 +104,21 @@ async function main() {
   const privilegedOk = report.filter((row) => row.status === "OK" && row.nivel !== "Operador").length;
   const anomalies = report.filter((row) => !new Set(["OK", "SEM_CONTA", "INATIVO"]).has(row.status));
 
-  console.log(`\nSEGEMPAT · Revisão granular de acessos privilegiados`);
+  console.log(`\nSEGEMPAT · Revisão granular de acessos privilegiados · PostgreSQL`);
   console.log(`Contas privilegiadas coerentes: ${privilegedOk}`);
   console.log(`Registros para revisão: ${anomalies.length}`);
   if (report.length) console.table(report);
   else console.log("Nenhum perfil/nível privilegiado encontrado.");
 
   if (anomalies.length) {
-    console.warn("[segempat-api] atenção: existem divergências entre nível granular, perfil funcional ou role legada que devem ser revisadas pela TI");
+    console.warn("[segempat-api] atenção: existem divergências entre nível granular, perfil funcional ou role legada que devem ser revisadas");
     process.exitCode = 2;
   }
 }
 
 main()
   .catch((error) => {
-    console.error("[segempat-api] falha ao gerar revisão de privilégios", error?.message || error);
+    console.error("[segempat-api] falha ao gerar revisão PostgreSQL de privilégios", error?.message || error);
     process.exitCode = 1;
   })
   .finally(async () => {

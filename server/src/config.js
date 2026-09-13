@@ -1,6 +1,6 @@
 import path from "node:path";
 
-const required = ["MYSQL_HOST", "MYSQL_DATABASE", "MYSQL_USER", "MYSQL_PASSWORD", "SEGEMPAT_SESSION_SECRET"];
+const required = ["DATABASE_URL", "SEGEMPAT_SESSION_SECRET"];
 
 const missing = required.filter((key) => String(process.env[key] ?? "").trim() === "");
 if (missing.length > 0) {
@@ -89,23 +89,29 @@ function allowedOrigins() {
   return origins.map((origin) => origin.replace(/\/$/, ""));
 }
 
-const mysqlHost = String(process.env["MYSQL_HOST"]).trim();
-const mysqlDatabase = String(process.env["MYSQL_DATABASE"]).trim();
-const mysqlUser = String(process.env["MYSQL_USER"]).trim();
-const mysqlPassword = String(process.env["MYSQL_PASSWORD"]);
-const mysqlSsl = booleanValue("MYSQL_SSL", false);
-const mysqlCaPath = String(process.env["MYSQL_SSL_CA_PATH"] || "").trim() || null;
+const databaseUrl = String(process.env["DATABASE_URL"] || "").trim();
+let parsedDatabaseUrl;
+try {
+  parsedDatabaseUrl = new URL(databaseUrl);
+  if (!["postgres:", "postgresql:"].includes(parsedDatabaseUrl.protocol)) throw new Error("invalid protocol");
+  if (!parsedDatabaseUrl.hostname || !parsedDatabaseUrl.pathname || parsedDatabaseUrl.pathname === "/") throw new Error("incomplete url");
+} catch {
+  console.error("[segempat-api] DATABASE_URL deve ser uma connection string PostgreSQL válida");
+  process.exit(1);
+}
 
-if (nodeEnv === "production" && !mysqlSsl) {
-  console.error("[segempat-api] MYSQL_SSL deve ser true em produção");
+const postgresSsl = booleanValue("POSTGRES_SSL", nodeEnv === "production");
+const postgresCaPath = String(process.env["POSTGRES_SSL_CA_PATH"] || "").trim() || null;
+if (nodeEnv === "production" && !postgresSsl) {
+  console.error("[segempat-api] POSTGRES_SSL deve ser true em produção");
   process.exit(1);
 }
-if (mysqlCaPath && !mysqlSsl) {
-  console.error("[segempat-api] MYSQL_SSL_CA_PATH foi informado, mas MYSQL_SSL=false");
+if (postgresCaPath && !postgresSsl) {
+  console.error("[segempat-api] POSTGRES_SSL_CA_PATH foi informado, mas POSTGRES_SSL=false");
   process.exit(1);
 }
-if (nodeEnv === "production" && mysqlCaPath && !path.isAbsolute(mysqlCaPath)) {
-  console.error("[segempat-api] MYSQL_SSL_CA_PATH deve ser absoluto em produção");
+if (nodeEnv === "production" && postgresCaPath && !path.isAbsolute(postgresCaPath)) {
+  console.error("[segempat-api] POSTGRES_SSL_CA_PATH deve ser absoluto em produção");
   process.exit(1);
 }
 
@@ -118,7 +124,10 @@ rejectProductionPlaceholder("SEGEMPAT_SESSION_SECRET", sessionSecret, [
   "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_32_BYTES_MINIMUM",
   "CHANGE_ME",
 ]);
-rejectProductionPlaceholder("MYSQL_PASSWORD", mysqlPassword, ["CHANGE_ME"]);
+rejectProductionPlaceholder("DATABASE_URL", databaseUrl, [
+  "postgresql://user:change_me@host:5432/database",
+  "postgres://user:change_me@host:5432/database",
+]);
 
 const sessionCookieName = String(process.env["SEGEMPAT_SESSION_COOKIE"] || "segempat_session").trim();
 if (!/^[A-Za-z0-9_.-]{1,80}$/.test(sessionCookieName)) {
@@ -145,7 +154,7 @@ if (nodeEnv === "production" && origins.length === 0) {
 
 const storageDriver = String(process.env["SEGEMPAT_STORAGE_DRIVER"] || "filesystem").trim().toLowerCase();
 if (storageDriver !== "filesystem") {
-  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER não suportado: ${storageDriver || "vazio"}. Use filesystem`);
+  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER não suportado nesta etapa: ${storageDriver || "vazio"}. Use filesystem`);
   process.exit(1);
 }
 
@@ -163,14 +172,10 @@ export const config = {
   port: positiveInteger("PORT", 8787, { min: 1, max: 65535 }),
   nodeEnv,
   db: {
-    host: mysqlHost,
-    port: positiveInteger("MYSQL_PORT", 3306, { min: 1, max: 65535 }),
-    database: mysqlDatabase,
-    user: mysqlUser,
-    password: mysqlPassword,
-    ssl: mysqlSsl,
-    caPath: mysqlCaPath,
-    poolSize: positiveInteger("MYSQL_POOL_SIZE", 10, { min: 1, max: 100 }),
+    url: databaseUrl,
+    ssl: postgresSsl,
+    caPath: postgresCaPath,
+    poolSize: positiveInteger("POSTGRES_POOL_SIZE", 10, { min: 1, max: 100 }),
   },
   session: {
     secret: sessionSecret,
@@ -183,7 +188,6 @@ export const config = {
     driver: storageDriver,
     path: storagePath,
   },
-  // Origens do frontend autorizadas a enviar cookie de sessão.
   allowedOrigins: origins,
   timezone: timezoneValue(),
 };
