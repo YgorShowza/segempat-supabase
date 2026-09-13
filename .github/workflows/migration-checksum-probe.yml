@@ -1,0 +1,19 @@
+name: Migration Checksum Probe
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - '.github/workflows/migration-checksum-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  checksum:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Print migration SHA-256
+        run: sha256sum supabase/migrations/*.sql
