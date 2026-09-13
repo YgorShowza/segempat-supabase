@@ -2,13 +2,27 @@
 
 Este checklist começa **depois** da fundação PostgreSQL validada em CI. Ele não autoriza deploy de produção e não deve receber senhas, tokens, service-role keys ou connection strings reais em commits, issues ou documentação pública.
 
+## Estado atual do projeto real
+
+- Projeto Supabase `SEGEMPAT` criado no plano Free, região São Paulo (`sa-east-1`).
+- PostgreSQL do projeto ativo e saudável.
+- Schema funcional do SEGEMPAT aplicado.
+- Hardening PostgreSQL aplicado.
+- Superfície Data API fechada para `anon`, `authenticated` e `service_role` nas tabelas/funções do SEGEMPAT.
+- Security Advisor sem lints após o hardening.
+- Histórico interno `schema_migrations` alinhado com versão, arquivo e SHA-256 dos três arquivos atuais.
+- Papel `segempat_runtime` criado sem login e sem privilégios administrativos.
+- Login técnico `segempat_app` criado sem senha e herdando somente `segempat_runtime`.
+- API ainda não conectada com credencial real de runtime.
+- Nenhum deploy de produção realizado.
+
 ## 1. Projeto e rede
 
-- [ ] Projeto Supabase alvo identificado.
-- [ ] Região e política de disponibilidade definidas.
+- [x] Projeto Supabase alvo identificado.
+- [x] Região definida.
 - [ ] Connection string de servidor/pooler disponível somente como secret do ambiente da API.
-- [ ] TLS obrigatório confirmado.
-- [ ] Limites de conexão/pool compatíveis com a API SEGEMPAT.
+- [ ] TLS obrigatório confirmado na conexão real da API.
+- [ ] Limites de conexão/pool validados no runtime real.
 - [ ] Origens HTTPS do frontend definidas para CORS.
 
 ## 2. Separação de credenciais
@@ -20,14 +34,26 @@ A edição usa duas conexões distintas em produção:
 
 Critérios:
 
+- [x] role de runtime dedicada criada;
+- [x] runtime não possui SUPERUSER, CREATEROLE, CREATEDB, REPLICATION ou BYPASSRLS;
+- [x] runtime não possui CREATE no schema `public`;
+- [x] runtime não pode alterar `schema_migrations`;
+- [x] login técnico foi criado sem senha versionada;
+- [ ] senha de `segempat_app` definida de forma privada no ambiente/secret manager;
+- [ ] `DATABASE_URL` real configurada apenas no runtime da API;
+- [ ] `SEGEMPAT_MIGRATION_DATABASE_URL` real configurada separadamente;
 - [ ] runtime e migrator não reutilizam a mesma credencial;
-- [ ] runtime não possui SUPERUSER, CREATEROLE, CREATEDB, REPLICATION ou BYPASSRLS;
-- [ ] runtime não possui CREATE no schema `public`;
-- [ ] runtime não possui TRUNCATE, TRIGGER ou REFERENCES desnecessários nas tabelas;
-- [ ] credencial de migration não permanece exposta ao frontend nem em `VITE_*`;
-- [ ] nenhum segredo real foi versionado.
+- [x] nenhum segredo real foi versionado.
+
+A configuração reproduzível dos papéis fica em `supabase/bootstrap/runtime-roles.sql`. Esse arquivo é infraestrutura de ambiente e **não** pertence à cadeia versionada em `supabase/migrations`.
 
 ## 3. Aplicação do schema
+
+Migrations atualmente versionadas:
+
+- [x] `supabase/migrations/20260913010000_api_owned_baseline.sql`;
+- [x] `supabase/migrations/20260913020000_current_hardening.sql`;
+- [x] `supabase/migrations/20260913030000_api_surface_hardening.sql`.
 
 No ambiente controlado da API, com secrets injetados pelo ambiente:
 
@@ -38,16 +64,17 @@ npm run migrate --prefix server
 
 O runner deve:
 
-- [ ] aplicar `supabase/migrations/20260913010000_api_owned_baseline.sql`;
-- [ ] aplicar `supabase/migrations/20260913020000_current_hardening.sql`;
-- [ ] registrar versão, arquivo e SHA-256 em `schema_migrations`;
-- [ ] aceitar nova execução sem reaplicar migrations já registradas;
-- [ ] rejeitar divergência de checksum;
-- [ ] manter advisory lock durante o processo.
+- [x] manter histórico em `schema_migrations` com versão, arquivo e SHA-256;
+- [x] manter advisory lock durante o processo;
+- [x] rejeitar divergência de checksum nos testes PostgreSQL;
+- [ ] ser executado contra o projeto real usando a credencial de migration separada;
+- [ ] aceitar nova execução real sem reaplicar migrations já registradas.
+
+Observação de bootstrap: como o primeiro schema do projeto real foi provisionado pela integração Supabase durante a criação do ambiente, o histórico interno do SEGEMPAT foi adotado uma única vez com os SHA-256 exatos dos arquivos do `main`. A partir da conexão real da API, a fonte de verdade operacional volta a ser o runner `server/scripts/migrate-postgres.js`.
 
 ## 4. Runtime da API
 
-Com `DATABASE_URL` da role de runtime:
+Com `DATABASE_URL` da role `segempat_app` após a senha ser definida privadamente:
 
 ```bash
 npm run preflight --prefix server
@@ -91,7 +118,7 @@ npm run cutover:audit --prefix server
 
 Somente avançar quando:
 
-- [ ] cutover audit estiver aprovado;
+- [ ] cutover audit estiver aprovado contra o projeto real;
 - [ ] relatório de privilégios não mostrar divergências;
 - [ ] `/health/ready` estiver verde;
 - [ ] testes ponta a ponta dos quatro níveis estiverem concluídos;
@@ -113,4 +140,6 @@ VITE_SEGEMPAT_REQUIRE_API=true
 
 ## Estado esperado ao final
 
-A frase **“SEGEMPAT homologado no Supabase”** só deve ser usada depois da execução deste checklist no projeto Supabase real. Até lá, o estado correto é **“fundação PostgreSQL/Supabase validada em CI e pronta para conexão ao projeto real”**.
+A frase **“SEGEMPAT homologado no Supabase”** só deve ser usada depois da execução dos gates reais de API, storage e E2E. O estado atual é:
+
+**“PROJETO SUPABASE REAL CRIADO, SCHEMA/HARDENING APLICADOS E RUNTIME DE MENOR PRIVILÉGIO PREPARADO — PENDENTE CONEXÃO PRIVADA DA API E HOMOLOGAÇÃO E2E.”**
