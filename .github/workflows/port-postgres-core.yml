@@ -1,0 +1,99 @@
+name: Port PostgreSQL API core
+
+on:
+  push:
+    branches:
+      - supabase/phase-1-foundation
+    paths:
+      - '.github/workflows/port-postgres-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  port:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Supabase edition branch
+        uses: actions/checkout@v4
+        with:
+          ref: supabase/phase-1-foundation
+          fetch-depth: 0
+
+      - name: Apply PostgreSQL core replacements
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_required(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f"replacement not found: {label}")
+              return text.replace(old, new)
+
+          app = Path('server/src/app.js')
+          text = app.read_text()
+          text = replace_required(text,
+              'const migrationsDir = path.resolve(here, "../../database/mysql");',
+              'const migrationsDir = path.resolve(here, "../../supabase/migrations");',
+              'migration directory')
+          text = replace_required(text,
+              'throw new Error("Nenhuma migration MySQL versionada encontrada no deploy")',
+              'throw new Error("Nenhuma migration PostgreSQL versionada encontrada no deploy")',
+              'migration error')
+          text = replace_required(text,
+              'ORDER BY CAST(version AS UNSIGNED) ASC, version ASC',
+              'ORDER BY version ASC',
+              'migration ordering')
+          text = replace_required(text,
+              '  "occurrences",\n  "audit_logs",',
+              '  "occurrences",\n  "occurrence_updates",\n  "occurrence_attachments",\n  "audit_logs",',
+              'readiness occurrence tables')
+          text = replace_required(text,
+              '''      const sslStatus = await queryOne("SHOW SESSION STATUS LIKE 'Ssl_cipher'");\n      const sslCipher = String(sslStatus?.Value ?? sslStatus?.value ?? "").trim();''',
+              '''      const sslStatus = await queryOne(\n        `SELECT ssl, COALESCE(cipher, '') AS cipher\n           FROM pg_stat_ssl\n          WHERE pid = pg_backend_pid()`,\n      );\n      const sslCipher = sslStatus?.ssl ? String(sslStatus?.cipher ?? "").trim() : "";''',
+              'postgres tls readiness')
+          text = replace_required(text,
+              'WHERE table_schema = DATABASE()',
+              "WHERE table_schema = 'public'",
+              'schema readiness')
+          app.write_text(text)
+
+          pkg = Path('server/package.json')
+          text = pkg.read_text()
+          text = replace_required(text,
+              '"migrate": "node scripts/migrate-with-ti-credentials.js"',
+              '"migrate": "node scripts/migrate-postgres.js"',
+              'migration script')
+          pkg.write_text(text)
+
+          session = Path('server/src/session.js')
+          text = session.read_text().replace('recarregados do MySQL', 'recarregados do PostgreSQL')
+          session.write_text(text)
+
+          util = Path('server/src/util.js')
+          text = util.read_text().replace('campos JSON do MySQL', 'campos JSON do banco')
+          util.write_text(text)
+          PY
+
+      - name: Validate patched syntax
+        run: |
+          node --check server/src/app.js
+          node --check server/src/session.js
+          node --check server/src/util.js
+          node --check server/scripts/migrate-postgres.js
+
+      - name: Commit core port
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/src/app.js server/src/session.js server/src/util.js server/package.json
+          if git diff --cached --quiet; then
+            echo "Core já portado."
+            exit 0
+          fi
+          git commit -m "Port API readiness core to PostgreSQL"
+          git push origin HEAD:supabase/phase-1-foundation
