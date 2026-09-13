@@ -153,19 +153,49 @@ if (nodeEnv === "production" && origins.length === 0) {
 }
 
 const storageDriver = String(process.env["SEGEMPAT_STORAGE_DRIVER"] || "filesystem").trim().toLowerCase();
-if (storageDriver !== "filesystem") {
-  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER não suportado nesta etapa: ${storageDriver || "vazio"}. Use filesystem`);
+if (!["filesystem", "supabase"].includes(storageDriver)) {
+  console.error(`[segempat-api] SEGEMPAT_STORAGE_DRIVER inválido: ${storageDriver || "vazio"}. Use filesystem ou supabase`);
   process.exit(1);
 }
 
-const storagePath = String(process.env["SEGEMPAT_STORAGE_PATH"] || "./storage").trim();
-if (!storagePath) {
-  console.error("[segempat-api] SEGEMPAT_STORAGE_PATH não pode ficar vazio");
-  process.exit(1);
-}
-if (nodeEnv === "production" && !path.isAbsolute(storagePath)) {
-  console.error("[segempat-api] SEGEMPAT_STORAGE_PATH deve ser absoluto em produção");
-  process.exit(1);
+let storagePath = null;
+let supabaseStorageUrl = null;
+let supabaseStorageSecretKey = null;
+let supabaseStorageBucket = null;
+
+if (storageDriver === "filesystem") {
+  storagePath = String(process.env["SEGEMPAT_STORAGE_PATH"] || "./storage").trim();
+  if (!storagePath) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_PATH não pode ficar vazio");
+    process.exit(1);
+  }
+  if (nodeEnv === "production" && !path.isAbsolute(storagePath)) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_PATH deve ser absoluto em produção");
+    process.exit(1);
+  }
+} else {
+  supabaseStorageUrl = String(process.env["SUPABASE_URL"] || "").trim().replace(/\/$/, "");
+  supabaseStorageSecretKey = String(process.env["SUPABASE_SECRET_KEY"] || "").trim();
+  supabaseStorageBucket = String(process.env["SEGEMPAT_STORAGE_BUCKET"] || "segempat-evidence").trim();
+
+  try {
+    const parsed = new URL(supabaseStorageUrl);
+    if (!/^https?:$/.test(parsed.protocol) || parsed.origin !== supabaseStorageUrl) throw new Error("invalid url");
+    if (nodeEnv === "production" && parsed.protocol !== "https:") throw new Error("https required");
+  } catch {
+    console.error("[segempat-api] SUPABASE_URL deve ser a URL base válida do projeto Supabase e usar HTTPS em produção");
+    process.exit(1);
+  }
+
+  if (!supabaseStorageSecretKey || supabaseStorageSecretKey.startsWith("sb_publishable_")) {
+    console.error("[segempat-api] SUPABASE_SECRET_KEY deve ser uma chave secreta exclusiva do backend, nunca uma publishable key");
+    process.exit(1);
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,62}$/.test(supabaseStorageBucket)) {
+    console.error("[segempat-api] SEGEMPAT_STORAGE_BUCKET inválido");
+    process.exit(1);
+  }
+  rejectProductionPlaceholder("SUPABASE_SECRET_KEY", supabaseStorageSecretKey, ["CHANGE_ME", "CHANGE_ME_SUPABASE_SECRET_KEY"]);
 }
 
 export const config = {
@@ -187,6 +217,9 @@ export const config = {
   storage: {
     driver: storageDriver,
     path: storagePath,
+    supabaseUrl: supabaseStorageUrl,
+    secretKey: supabaseStorageSecretKey,
+    bucket: supabaseStorageBucket,
   },
   allowedOrigins: origins,
   timezone: timezoneValue(),
