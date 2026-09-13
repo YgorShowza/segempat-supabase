@@ -18,19 +18,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate TI, Master and Inspector privilege boundaries
+      - name: Validate governance and PostgreSQL privilege boundaries
         shell: bash
         run: |
           set -euo pipefail
 
-          # Perfil funcional Inspetor permanece sob controle da TI.
+          # Perfil funcional Inspetor permanece sob controle administrativo protegido.
           grep -F 'Perfil Inspetor é administrado exclusivamente pela TI' server/src/routes/employees.js >/dev/null
           grep -F 'Privilégio de Inspetor, status e identidade privilegiada são administrados exclusivamente pela TI' server/src/routes/employees.js >/dev/null
           grep -F 'Cadastro de Inspetor é administrado exclusivamente pela TI' server/src/routes/employees.js >/dev/null
           grep -F 'linkedLevel === "master"' server/src/routes/employees.js >/dev/null
           grep -F 'session_epoch = session_epoch + 1' server/src/routes/employees.js >/dev/null
 
-          # Concessão/revogação de Inspetor ocorre por utilitário auditável da TI.
+          # Concessão/revogação de Inspetor ocorre por utilitário auditável.
           grep -F 'CONFIRM_PRIVILEGED_ACCESS' server/scripts/manage-inspector-access.js >/dev/null
           grep -F 'TI_OPERATOR' server/scripts/manage-inspector-access.js >/dev/null
           grep -F 'TI_GRANT_INSPECTOR' server/scripts/manage-inspector-access.js >/dev/null
@@ -38,7 +38,7 @@ jobs:
           grep -F 'previousLevel === "master"' server/scripts/manage-inspector-access.js >/dev/null
           grep -F 'session_epoch = session_epoch + 1' server/scripts/manage-inspector-access.js >/dev/null
 
-          # Bootstrap de Administrador Master também exige confirmação explícita da TI.
+          # Concessão de Administrador Master exige confirmação explícita e auditoria.
           grep -F 'CONFIRM_MASTER_ACCESS' server/scripts/grant-master-access.js >/dev/null
           grep -F 'TI_OPERATOR' server/scripts/grant-master-access.js >/dev/null
           grep -F 'TI_GRANT_MASTER_ACCESS' server/scripts/grant-master-access.js >/dev/null
@@ -59,17 +59,34 @@ jobs:
           grep -F '"manage-inspector-access"' server/package.json >/dev/null
           grep -F '"grant-master-access"' server/package.json >/dev/null
           grep -F '"report-privileged-access"' server/package.json >/dev/null
-          grep -F '"migrate": "node scripts/migrate-with-ti-credentials.js"' server/package.json >/dev/null
-          grep -F 'check-runtime-grants.js' server/package.json >/dev/null
-          grep -F 'MYSQL_MIGRATION_USER' server/scripts/migrate-with-ti-credentials.js >/dev/null
-          grep -F 'deve ser diferente de MYSQL_USER em produção' server/scripts/migrate-with-ti-credentials.js >/dev/null
-          grep -F 'MYSQL_MIGRATION_PASSWORD' server/.env.example >/dev/null
+          grep -F '"migrate": "node scripts/migrate-postgres.js"' server/package.json >/dev/null
+          grep -F '"preflight": "node scripts/preflight.js && node scripts/check-runtime-grants.js"' server/package.json >/dev/null
 
-          # Auditoria append-only e governança MySQL.
-          grep -F 'check-governance-integrity.js' server/package.json >/dev/null
-          grep -F 'audit_logs_block_update' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
-          grep -F 'audit_logs_block_delete' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
-          grep -F 'ADD COLUMN session_epoch BIGINT UNSIGNED NOT NULL DEFAULT 0' database/mysql/006_governance_audit_session_hardening.sql >/dev/null
+          # Auditoria append-only e governança PostgreSQL.
+          migration=supabase/migrations/20260913020000_current_hardening.sql
+          grep -F 'audit_logs_block_update' "$migration" >/dev/null
+          grep -F 'audit_logs_block_delete' "$migration" >/dev/null
+          grep -F 'ADD COLUMN session_epoch BIGINT NOT NULL DEFAULT 0' "$migration" >/dev/null
+
+          # Runtime PostgreSQL deve seguir menor privilégio.
+          grep -F 'FROM pg_roles r' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'r.rolsuper' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'r.rolcreaterole' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'r.rolcreatedb' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'r.rolreplication' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'r.rolbypassrls' server/scripts/check-runtime-grants.js >/dev/null
+          grep -F "has_schema_privilege(current_user, 'public', 'CREATE')" server/scripts/check-runtime-grants.js >/dev/null
+          grep -F "has_table_privilege" server/scripts/check-runtime-grants.js >/dev/null
+          grep -F 'produção exige role dedicada' server/scripts/check-runtime-grants.js >/dev/null
+
+          # Configuração separa navegador e banco: DATABASE_URL fica somente no backend.
+          grep -F 'DATABASE_URL=postgresql://user:CHANGE_ME@host:5432/database' server/.env.example >/dev/null
+          grep -F 'POSTGRES_SSL=true' server/.env.example >/dev/null
+          test -f .env.supabase.example
+          if grep -E '^(DATABASE_URL|POSTGRES_|SEGEMPAT_SESSION_SECRET)=' .env.supabase.example >/dev/null; then
+            echo "::error::Frontend Supabase expõe segredo/configuração privada do backend"
+            exit 1
+          fi
 
           # A tela de equipe não pode conceder privilégio funcional.
           grep -F 'export const PERFIS = ["Operacional"]' src/lib/employees.ts >/dev/null
@@ -80,50 +97,10 @@ jobs:
           node --check server/src/routes/employees.js
           node --check server/src/session.js
           node --check server/src/authorization.js
-          node --check server/src/runtime-grants.js
           node --check server/scripts/manage-inspector-access.js
           node --check server/scripts/grant-master-access.js
           node --check server/scripts/report-privileged-access.js
-          node --check server/scripts/check-governance-integrity.js
           node --check server/scripts/check-runtime-grants.js
-          node --check server/scripts/migrate-with-ti-credentials.js
+          node --check server/scripts/migrate-postgres.js
 
-          # Produção nunca pode executar migration com a credencial de runtime.
-          if NODE_ENV=production MYSQL_USER=segempat_app MYSQL_PASSWORD=runtime node server/scripts/migrate-with-ti-credentials.js >/tmp/migrate-gate.log 2>&1; then
-            echo "::error::Migration de produção foi aceita sem credencial separada da TI"
-            exit 1
-          fi
-          grep -F 'produção exige credencial de migration controlada pela TI' /tmp/migrate-gate.log >/dev/null
-
-          if NODE_ENV=production MYSQL_USER=segempat_app MYSQL_PASSWORD=runtime MYSQL_MIGRATION_USER=segempat_app MYSQL_MIGRATION_PASSWORD=migration node server/scripts/migrate-with-ti-credentials.js >/tmp/migrate-same-user.log 2>&1; then
-            echo "::error::Migration de produção aceitou o mesmo usuário da API"
-            exit 1
-          fi
-          grep -F 'deve ser diferente de MYSQL_USER em produção' /tmp/migrate-same-user.log >/dev/null
-
-          # Runtime MySQL aceita somente o conjunto mínimo previsto.
-          node --input-type=module <<'NODE'
-          const { validateRuntimeGrantStatements } = await import('./server/src/runtime-grants.js');
-          const safe = [
-            "GRANT USAGE ON *.* TO `segempat_app`@`%`",
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON `segempat`.* TO `segempat_app`@`%`",
-          ];
-          if (validateRuntimeGrantStatements(safe, 'segempat').length !== 0) {
-            throw new Error('Política rejeitou grants mínimos válidos');
-          }
-          const unsafeSets = [
-            ["GRANT ALL PRIVILEGES ON `segempat`.* TO `segempat_app`@`%`"],
-            ["GRANT CREATE, SELECT ON `segempat`.* TO `segempat_app`@`%`"],
-            ["GRANT SELECT ON *.* TO `segempat_app`@`%`"],
-            ["GRANT SELECT ON `outro_banco`.* TO `segempat_app`@`%`"],
-            ["GRANT SELECT ON `segempat`.* TO `segempat_app`@`%` WITH GRANT OPTION"],
-          ];
-          for (const grants of unsafeSets) {
-            if (validateRuntimeGrantStatements(grants, 'segempat').length === 0) {
-              throw new Error(`Política aceitou grant inseguro: ${grants[0]}`);
-            }
-          }
-          console.log('Política de grants mínimos validada.');
-          NODE
-
-          echo "Segregação TI x Master x Inspetoria, auditoria, migrations e grants mínimos validados."
+          echo "Segregação de privilégios, auditoria e menor privilégio PostgreSQL validados."
