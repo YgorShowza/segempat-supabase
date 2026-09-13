@@ -1,0 +1,58 @@
+name: Supabase Real Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Digite MIGRATE-SEGEMPAT para confirmar a execução manual"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: segempat-real-supabase-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: migrate-real-supabase
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_ENV: production
+      POSTGRES_SSL: "true"
+      SEGEMPAT_MIGRATION_DATABASE_URL: ${{ secrets.SEGEMPAT_MIGRATION_DATABASE_URL }}
+
+    steps:
+      - name: Require explicit confirmation and migration secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirm }}" != "MIGRATE-SEGEMPAT" ]; then
+            echo "Confirmação inválida. A migration real não será executada."
+            exit 1
+          fi
+          if [ -z "${SEGEMPAT_MIGRATION_DATABASE_URL:-}" ]; then
+            echo "Secret SEGEMPAT_MIGRATION_DATABASE_URL não configurado."
+            exit 1
+          fi
+
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci --prefix server --ignore-scripts --registry=https://registry.npmjs.org/
+
+      - name: Apply and verify versioned PostgreSQL migrations
+        run: npm run migrate --prefix server
