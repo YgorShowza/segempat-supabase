@@ -14,16 +14,41 @@ Evidências privadas:
 
 O navegador não recebe senha do PostgreSQL, credencial S3 nem acesso direto às tabelas do banco.
 
+## Estado validado antes do Render
+
+No projeto Supabase real já foram confirmados:
+
+- Security Advisor sem lints;
+- `anon`, `authenticated` e `service_role` sem grants nas tabelas/funções do SEGEMPAT;
+- `segempat_app` com menor privilégio e limite de 10 conexões;
+- `segempat_app` com CRUD nas 28 tabelas funcionais e somente leitura em `schema_migrations`;
+- funções internas `segempat_*` sem `EXECUTE` direto para o runtime;
+- bucket `segempat-evidence` privado, 1,5 MB, PNG/JPEG.
+
+A credencial de `segempat_app` existe no PostgreSQL, mas seu valor não é lido/exposto pela automação. Se o responsável pelo host não possuir o valor operacional, **rotacione a senha diretamente no ambiente seguro** antes de montar a `DATABASE_URL`.
+
 ## Secrets que devem ser cadastrados no Render
 
 Não coloque os valores abaixo em Git, chat, documentação pública ou variáveis `VITE_*`.
 
-- `DATABASE_URL`: conexão de runtime do papel `segempat_app`. Preferir o **Session Pooler** do Supabase para o serviço hospedado. O usuário deve receber uma senha privada antes da homologação.
+- `DATABASE_URL`: conexão de runtime do papel `segempat_app` via **Shared Session Pooler**. Copie o host exato do botão **Connect** do Supabase; não invente o hostname.
 - `SEGEMPAT_ALLOWED_ORIGINS`: origem HTTPS exata do frontend de homologação/produção.
 - `SUPABASE_STORAGE_S3_ACCESS_KEY_ID`: Access Key ID criado em Storage > S3 Configuration.
 - `SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY`: Secret Access Key correspondente, exclusiva do backend.
 
 `SEGEMPAT_SESSION_SECRET` é gerado pelo próprio Render no Blueprint.
+
+Para o Shared Session Pooler, o username do papel customizado é:
+
+```text
+segempat_app.bkghgceaubnuhjtzggsj
+```
+
+A forma esperada da connection string é:
+
+```text
+postgresql://segempat_app.bkghgceaubnuhjtzggsj:<PASSWORD_PERCENT_ENCODED>@<SESSION_POOLER_HOST>:5432/postgres
+```
 
 ## Migration real sem credencial administrativa no Render
 
@@ -59,8 +84,8 @@ O probe usa matrícula inexistente e senha descartável; não cria usuário e n�
 ## Sequência para a primeira homologação
 
 1. Criar o Blueprint/Web Service a partir do `render.yaml` e manter o deploy automático desligado.
-2. Definir uma senha privada para `segempat_app` e cadastrar a `DATABASE_URL` no secret manager do Render.
-3. Gerar uma credencial S3 específica do backend e cadastrar as duas variáveis S3 no Render.
+2. Confirmar ou rotacionar privadamente a senha de `segempat_app`; copiar o host do Shared Session Pooler e cadastrar a `DATABASE_URL` diretamente no secret manager do Render.
+3. Gerar uma credencial S3 específica do backend e cadastrar as duas variáveis S3 diretamente no Render.
 4. Cadastrar `SEGEMPAT_ALLOWED_ORIGINS` com a URL HTTPS exata do frontend.
 5. Configurar temporariamente o Secret `SEGEMPAT_MIGRATION_DATABASE_URL` no GitHub e executar **Supabase Real Migration** manualmente; conferir o resultado e remover/rotacionar a credencial administrativa.
 6. Fazer o primeiro deploy manual da API.
@@ -74,8 +99,8 @@ O serviço gratuito do Render é adequado para desenvolvimento e homologação, 
 
 ## Critério de conclusão
 
-A existência do Blueprint não significa homologação. A frase de status continua sendo:
+A existência do Blueprint não significa homologação. A frase de status atual é:
 
-> **PROJETO SUPABASE REAL CRIADO, SCHEMA/HARDENING APLICADOS E RUNTIME DE MENOR PRIVILÉGIO PREPARADO — PENDENTE CONEXÃO PRIVADA DA API E HOMOLOGAÇÃO E2E.**
+> **SUPABASE REAL E SEGURANÇA DE BANCO/STORAGE PREPARADOS — PENDENTE INJETAR OS SECRETS NO HOST, CONECTAR A API E EXECUTAR A HOMOLOGAÇÃO E2E.**
 
 Somente após o deploy manual e os gates reais de banco, storage, autenticação e E2E deve-se declarar a edição Supabase homologada.
