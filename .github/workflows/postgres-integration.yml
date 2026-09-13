@@ -155,6 +155,9 @@ jobs:
           test "$allowed" = '204'
           echo 'Proteção de Origin preservada na edição PostgreSQL.'
 
+      - name: Exercise authenticated Master session and employee CRUD
+        run: node server/scripts/postgres-api-auth-smoke.js
+
       - name: Print API log on failure
         if: failure()
         run: cat /tmp/segempat-postgres-api.log || true
