@@ -1,24 +1,37 @@
 # SEGEMPAT Supabase — Handoff de Produção no Cloudflare
 
-Este documento registra a etapa final de publicação do frontend da edição **SEGEMPAT Supabase** no Cloudflare, sem expor credenciais e sem misturar a hospedagem do frontend com o PostgreSQL/Storage do Supabase.
+Este documento registra a publicação do frontend da edição **SEGEMPAT Supabase** no Cloudflare, sem misturar a hospedagem do frontend com PostgreSQL/Storage do Supabase.
 
 ## Estado técnico
 
-O frontend já possui configuração Cloudflare versionada (`@cloudflare/vite-plugin`, `wrangler` e `wrangler.jsonc`). O Worker desta edição usa o nome exclusivo `segempat-supabase`, separado da edição MySQL.
+O frontend possui configuração Cloudflare versionada (`@cloudflare/vite-plugin`, `wrangler` e `wrangler.jsonc`). O Worker desta edição usa o nome exclusivo `segempat-supabase`, separado da edição MySQL.
 
-O workflow `SEGEMPAT Cloudflare Deployment Readiness` valida o build e executa `wrangler deploy --dry-run`, sem publicação.
+A API Node/Express está hospedada em:
 
-A publicação real é separada e somente manual, por `.github/workflows/cloudflare-production-deploy.yml`.
+`https://segempat-api-supabase.onrender.com`
 
-## Pré-requisitos obrigatórios
+O frontend de produção está publicado em:
 
-Antes de qualquer publicação real, configurar no GitHub Environment `production` deste repositório:
+`https://segempat-supabase.ygoxxx.workers.dev`
 
-- Secret `CLOUDFLARE_API_TOKEN` com permissão mínima necessária para publicar o Worker `segempat-supabase`;
-- Secret `CLOUDFLARE_ACCOUNT_ID` da conta Cloudflare autorizada;
-- Variable `VITE_SEGEMPAT_API_URL` com a URL HTTPS real da API Node/Express desta edição.
+O Hosted API Readiness final foi executado usando a origem real do Worker e aprovou banco, TLS, schema, migrations, Storage e CORS.
 
-A URL da API não pode apontar para localhost nem domínio de exemplo. O frontend de produção permanece com `VITE_SEGEMPAT_REQUIRE_API=true`, sem fallback silencioso para demonstração.
+## Configuração de produção
+
+O workflow `SEGEMPAT Cloudflare Production Deploy` continua manual e protegido por confirmação explícita `PUBLICAR`.
+
+O único segredo necessário no GitHub Environment `production` é:
+
+- `CLOUDFLARE_API_TOKEN`
+
+O token deve possuir apenas a permissão mínima necessária para publicar Workers Scripts.
+
+Os seguintes valores são identificadores públicos de deployment e permanecem versionados no workflow:
+
+- Cloudflare Account ID da conta autorizada;
+- `VITE_SEGEMPAT_API_URL=https://segempat-api-supabase.onrender.com`.
+
+Nenhuma senha de banco, `DATABASE_URL`, credencial S3 ou outro secret de backend é enviado ao frontend ou ao repositório.
 
 ## Relação com Supabase
 
@@ -32,8 +45,6 @@ A API Node/Express permanece como a única camada autorizada a acessar:
 
 O navegador não recebe `DATABASE_URL`, senha do PostgreSQL, credenciais S3, chaves administrativas nem outros secrets do backend.
 
-A hospedagem da API é independente do Cloudflare do frontend. O repositório está preparado para hospedar a API em um serviço Node HTTPS e conectá-la ao projeto Supabase real.
-
 ## Publicação controlada
 
 O workflow de produção:
@@ -41,30 +52,12 @@ O workflow de produção:
 1. só pode ser iniciado manualmente (`workflow_dispatch`);
 2. só executa a partir da branch `main`;
 3. exige que o operador digite exatamente `PUBLICAR`;
-4. exige token e account ID do Cloudflare;
-5. exige URL HTTPS real da API desta edição;
+4. exige o token protegido do Cloudflare;
+5. usa a URL HTTPS real da API desta edição;
 6. instala dependências com lockfile;
 7. executa o build;
-8. executa um `wrangler deploy --dry-run` imediatamente antes da publicação;
+8. executa `wrangler deploy --dry-run` imediatamente antes da publicação;
 9. somente então executa `wrangler deploy` no Worker `segempat-supabase`.
-
-Não existe gatilho automático por `push` ou `pull_request` para publicação de produção.
-
-## Ordem final recomendada
-
-```text
-API Node/Express conectada ao Supabase real
-  -> /health/ready verde
-  -> configurar VITE_SEGEMPAT_API_URL com a URL HTTPS real da API
-  -> configurar secrets Cloudflare no environment production
-  -> confirmar todos os checks da main verdes
-  -> executar SEGEMPAT Cloudflare Production Deploy manualmente
-  -> digitar PUBLICAR
-  -> validar a URL publicada do Worker segempat-supabase
-  -> executar teste E2E Master + Administrador + Inspetor + Operador
-  -> validar banco, Storage, sessões, evidências e auditoria
-  -> registrar evidências de aceite
-```
 
 ## Separação da edição MySQL
 
@@ -72,8 +65,6 @@ Este procedimento pertence exclusivamente ao repositório `YgorShowza/segempat-s
 
 Ele não modifica, não publica por cima e não reutiliza o Worker `app-reimagined` da edição MySQL.
 
-## Regra de aceite
+## Estado de aceite
 
-A existência deste workflow não significa que o sistema já foi publicado. Até o deploy manual bem-sucedido e a homologação E2E, o estado correto é:
-
-**CLOUDFLARE DA EDIÇÃO SUPABASE PREPARADO PARA PUBLICAÇÃO CONTROLADA — PRODUÇÃO AINDA NÃO PUBLICADA.**
+**CLOUDFLARE DA EDIÇÃO SUPABASE PUBLICADO — API RENDER SAUDÁVEL — STORAGE E CORS HOMOLOGADOS — WORKER `segempat-supabase` ATIVO.**
