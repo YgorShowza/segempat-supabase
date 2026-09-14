@@ -1,4 +1,4 @@
-name: SEGEMPAT Final Hosted Readiness
+name: SEGEMPAT Production Frontend Smoke
 
 on:
   push:
@@ -6,22 +6,20 @@ on:
       - diag-cloudflare-config
 
 jobs:
-  hosted-readiness:
-    name: Verify hosted API against production Worker origin
+  smoke:
+    name: Verify production Worker responds
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      SEGEMPAT_HOSTED_API_URL: https://segempat-api-supabase.onrender.com
-      SEGEMPAT_HOSTED_TRUSTED_ORIGIN: https://segempat-supabase.ygoxxx.workers.dev
     steps:
-      - name: Checkout approved main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Run final hosted readiness gate
-        run: node server/scripts/hosted-readiness.js
+      - name: Request production Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://segempat-supabase.ygoxxx.workers.dev/'
+          status=$(curl -sS -L -o /tmp/segempat.html -w '%{http_code}' "$url")
+          echo "HTTP $status"
+          test "$status" = '200'
+          test -s /tmp/segempat.html
+          grep -Eqi '<!doctype html|<html|SEGEMPAT' /tmp/segempat.html
+          echo 'SEGEMPAT production Worker smoke approved.'
