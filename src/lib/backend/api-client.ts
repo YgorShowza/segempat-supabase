@@ -59,15 +59,23 @@ export function buildSegempatApiUrl(path: string) {
   return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export async function checkSegempatApiReadiness(timeoutMs = 5000): Promise<boolean | null> {
+/**
+ * Lightweight browser status check.
+ *
+ * The deep /health/ready endpoint validates database, migrations, schema and
+ * storage and is intentionally reserved for deployment/readiness gates. The UI
+ * only needs to know whether the API process is reachable, so it uses /health
+ * to avoid a full dependency probe on every screen and interval tick.
+ */
+export async function checkSegempatApiReadiness(timeoutMs = 3000): Promise<boolean | null> {
   if (!isSegempatApiConfigured()) return null;
 
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(buildSegempatApiUrl("/health/ready"), {
+    const response = await fetch(buildSegempatApiUrl("/health"), {
       method: "GET",
-      credentials: "include",
+      credentials: "omit",
       headers: { Accept: "application/json" },
       signal: controller.signal,
       cache: "no-store",
