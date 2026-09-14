@@ -9,7 +9,7 @@ on:
         type: string
 
 concurrency:
-  group: segempat-cloudflare-production
+  group: segempat-supabase-cloudflare-production
   cancel-in-progress: false
 
 jobs:
@@ -42,12 +42,12 @@ jobs:
           fi
 
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "Deploy bloqueado: CLOUDFLARE_API_TOKEN não configurado no environment production."
+            echo "Deploy bloqueado: CLOUDFLARE_API_TOKEN não configurado no environment production deste repositório."
             exit 1
           fi
 
           if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "Deploy bloqueado: CLOUDFLARE_ACCOUNT_ID não configurado no environment production."
+            echo "Deploy bloqueado: CLOUDFLARE_ACCOUNT_ID não configurado no environment production deste repositório."
             exit 1
           fi
 
@@ -59,7 +59,7 @@ jobs:
           case "$VITE_SEGEMPAT_API_URL" in
             https://*) ;;
             *)
-              echo "Deploy bloqueado: a API corporativa deve usar HTTPS."
+              echo "Deploy bloqueado: a API da edição Supabase deve usar HTTPS."
               exit 1
               ;;
           esac
@@ -71,7 +71,7 @@ jobs:
               ;;
           esac
 
-          echo "Autorização e configuração mínima de produção validadas."
+          echo "Autorização e configuração mínima da edição Supabase validadas."
 
       - name: Checkout approved main
         uses: actions/checkout@v4
@@ -87,11 +87,11 @@ jobs:
       - name: Install dependencies from official npm registry
         run: bun install --frozen-lockfile --registry https://registry.npmjs.org
 
-      - name: Build corporate frontend
+      - name: Build Supabase edition frontend
         run: bun run build
 
       - name: Validate Cloudflare package before upload
         run: bunx wrangler deploy --dry-run --outdir .wrangler-production-dry-run
 
-      - name: Deploy approved main to Cloudflare
+      - name: Deploy approved Supabase edition main to Cloudflare
         run: bunx wrangler deploy
