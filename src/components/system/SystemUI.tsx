@@ -25,6 +25,50 @@ export function SystemSurface({
   );
 }
 
+export function SystemPageHero({
+  icon: Icon,
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+  description: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <section
+      className="relative overflow-hidden rounded-[1.75rem] p-5 md:p-6 lg:p-7"
+      style={{
+        background: "linear-gradient(135deg,#171117 0%,#310912 54%,#160f14 100%)",
+        border: "1px solid rgba(200,16,46,.28)",
+        boxShadow: "0 12px 38px rgba(80,0,18,.16)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-50"
+        style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)",
+          backgroundSize: "30px 30px",
+        }}
+      />
+      <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.22),transparent 68%)" }} />
+      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0 max-w-4xl">
+          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.16em] text-white/45">
+            <Icon className="h-4 w-4" /> {eyebrow}
+          </div>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">{title}</h1>
+          <div className="mt-2 max-w-3xl text-sm leading-6 text-white/55">{description}</div>
+        </div>
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      </div>
+    </section>
+  );
+}
+
 export function SystemSectionHeader({
   icon: Icon,
   title,
@@ -91,6 +135,33 @@ export function SystemMetricCard({
 
 function Skeleton({ className }: { className: string }) {
   return <div className={`animate-pulse rounded-xl ${className}`} style={{ background: "var(--bg-surface-2)" }} />;
+}
+
+export function SystemListSkeleton({ rows = 7 }: { rows?: number }) {
+  return (
+    <div className="mx-auto w-full max-w-[1536px] space-y-5 pb-10" role="status" aria-live="polite" aria-label="Carregando conteúdo">
+      <SystemSurface className="p-6 lg:p-7">
+        <Skeleton className="h-3 w-40" />
+        <Skeleton className="mt-4 h-9 w-full max-w-md" />
+        <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
+      </SystemSurface>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-[132px] w-full" />)}
+      </div>
+      <SystemSurface className="overflow-hidden">
+        <div className="border-b p-4" style={{ borderColor: "var(--border)" }}><Skeleton className="h-10 w-full" /></div>
+        <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+          {Array.from({ length: rows }, (_, index) => (
+            <div key={index} className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(220px,.8fr)_180px]">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ))}
+        </div>
+      </SystemSurface>
+    </div>
+  );
 }
 
 export function SystemDashboardSkeleton() {
