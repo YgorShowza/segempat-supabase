@@ -6,8 +6,11 @@ import {
   BellRing,
   CalendarDays,
   ChevronRight,
+  Crown,
   FileSpreadsheet,
   FileText,
+  History,
+  KeyRound,
   Maximize2,
   RefreshCw,
   Shield,
@@ -18,87 +21,14 @@ import {
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { employeeRisk, getOperationalSnapshot, sectorMetrics, snapshotMetrics } from "@/lib/insights";
 import { operationalYear } from "@/lib/operational-time";
+import {
+  SystemDashboardSkeleton,
+  SystemMetricCard,
+  SystemSectionHeader,
+  SystemSurface,
+} from "@/components/system/SystemUI";
 
-const SECTOR_COLORS = ["#e11d48", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
-
-function Surface({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <section
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      {children}
-    </section>
-  );
-}
-
-function SectionTitle({
-  icon: Icon,
-  title,
-  description,
-  action,
-  accent = "var(--accent)",
-}: {
-  icon: typeof Users;
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-  accent?: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 border-b p-4 lg:px-5" style={{ borderColor: "var(--border)" }}>
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-        style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
-      >
-        <Icon className="h-4 w-4" style={{ color: accent }} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</h2>
-        <p className="mt-0.5 text-[11px] leading-4" style={{ color: "var(--text-4)" }}>{description}</p>
-      </div>
-      {action}
-    </div>
-  );
-}
-
-function KPI({
-  label,
-  value,
-  icon: Icon,
-  sub,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  icon: typeof Users;
-  sub: string;
-  accent: string;
-}) {
-  return (
-    <Surface className="relative min-h-[132px] overflow-hidden p-4 sm:p-5">
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
-      <div className="absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-[.07]" style={{ background: accent }} />
-      <div className="relative flex h-full items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="mt-3 text-[2rem] font-black leading-none tracking-tight" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="mt-3 text-xs font-semibold leading-5" style={{ color: "var(--text-3)" }}>{sub}</p>
-        </div>
-        <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
-          style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}
-        >
-          <Icon className="h-5 w-5" style={{ color: accent }} />
-        </div>
-      </div>
-    </Surface>
-  );
-}
+const SECTOR_COLORS = ["#C8102E", "#2563eb", "#10b981", "#f59e0b", "#64748b", "#3b82f6"];
 
 export function AdminDashboardV2() {
   const year = operationalYear();
@@ -109,17 +39,11 @@ export function AdminDashboardV2() {
     staleTime: 60_000,
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center" aria-live="polite" aria-label="Carregando dashboard">
-        <div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} />
-      </div>
-    );
-  }
+  if (isLoading) return <SystemDashboardSkeleton />;
 
   if (!data) {
     return (
-      <Surface className="mx-auto max-w-3xl p-8 text-center">
+      <SystemSurface className="mx-auto max-w-3xl p-8 text-center">
         <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
         <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar o dashboard.</p>
         <button
@@ -130,7 +54,7 @@ export function AdminDashboardV2() {
         >
           <RefreshCw className="h-4 w-4" /> Tentar novamente
         </button>
-      </Surface>
+      </SystemSurface>
     );
   }
 
@@ -144,6 +68,8 @@ export function AdminDashboardV2() {
   const priorityCount = priority.length;
   const highRiskCount = priority.filter((item) => item.level === "Alto").length;
   const first = user?.nome?.split(" ")[0] || "Inspetor";
+  const isMaster = Boolean(user?.isMaster || user?.accessLevel === "master");
+  const permissionCount = user?.permissions?.length ?? 0;
   const now = new Date();
   const hour = Number(new Intl.DateTimeFormat("en-US", { hour: "2-digit", hourCycle: "h23", timeZone: "America/Maceio" }).format(now));
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
@@ -157,14 +83,14 @@ export function AdminDashboardV2() {
   });
 
   const quick = [
-    { to: "/equipe", label: "Equipe", icon: Users, accent: "#3b82f6" },
-    { to: "/analytics", label: "Analytics", icon: BarChart3, accent: "#e11d48" },
+    { to: "/equipe", label: "Equipe", icon: Users, accent: "#2563eb" },
+    { to: "/analytics", label: "Analytics", icon: BarChart3, accent: "#C8102E" },
     { to: "/cronograma", label: "Cronograma", icon: CalendarDays, accent: "#f59e0b" },
     { to: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle, accent: "#ef4444" },
-    { to: "/provas", label: "Provas", icon: FileText, accent: "#8b5cf6" },
+    { to: "/provas", label: "Provas", icon: FileText, accent: "#2563eb" },
     { to: "/risco", label: "Zona de Risco", icon: Target, accent: "#f59e0b" },
-    { to: "/individual", label: "Análise Individual", icon: BarChart3, accent: "#06b6d4" },
-    { to: "/relatorios", label: "Relatórios", icon: FileSpreadsheet, accent: "#ec4899" },
+    { to: "/individual", label: "Análise Individual", icon: BarChart3, accent: "#3b82f6" },
+    { to: "/relatorios", label: "Relatórios", icon: FileSpreadsheet, accent: "#C8102E" },
   ];
 
   const leaders = data.employees
@@ -214,15 +140,24 @@ export function AdminDashboardV2() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <p className="text-[10px] font-black uppercase tracking-[.22em]" style={{ color: "rgba(255,255,255,.52)" }}>Visão operacional · {year}</p>
+              <p className="text-[11px] font-black uppercase tracking-[.16em]" style={{ color: "rgba(255,255,255,.52)" }}>
+                {isMaster ? "Comando Master" : "Visão operacional"} · {year}
+              </p>
             </div>
             <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-[2rem] xl:text-[2.2rem]">{greeting}, {first}</h1>
             <p className="mt-2 max-w-3xl text-xs leading-5 sm:text-sm" style={{ color: "rgba(255,255,255,.58)" }}>
-              Acompanhe equipe, execução, desempenho e prioridades da operação em uma única visão.
+              {isMaster
+                ? "Operação e governança reunidas em uma visão executiva, com acesso integral às áreas administrativas do SEGEMPAT."
+                : "Acompanhe equipe, execução, desempenho e prioridades da operação em uma única visão."}
             </p>
             <p className="mt-2 text-[11px] capitalize" style={{ color: "rgba(255,255,255,.40)" }}>Atualizado em {updatedAt}</p>
 
             <div className="mt-5 flex flex-wrap gap-2">
+              {isMaster && (
+                <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black" style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.22)", color: "#fcd34d" }}>
+                  <Crown className="h-3.5 w-3.5" /> Administrador Master
+                </span>
+              )}
               <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-white" style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)" }}>
                 <Users className="h-3.5 w-3.5" /> {metrics.activeEmployees} ativos
               </span>
@@ -272,40 +207,73 @@ export function AdminDashboardV2() {
         </div>
       </section>
 
+      {isMaster && (
+        <SystemSurface className="overflow-hidden">
+          <SystemSectionHeader
+            icon={Crown}
+            title="Central de Governança Master"
+            description="Atalhos de alto privilégio separados das rotinas operacionais para reduzir ruído e acelerar decisões administrativas."
+            accent="#f59e0b"
+            action={
+              <span className="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black sm:block" style={{ background: "rgba(245,158,11,.10)", color: "#d97706" }}>
+                {permissionCount} permissões efetivas
+              </span>
+            }
+          />
+          <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+            <Link to="/acessos" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+              <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)" }}><KeyRound className="h-4 w-4" style={{ color: "var(--accent)" }} /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
+              <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Acessos e privilégios</p>
+              <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Contas, primeiro acesso, recuperação e permissões administrativas.</p>
+            </Link>
+            <Link to="/auditoria" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+              <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(37,99,235,.10)" }}><History className="h-4 w-4 text-blue-600" /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
+              <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Auditoria</p>
+              <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Rastreabilidade de acessos, mudanças sensíveis e eventos administrativos.</p>
+            </Link>
+            <Link to="/documento-seguranca" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+              <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(16,185,129,.10)" }}><Shield className="h-4 w-4 text-emerald-600" /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
+              <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Documento de Segurança</p>
+              <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Controles implementados, arquitetura e pontos de homologação.</p>
+            </Link>
+          </div>
+        </SystemSurface>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <KPI
+        <SystemMetricCard
           label="Equipe ativa"
           value={metrics.activeEmployees}
           icon={Users}
-          sub={`${metrics.pending} pendência${metrics.pending === 1 ? "" : "s"} no cronograma`}
-          accent="#3b82f6"
+          detail={`${metrics.pending} pendência${metrics.pending === 1 ? "" : "s"} no cronograma`}
+          accent="#2563eb"
         />
-        <KPI
+        <SystemMetricCard
           label="Taxa de aprovação"
           value={`${metrics.approvalRate}%`}
           icon={Shield}
-          sub={`${metrics.passed} aprovações em ${metrics.attempts} tentativa${metrics.attempts === 1 ? "" : "s"}`}
+          detail={`${metrics.passed} aprovações em ${metrics.attempts} tentativa${metrics.attempts === 1 ? "" : "s"}`}
           accent="#10b981"
         />
-        <KPI
+        <SystemMetricCard
           label="Média geral"
           value={metrics.averageScore}
           icon={BarChart3}
-          sub={metrics.attempts ? `Desempenho consolidado de ${metrics.attempts} tentativa${metrics.attempts === 1 ? "" : "s"}` : "Ainda sem tentativas registradas"}
+          detail={metrics.attempts ? `Desempenho consolidado de ${metrics.attempts} tentativa${metrics.attempts === 1 ? "" : "s"}` : "Ainda sem tentativas registradas"}
           accent="#f59e0b"
         />
-        <KPI
+        <SystemMetricCard
           label="Execução anual"
           value={`${metrics.executionRate}%`}
           icon={Target}
-          sub={`${metrics.realized} de ${metrics.planned} atividades realizadas`}
-          accent="#e11d48"
+          detail={`${metrics.realized} de ${metrics.planned} atividades realizadas`}
+          accent="#C8102E"
         />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-12">
-        <Surface className="overflow-hidden xl:col-span-7">
-          <SectionTitle
+        <SystemSurface className="overflow-hidden xl:col-span-7">
+          <SystemSectionHeader
             icon={BarChart3}
             title="Execução por setor"
             description="Setores com menor execução aparecem primeiro para facilitar a priorização."
@@ -347,10 +315,10 @@ export function AdminDashboardV2() {
               })}
             </div>
           )}
-        </Surface>
+        </SystemSurface>
 
-        <Surface className="overflow-hidden xl:col-span-5">
-          <SectionTitle
+        <SystemSurface className="overflow-hidden xl:col-span-5">
+          <SystemSectionHeader
             icon={AlertTriangle}
             title="Prioridades operacionais"
             description="Profissionais com pendências, atrasos ou reprovações que pedem acompanhamento."
@@ -414,10 +382,10 @@ export function AdminDashboardV2() {
               Abrir Zona de Risco <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
-        </Surface>
+        </SystemSurface>
       </div>
 
-      <Surface className="p-3.5 lg:p-4">
+      <SystemSurface className="p-3.5 lg:p-4">
         <div className="mb-3 flex items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--accent-soft)" }}>
@@ -447,10 +415,10 @@ export function AdminDashboardV2() {
             </Link>
           ))}
         </div>
-      </Surface>
+      </SystemSurface>
 
-      <Surface className="overflow-hidden">
-        <SectionTitle
+      <SystemSurface className="overflow-hidden">
+        <SystemSectionHeader
           icon={Trophy}
           title="Destaques de desempenho"
           description="Leitura combinada de aprovação, média e execução para identificar os melhores resultados do período."
@@ -503,7 +471,7 @@ export function AdminDashboardV2() {
             ))}
           </div>
         )}
-      </Surface>
+      </SystemSurface>
     </div>
   );
 }
