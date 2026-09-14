@@ -36,7 +36,7 @@ export function useApiReadiness() {
     const handleOffline = () => setStatus("unavailable");
 
     void check();
-    const interval = window.setInterval(() => void check(), 30_000);
+    const interval = window.setInterval(() => void check(), 60_000);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
