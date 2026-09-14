@@ -148,10 +148,15 @@ export const storage = {
     return provider.remove(safeObjectPath(objectPath));
   },
   async readinessProbe() {
-    const objectPath = `.segempat-readiness/${randomUUID()}.txt`;
-    const expected = Buffer.from("segempat-storage-readiness", "utf8");
+    // The production evidence bucket only accepts PNG/JPEG, so the probe must
+    // use one of those allowed MIME types rather than text/plain.
+    const objectPath = `.segempat-readiness/${randomUUID()}.png`;
+    const expected = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    );
     try {
-      await provider.put(objectPath, expected, { contentType: "text/plain" });
+      await provider.put(objectPath, expected, { contentType: "image/png" });
       const actual = await provider.get(objectPath);
       if (!Buffer.from(actual).equals(expected)) throw new Error("Storage de evidências falhou na verificação de leitura");
     } finally {
