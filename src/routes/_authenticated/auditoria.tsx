@@ -13,12 +13,18 @@ import {
   Search,
   ShieldCheck,
   UserCog,
-  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  SystemListSkeleton,
+  SystemMetricCard,
+  SystemPageHero,
+  SystemSectionHeader,
+  SystemSurface,
+} from "@/components/system/SystemUI";
 import { listAuditLogs } from "@/lib/operations";
 
 export const Route = createFileRoute("/_authenticated/auditoria")({
@@ -65,14 +71,6 @@ function normalizeSearch(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`rounded-2xl ${className}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
-      {children}
-    </div>
-  );
-}
-
 function fmtDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value || "—";
@@ -95,7 +93,7 @@ function actionTone(action: string) {
     return { color: "#f59e0b", background: "rgba(245,158,11,.1)" };
   }
   if (action === "LOGIN" || action === "ACTIVATE" || action.startsWith("ISSUE_") || action.startsWith("TI_")) {
-    return { color: "#3b82f6", background: "rgba(59,130,246,.1)" };
+    return { color: "#2563eb", background: "rgba(37,99,235,.1)" };
   }
   return { color: "#10b981", background: "rgba(16,185,129,.1)" };
 }
@@ -106,21 +104,6 @@ function isAccessEvent(action: string, entity: string) {
 
 function isCriticalEvent(action: string) {
   return action === "DELETE" || action.startsWith("REVOKE_") || action === "UPDATE_ACCESS_CONTROL" || action === "TI_GRANT_MASTER_ACCESS";
-}
-
-function MetricCard({ label, value, icon: Icon, hint }: { label: string; value: number; icon: LucideIcon; hint: string }) {
-  return (
-    <Card className="p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="mt-2 text-2xl font-black" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="mt-1 text-[11px]" style={{ color: "var(--text-4)" }}>{hint}</p>
-        </div>
-        <Icon className="h-4 w-4" style={{ color: "var(--accent)" }} />
-      </div>
-    </Card>
-  );
 }
 
 function AuditPage() {
@@ -170,43 +153,42 @@ function AuditPage() {
     auth: data.filter((row) => ["LOGIN", "ACTIVATE", "PASSWORD_CHANGE"].includes(row.action)).length,
   }), [data]);
 
-  if (query.isLoading) return <Loading />;
+  if (query.isLoading) return <SystemListSkeleton />;
   if (query.isError) {
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center">
+      <SystemSurface className="mx-auto max-w-xl p-8 text-center">
         <AlertTriangle className="mx-auto h-10 w-10 text-red-500" />
         <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>Não foi possível carregar a auditoria.</p>
         <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>A trilha de auditoria exige a permissão específica de consulta e disponibilidade da API SEGEMPAT.</p>
         <Button variant="outline" className="mt-4" onClick={() => query.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
-      </Card>
+      </SystemSurface>
     );
   }
 
+  const hasFilters = Boolean(search) || entity !== "Todos" || action !== "Todos";
+
   return (
     <div className="segempat-governance-audit mx-auto w-full max-w-[1536px] space-y-5 pb-10">
-      <section className="rounded-[1.5rem] p-5 md:p-6" style={{ background: "linear-gradient(135deg,#171118,#2b0b13 50%,#111216)", border: "1px solid rgba(200,16,46,.26)" }}>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.2em] text-white/40"><History className="h-4 w-4" /> Rastreabilidade e responsabilidade</div>
-            <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Auditoria</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
-              Histórico dos eventos administrativos e de segurança, com autoria, ação, alvo e horário operacional. A consulta é restrita à permissão <span className="font-mono text-white/75">audit.view</span>.
-            </p>
-          </div>
+      <SystemPageHero
+        icon={History}
+        eyebrow="Rastreabilidade e responsabilidade"
+        title="Auditoria"
+        description={<>Histórico dos eventos administrativos e de segurança, com autoria, ação, alvo e horário operacional. A consulta é restrita à permissão <span className="font-mono text-white/75">audit.view</span>.</>}
+        actions={
           <Button variant="outline" onClick={() => query.refetch()} className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white">
             <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} /> Atualizar trilha
           </Button>
-        </div>
-      </section>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <MetricCard label="Eventos carregados" value={metrics.loaded} icon={Database} hint={`janela de até ${AUDIT_WINDOW}`} />
-        <MetricCard label="Acesso e segurança" value={metrics.access} icon={ShieldCheck} hint="identidade e privilégios" />
-        <MetricCard label="Eventos críticos" value={metrics.critical} icon={AlertTriangle} hint="exclusões, revogações e privilégios" />
-        <MetricCard label="Autenticação" value={metrics.auth} icon={KeyRound} hint="login, ativação e senha" />
+        <SystemMetricCard label="Eventos carregados" value={metrics.loaded} icon={Database} detail={`janela de até ${AUDIT_WINDOW}`} accent="#64748b" />
+        <SystemMetricCard label="Acesso e segurança" value={metrics.access} icon={ShieldCheck} detail="identidade e privilégios" accent="#2563eb" />
+        <SystemMetricCard label="Eventos críticos" value={metrics.critical} icon={AlertTriangle} detail="exclusões, revogações e privilégios" accent="#ef4444" />
+        <SystemMetricCard label="Autenticação" value={metrics.auth} icon={KeyRound} detail="login, ativação e senha" accent="#C8102E" />
       </div>
 
-      <Card className="p-4">
+      <SystemSurface className="p-4 lg:p-5">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_240px_260px_auto] lg:items-center">
           <div className="relative">
             <Label htmlFor="audit-search" className="sr-only">Buscar auditoria</Label>
@@ -221,7 +203,7 @@ function AuditPage() {
             <SelectTrigger aria-label="Filtrar auditoria por ação"><SelectValue /></SelectTrigger>
             <SelectContent>{actions.map((item) => <SelectItem key={item} value={item}>{item === "Todos" ? "Todas as ações" : actionLabel[item] || item}</SelectItem>)}</SelectContent>
           </Select>
-          {(search || entity !== "Todos" || action !== "Todos") && (
+          {hasFilters && (
             <Button type="button" variant="ghost" onClick={() => { setSearch(""); setEntity("Todos"); setAction("Todos"); }}>Limpar filtros</Button>
           )}
         </div>
@@ -229,15 +211,30 @@ function AuditPage() {
           <span>{filtered.length === data.length ? `${data.length} evento(s) na janela atual` : `${filtered.length} de ${data.length} evento(s) correspondem aos filtros`}</span>
           {hasOlderEvents && <span>Há eventos anteriores fora da janela carregada.</span>}
         </div>
-      </Card>
+      </SystemSurface>
 
-      <div className="space-y-2">
-        {visible.map((row) => {
-          const tone = actionTone(row.action);
-          const actor = row.actor_name || (row.actor_id ? "Usuário identificado" : "Sistema / processo técnico");
-          return (
-            <Card key={row.id} className="p-4">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(220px,.8fr)_auto] lg:items-center">
+      <SystemSurface className="overflow-hidden">
+        <SystemSectionHeader
+          icon={Fingerprint}
+          title="Registro de eventos"
+          description="Leitura compacta para revisão de grandes volumes sem perder autoria, alvo ou horário."
+          action={<span className="hidden rounded-full px-2.5 py-1 text-[11px] font-black sm:block" style={{ background: "var(--bg-surface-2)", color: "var(--text-3)" }}>{filtered.length} evento(s)</span>}
+        />
+
+        {visible.length > 0 && (
+          <div className="hidden grid-cols-[minmax(0,1.25fr)_minmax(220px,.85fr)_190px] gap-4 border-b px-5 py-2.5 text-[10px] font-black uppercase tracking-[.1em] lg:grid" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)", background: "var(--bg-surface-2)" }}>
+            <span>Evento e alvo</span>
+            <span>Responsável</span>
+            <span className="text-right">Data e hora</span>
+          </div>
+        )}
+
+        <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+          {visible.map((row) => {
+            const tone = actionTone(row.action);
+            const actor = row.actor_name || (row.actor_id ? "Usuário identificado" : "Sistema / processo técnico");
+            return (
+              <div key={row.id} className="grid gap-3 px-4 py-4 transition-colors hover:bg-[var(--bg-surface-2)] lg:grid-cols-[minmax(0,1.25fr)_minmax(220px,.85fr)_190px] lg:items-center lg:gap-4 lg:px-5">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full px-2 py-1 text-[10px] font-black" style={tone}>{actionLabel[row.action] || row.action}</span>
@@ -249,25 +246,25 @@ function AuditPage() {
                   </div>
                 </div>
 
-                <div className="min-w-0 rounded-xl border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--bg-surface-2)" }}>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2"><UserCog className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--accent)" }} /><p className="truncate text-xs font-bold" style={{ color: "var(--text-2)" }}>{actor}</p></div>
                   <p className="mt-1 break-all text-[10px]" style={{ color: "var(--text-4)" }}>Ator: {row.actor_id || "processo sem usuário associado"}</p>
                 </div>
 
                 <p className="shrink-0 text-xs lg:text-right" style={{ color: "var(--text-4)" }}>{fmtDate(row.created_at)}</p>
               </div>
-            </Card>
-          );
-        })}
+            );
+          })}
+        </div>
 
         {filtered.length === 0 && (
-          <Card className="p-10 text-center">
+          <div className="p-10 text-center">
             <History className="mx-auto h-10 w-10 opacity-30" style={{ color: "var(--text-4)" }} />
             <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>Nenhum evento encontrado.</p>
             <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>{data.length ? "Ajuste os filtros para ampliar a consulta." : "A janela de auditoria carregada ainda não possui eventos."}</p>
-          </Card>
+          </div>
         )}
-      </div>
+      </SystemSurface>
 
       {filtered.length > PAGE_SIZE && (
         <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
@@ -280,7 +277,7 @@ function AuditPage() {
         </div>
       )}
 
-      <Card className="p-4">
+      <SystemSurface className="p-4">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--accent)" }} />
           <div>
@@ -290,11 +287,7 @@ function AuditPage() {
             </p>
           </div>
         </div>
-      </Card>
+      </SystemSurface>
     </div>
   );
-}
-
-function Loading() {
-  return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /></div>;
 }
