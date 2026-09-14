@@ -24,3 +24,21 @@ jobs:
           if [ -n "${CLOUDFLARE_API_TOKEN:-}" ]; then echo "CLOUDFLARE_API_TOKEN=configured"; else echo "CLOUDFLARE_API_TOKEN=missing"; fi
           if [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then echo "CLOUDFLARE_ACCOUNT_ID=configured"; else echo "CLOUDFLARE_ACCOUNT_ID=missing"; fi
           if [ -n "${VITE_SEGEMPAT_API_URL:-}" ]; then echo "VITE_SEGEMPAT_API_URL=configured"; else echo "VITE_SEGEMPAT_API_URL=missing"; fi
+
+  hosted-readiness:
+    name: Verify hosted API with temporary trusted origin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SEGEMPAT_HOSTED_API_URL: https://segempat-api-supabase.onrender.com
+      SEGEMPAT_HOSTED_TRUSTED_ORIGIN: https://segempat-api-supabase.onrender.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run hosted readiness gate
+        run: node server/scripts/hosted-readiness.js
