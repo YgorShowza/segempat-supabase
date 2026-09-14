@@ -33,7 +33,7 @@ services:
       - key: SEGEMPAT_SESSION_SAMESITE
         value: lax
       - key: SEGEMPAT_ALLOWED_ORIGINS
-        sync: false
+        value: https://segempat-supabase.ygoxxx.workers.dev
       - key: SEGEMPAT_STORAGE_DRIVER
         value: supabase
       - key: SEGEMPAT_STORAGE_BUCKET
