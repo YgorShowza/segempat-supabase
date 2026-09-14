@@ -14,10 +14,16 @@ export interface CurrentUser {
   permissions?: string[];
 }
 
-export function useCurrentUser() {
-  return useQuery<CurrentUser | null>({
-    queryKey: ["current-user"],
+export const CURRENT_USER_QUERY_KEY = ["current-user"] as const;
+
+export function currentUserQueryOptions() {
+  return {
+    queryKey: CURRENT_USER_QUERY_KEY,
     staleTime: 60_000,
     queryFn: getCurrentSessionUser,
-  });
+  };
+}
+
+export function useCurrentUser() {
+  return useQuery<CurrentUser | null>(currentUserQueryOptions());
 }
