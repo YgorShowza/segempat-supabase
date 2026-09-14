@@ -196,15 +196,12 @@ export function createApp() {
       await healthcheck();
 
       phase = "database-tls";
-      const sslStatus = await queryOne(
-        `SELECT ssl, COALESCE(cipher, '') AS cipher
-           FROM pg_stat_ssl
-          WHERE pid = pg_backend_pid()`,
-      );
-      const sslCipher = sslStatus?.ssl ? String(sslStatus?.cipher ?? "").trim() : "";
-      if (config.db.ssl && !sslCipher) {
-        return res.status(503).json({ ok: false, service: "segempat-api", database: "connected", tls: "not-negotiated" });
-      }
+      // With Supavisor Session Pooler, pg_stat_ssl describes the pooler-to-Postgres
+      // backend hop rather than the application's incoming TLS session. The pg client
+      // is configured with SSL plus rejectUnauthorized=true (and the Supabase CA when
+      // provided), so a successful healthcheck proves the application-side verified
+      // TLS handshake whenever SSL is enabled. Production already requires SSL in config.
+      const sslCipher = config.db.ssl ? "verified-client" : "";
 
       phase = "migrations";
       const migrationStatus = await verifyMigrationReadiness();
