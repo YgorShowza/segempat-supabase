@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { AppLayoutV2 } from "@/components/AppLayoutV2";
 import { DemoModeBadge } from "@/components/DemoModeBadge";
-import { getCurrentSessionUser } from "@/lib/backend/current-user-gateway";
+import { currentUserQueryOptions } from "@/lib/useCurrentUser";
 import { canAccessAdminPath, firstAllowedAdminPath, requiredPermissionsForPath } from "@/lib/access-control";
 
 export const ADMIN_ONLY_PATHS = new Set([
@@ -96,8 +96,8 @@ function AuthenticatedShell() {
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async ({ location }) => {
-    const user = await getCurrentSessionUser();
+  beforeLoad: async ({ location, context }) => {
+    const user = await context.queryClient.ensureQueryData(currentUserQueryOptions());
     if (!user) throw redirect({ to: "/" });
 
     const pathname = canonicalPathname(location.pathname);
