@@ -7,13 +7,13 @@ import { healthcheck, pool } from "./db.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-function runApprovedMasterBootstrap() {
-  const enabled = String(process.env["SEGEMPAT_BOOTSTRAP_MASTER_ON_START"] || "")
+function runApprovedMasterPasswordReset() {
+  const enabled = String(process.env["SEGEMPAT_MASTER_PASSWORD_RESET_ON_START"] || "")
     .trim()
     .toUpperCase() === "SIM";
   if (!enabled) return;
 
-  const scriptPath = path.resolve(here, "../scripts/bootstrap-admin.js");
+  const scriptPath = path.resolve(here, "../scripts/reset-master-password-hash.js");
   const result = spawnSync(process.execPath, [scriptPath], {
     env: process.env,
     encoding: "utf8",
@@ -23,12 +23,12 @@ function runApprovedMasterBootstrap() {
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.status !== 0) {
     if (result.stderr) process.stderr.write(result.stderr);
-    throw new Error("bootstrap controlado do Administrador Master falhou");
+    throw new Error("reset controlado da senha do Administrador Master falhou");
   }
 }
 
 async function start() {
-  runApprovedMasterBootstrap();
+  runApprovedMasterPasswordReset();
   await healthcheck();
 
   const app = createApp();
