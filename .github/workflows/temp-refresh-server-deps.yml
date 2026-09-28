@@ -25,6 +25,7 @@ jobs:
           set -euo pipefail
           cd server
           npm install express@4.22.3 cookie-parser@1.4.7 --save-exact --ignore-scripts --registry=https://registry.npmjs.org/
+          npm audit fix --omit=dev --ignore-scripts --registry=https://registry.npmjs.org/ || true
           npm audit --omit=dev || true
           npm audit --json > /tmp/segempat-audit.json || true
           node - <<'NODE'
