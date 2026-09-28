@@ -324,6 +324,7 @@ export function InspectorProductionWorkspace() {
   const [details, setDetails] = useState("");
   const [location, setLocation] = useState("");
   const [pendingEvidence, setPendingEvidence] = useState<PendingEvidence[]>([]);
+  const [followUpSource, setFollowUpSource] = useState<InspectorProductionEntry | null>(null);
 
   const suggestions = useQuery({
     queryKey: ["inspector-production-suggestions", title.trim().toLowerCase()],
@@ -338,6 +339,7 @@ export function InspectorProductionWorkspace() {
         title: title.trim(),
         category,
         result_status: resultStatus,
+        parent_entry_id: followUpSource?.id ?? null,
         details: details.trim(),
         location: location.trim() || null,
       });
@@ -355,22 +357,25 @@ export function InspectorProductionWorkspace() {
       }
       return { created, evidenceFailures: failures };
     },
-    onSuccess: async ({ evidenceFailures }) => {
+    onSuccess: async ({ created, evidenceFailures }) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["inspector-production-summary"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-history"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-suggestions"] }),
+        queryClient.invalidateQueries({ queryKey: ["inspector-production-entry"] }),
       ]);
+      const wasFollowUp = Boolean(created.parent_entry_id);
       setTitle("");
       setCategory(membership.data?.categories?.[0] || "Inspeção");
       setResultStatus(membership.data?.result_statuses?.[0] || "Concluído");
       setDetails("");
       setLocation("");
       setPendingEvidence([]);
+      setFollowUpSource(null);
       if (evidenceFailures.length) {
-        toast.warning(`Atribuição registrada, mas ${evidenceFailures.length} evidência(s) não foram anexadas.`);
+        toast.warning(`${wasFollowUp ? "Acompanhamento" : "Atribuição"} registrado, mas ${evidenceFailures.length} evidência(s) não foram anexadas.`);
       } else {
-        toast.success("Atribuição registrada na Produção da Inspetoria");
+        toast.success(wasFollowUp ? "Acompanhamento registrado e vinculado ao histórico" : "Atribuição registrada na Produção da Inspetoria");
       }
       setTab("dashboard");
     },
@@ -470,6 +475,25 @@ export function InspectorProductionWorkspace() {
     currentMember?.is_leader ||
     entry.executor_user_id === user?.id
   );
+
+  const canStartFollowUp = (entry: InspectorProductionEntry) => Boolean(
+    canRegister &&
+    entry.status === "Registrada" &&
+    ["Concluído com pendência", "Requer acompanhamento"].includes(entry.result_status)
+  );
+
+  const startFollowUp = (entry: InspectorProductionEntry) => {
+    if (!canStartFollowUp(entry)) return;
+    setFollowUpSource(entry);
+    setTitle(`Acompanhamento — ${entry.title}`.slice(0, 255));
+    setCategory(membership.data?.categories.includes(entry.category) ? entry.category : (membership.data?.categories?.[0] || "Inspeção"));
+    setResultStatus(membership.data?.result_statuses?.[0] || "Concluído");
+    setDetails("");
+    setLocation(entry.location || "");
+    setPendingEvidence([]);
+    setDetailsId(null);
+    setTab("registrar");
+  };
 
   const submitHistorySearch = () => setHistorySearch(historySearchDraft.trim());
   const clearHistoryFilters = () => {
@@ -956,7 +980,7 @@ export function InspectorProductionWorkspace() {
       {tab === "registrar" && (
         <div className="grid gap-4 xl:grid-cols-12">
           <SystemSurface className="overflow-hidden xl:col-span-8">
-            <SystemSectionHeader icon={Plus} title="Registrar atribuição executada" description="O registro deve representar uma entrega efetivamente realizada. Após salvo, o conteúdo torna-se histórico imutável." />
+            <SystemSectionHeader icon={Plus} title={followUpSource ? "Registrar acompanhamento" : "Registrar atribuição executada"} description={followUpSource ? "O acompanhamento será salvo como um novo registro imutável e permanecerá vinculado à execução de origem." : "O registro deve representar uma entrega efetivamente realizada. Após salvo, o conteúdo torna-se histórico imutável."} />
             <div className="space-y-5 p-5">
               {!canRegister ? (
                 <div className="rounded-2xl p-5" style={{ background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.20)" }}>
@@ -965,6 +989,22 @@ export function InspectorProductionWorkspace() {
                 </div>
               ) : (
                 <>
+                  {followUpSource && (
+                    <div className="rounded-2xl p-4" style={{ background: "rgba(37,99,235,.06)", border: "1px solid rgba(37,99,235,.18)" }}>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black uppercase tracking-[.12em] text-blue-600">Continuidade vinculada</p>
+                          <p className="mt-1 truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{followUpSource.title}</p>
+                          <p className="mt-1 text-[11px] leading-5" style={{ color: "var(--text-4)" }}>
+                            Origem: {followUpSource.executor_name} · {displayDateTime(followUpSource.executed_at)} · {followUpSource.result_status}. O registro original não será alterado.
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => setFollowUpSource(null)}>
+                          <X className="mr-2 h-3.5 w-3.5" /> Remover vínculo
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-1.5 md:col-span-2">
                       <Label htmlFor="production-title">Atribuição realizada</Label>
@@ -1484,9 +1524,55 @@ export function InspectorProductionWorkspace() {
                 <Info label="Resultado" value={detailsQuery.data.result_status} detail="Desfecho imutável da atribuição" icon={resultStatusMeta(detailsQuery.data.result_status).icon} />
                 <Info label="Evidências" value={String(detailsQuery.data.attachment_count)} detail="Imagens preservadas" icon={Camera} />
               </div>
+              {(detailsQuery.data.parent_entry_id || detailsQuery.data.follow_up_chain.length > 1) && (
+                <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div className="flex items-start gap-3">
+                    <History className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Cadeia de acompanhamento</p>
+                      <p className="mt-1 text-[10px] leading-5" style={{ color: "var(--text-4)" }}>Cada etapa é um registro próprio, com executor, horário, resultado e evidências independentes. Nenhuma etapa anterior é reescrita.</p>
+                      <div className="mt-4 space-y-2">
+                        {detailsQuery.data.follow_up_chain.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            disabled={item.is_current}
+                            onClick={() => setDetailsId(item.id)}
+                            className="block w-full rounded-xl p-3 text-left disabled:cursor-default"
+                            style={{
+                              marginLeft: `${Math.min(item.depth, 4) * 10}px`,
+                              width: `calc(100% - ${Math.min(item.depth, 4) * 10}px)`,
+                              background: item.is_current ? "var(--accent-soft)" : "var(--bg-surface)",
+                              border: item.is_current ? "1px solid rgba(200,16,46,.18)" : "1px solid var(--border)",
+                            }}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{item.title}</p>
+                                <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{item.executor_name} · {displayDateTime(item.executed_at)}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {item.is_current && <span className="rounded-full px-2 py-1 text-[8px] font-black" style={{ background: "rgba(200,16,46,.10)", color: "#C8102E" }}>ATUAL</span>}
+                                <ResultStatusBadge status={item.result_status} />
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               {detailsQuery.data.status === "Cancelada" && <div className="rounded-2xl p-4" style={{ background: "rgba(239,68,68,.06)", border: "1px solid rgba(239,68,68,.20)" }}><p className="text-sm font-black text-red-500">Registro cancelado</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-3)" }}>{detailsQuery.data.canceled_reason}</p><p className="mt-2 text-[11px]" style={{ color: "var(--text-4)" }}>Por {detailsQuery.data.canceled_by_name || "usuário autorizado"} · {displayDateTime(detailsQuery.data.canceled_at)}</p></div>}
               <div><p className="mb-2 text-sm font-black" style={{ color: "var(--text-1)" }}>Evidências preservadas</p>{detailsQuery.data.attachments.length ? <div className="grid gap-3 sm:grid-cols-2">{detailsQuery.data.attachments.map((attachment) => <a key={attachment.id} href={inspectorProductionAttachmentUrl(detailsQuery.data.id, attachment.id)} target="_blank" rel="noreferrer" className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}><img src={inspectorProductionAttachmentUrl(detailsQuery.data.id, attachment.id)} alt={attachment.caption || "Evidência da atribuição"} className="h-44 w-full object-cover" /><div className="p-3"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{attachment.original_name}</p>{attachment.caption && <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{attachment.caption}</p>}<p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{Math.round(attachment.size_bytes / 1024)} KB · {displayDate(attachment.created_at)}</p></div></a>)}</div> : <p className="rounded-xl p-4 text-sm" style={{ background: "var(--bg-surface-2)", color: "var(--text-4)" }}>Nenhuma evidência anexada a esta execução.</p>}</div>
-              {detailsQuery.data.status === "Registrada" && canCancel(detailsQuery.data) && <div className="flex justify-end"><Button variant="outline" className="text-red-500" onClick={() => { setCancelTarget(detailsQuery.data); setDetailsId(null); }}><XCircle className="mr-2 h-4 w-4" /> Cancelar registro</Button></div>}
+              <div className="flex flex-wrap justify-end gap-2">
+                {canStartFollowUp(detailsQuery.data) && (
+                  <Button className="bg-[#2563eb] text-white hover:bg-[#1d4ed8]" onClick={() => startFollowUp(detailsQuery.data)}>
+                    <Plus className="mr-2 h-4 w-4" /> Registrar acompanhamento
+                  </Button>
+                )}
+                {detailsQuery.data.status === "Registrada" && canCancel(detailsQuery.data) && <Button variant="outline" className="text-red-500" onClick={() => { setCancelTarget(detailsQuery.data); setDetailsId(null); }}><XCircle className="mr-2 h-4 w-4" /> Cancelar registro</Button>}
+              </div>
             </div>
           ) : null}
         </DialogContent>
