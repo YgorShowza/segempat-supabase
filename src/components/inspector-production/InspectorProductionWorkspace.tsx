@@ -76,6 +76,7 @@ interface PendingEvidence {
 const MAX_EVIDENCES = 5;
 const MAX_EVIDENCE_BYTES = 1_250_000;
 const PAGE_SIZE = 50;
+const FOLLOW_UP_SOURCE_RESULTS: InspectorProductionResultStatus[] = ["Concluído com pendência", "Requer acompanhamento"];
 
 function displayDateTime(value?: string | null) {
   if (!value) return "—";
@@ -479,7 +480,7 @@ export function InspectorProductionWorkspace() {
   const canStartFollowUp = (entry: InspectorProductionEntry) => Boolean(
     canRegister &&
     entry.status === "Registrada" &&
-    ["Concluído com pendência", "Requer acompanhamento"].includes(entry.result_status)
+    FOLLOW_UP_SOURCE_RESULTS.includes(entry.result_status)
   );
 
   const startFollowUp = (entry: InspectorProductionEntry) => {
