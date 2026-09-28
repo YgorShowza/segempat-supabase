@@ -89,8 +89,9 @@ jobs:
           grep -F 'Página {page} de 3' "$PRINT" >/dev/null
           grep -F 'printExecutiveReport' "$UI" >/dev/null
           grep -F 'setPrintIssuedAt' "$UI" >/dev/null
-          grep -F 'body * {' "$PRINT" >/dev/null
-          grep -F 'visibility: hidden !important;' "$PRINT" >/dev/null
+          grep -F 'body > *:not(.inspector-production-print-report):not(style):not(script)' "$PRINT" >/dev/null
+          grep -F 'createPortal' "$PRINT" >/dev/null
+          grep -F 'document.body' "$PRINT" >/dev/null
           grep -F 'sem conteúdo generativo ou inferências' "$UI" >/dev/null
           grep -F 'buildExecutiveSummary' "$API" >/dev/null
           grep -F 'executive_summary' "$API" >/dev/null
