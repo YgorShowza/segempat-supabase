@@ -106,7 +106,7 @@ export interface ExamAttemptEvidence {
 
 export const EXAM_TYPES = ["Múltipla escolha", "Discursiva", "Mista"];
 export const EXAM_STATUS = ["Rascunho", "Publicada"];
-export const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"];
+export const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"];
 
 export interface ExamForm {
   title: string;
