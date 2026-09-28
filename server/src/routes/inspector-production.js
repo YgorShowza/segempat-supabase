@@ -856,7 +856,7 @@ inspectorProductionRouter.post(
          VALUES (?,?,?,?,?,?,?,?,?,?,?,'Registrada',CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))`,
         [id, employee.id, req.user.id, employee.full_name, employee.matricula, title, category, resultStatus, parentEntryId, details, location],
       );
-      await audit(req.user.id, "INSPECTOR_PRODUCTION_CREATE", "inspector_production_entries", id, {
+      await audit(req.user.id, parentEntryId ? "INSPECTOR_PRODUCTION_FOLLOW_UP_CREATE" : "INSPECTOR_PRODUCTION_CREATE", "inspector_production_entries", id, {
         executor_employee_id: employee.id,
         executor_matricula: employee.matricula,
         category,
