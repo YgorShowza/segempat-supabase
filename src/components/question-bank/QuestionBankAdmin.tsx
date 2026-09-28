@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { hasPermission } from "@/lib/access-control";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface } from "@/components/system/SystemUI";
 import {
   createQuestionBankItem,
   deleteQuestionBankItem,
@@ -89,52 +90,6 @@ function normalizeMultipleChoice(form: QuestionBankInput) {
     correct_answer: null,
     explanation: form.explanation?.trim() || null,
   };
-}
-
-function Metric({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  sub,
-}: {
-  label: string;
-  value: number;
-  icon: typeof Layers3;
-  accent: string;
-  sub: string;
-}) {
-  return (
-    <div
-      className="relative min-w-0 overflow-hidden rounded-2xl p-4"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      <div className="absolute left-0 top-0 h-[3px] w-full" style={{ background: accent }} />
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-black" style={{ color: "var(--text-1)" }}>
-            {value}
-          </p>
-          <p className="mt-1 truncate text-[11px] font-semibold" style={{ color: accent }} title={sub}>
-            {sub}
-          </p>
-        </div>
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}
-        >
-          <Icon className="h-4 w-4" style={{ color: accent }} />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function QuestionBankAdmin() {
@@ -285,14 +240,7 @@ export function QuestionBankAdmin() {
   const canManageExams = hasPermission(user, "exams.manage");
 
   if (query.isLoading) {
-    return (
-      <div className="flex justify-center py-24" role="status" aria-label="Carregando Banco de Questões">
-        <div
-          className="h-9 w-9 animate-spin rounded-full border-4"
-          style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }}
-        />
-      </div>
-    );
+    return <SystemDataWorkspaceSkeleton metricCount={4} rowCount={8} />;
   }
 
   if (query.isError) {
@@ -357,20 +305,13 @@ export function QuestionBankAdmin() {
       </section>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="Total" value={rows.length} icon={Layers3} accent="#3b82f6" sub="questões cadastradas" />
-        <Metric label="Ativas" value={activeCount} icon={ShieldCheck} accent="#10b981" sub="disponíveis para uso" />
-        <Metric label="Inativas" value={inactiveCount} icon={CircleOff} accent="#64748b" sub="fora das novas seleções" />
-        <Metric label="Setores" value={sectorCount} icon={Crosshair} accent="#e11d48" sub="segmentações configuradas" />
+        <SystemMetricCard label="Total" value={rows.length} icon={Layers3} accent="#C8102E" detail="questões cadastradas" />
+        <SystemMetricCard label="Ativas" value={activeCount} icon={ShieldCheck} accent="#10b981" detail="disponíveis para uso" />
+        <SystemMetricCard label="Inativas" value={inactiveCount} icon={CircleOff} accent="#64748b" detail="fora das novas seleções" />
+        <SystemMetricCard label="Setores" value={sectorCount} icon={Crosshair} accent="#2563eb" detail="segmentações configuradas" />
       </div>
 
-      <section
-        className="rounded-2xl p-4"
-        style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          boxShadow: "var(--shadow-card, var(--shadow-md))",
-        }}
-      >
+      <SystemSurface className="p-4">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_190px_160px_150px_auto]">
           <div className="relative md:col-span-2 xl:col-span-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} />
@@ -416,7 +357,7 @@ export function QuestionBankAdmin() {
             {filtered.length} questão{filtered.length === 1 ? "" : "ões"} encontrada{filtered.length === 1 ? "" : "s"} · exibindo {Math.min((currentPage - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(currentPage * PAGE_SIZE, filtered.length)}
           </p>
         )}
-      </section>
+      </SystemSurface>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {paged.map((item) => {
