@@ -19,6 +19,8 @@ import {
 
 export const inspectorProductionRouter = Router();
 
+const RESULT_STATUSES = ["Concluído", "Concluído com pendência", "Requer acompanhamento"];
+
 const CATEGORIES = [
   "Inspeção",
   "Fiscalização",
@@ -193,6 +195,7 @@ inspectorProductionRouter.get(
         active: Number(row.active) === 1,
       })),
       categories: CATEGORIES,
+      result_statuses: RESULT_STATUSES,
     });
   }),
 );
@@ -204,7 +207,7 @@ inspectorProductionRouter.get(
     const { from, to } = periodFromRequest(req);
     const previousPeriod = previousComparablePeriod(from, to);
 
-    const [rankingRows, previousRankingRows, categoryRows, categoryInspectorRows, timelineRows, recentRows, canceledRow] = await Promise.all([
+    const [rankingRows, previousRankingRows, categoryRows, categoryInspectorRows, outcomeRows, timelineRows, recentRows, canceledRow] = await Promise.all([
       query(
         `SELECT m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order,
                 COUNT(p.id) FILTER (WHERE p.status = 'Registrada') AS total,
@@ -257,6 +260,15 @@ inspectorProductionRouter.get(
             AND (p.executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)
           GROUP BY p.category,p.executor_employee_id,p.executor_name,e.matricula,m.is_leader,m.display_order
           ORDER BY p.category ASC,total DESC,m.display_order ASC,p.executor_name ASC`,
+        [from, to],
+      ),
+      query(
+        `SELECT result_status,COUNT(*) AS total
+           FROM inspector_production_entries
+          WHERE status = 'Registrada'
+            AND (executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)
+          GROUP BY result_status
+          ORDER BY total DESC,result_status ASC`,
         [from, to],
       ),
       query(
@@ -412,6 +424,15 @@ inspectorProductionRouter.get(
         share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
       })),
       category_concentration: categoryConcentration,
+      outcomes: RESULT_STATUSES.map((resultStatus) => {
+        const row = outcomeRows.find((item) => item.result_status === resultStatus);
+        const outcomeTotal = Number(row?.total ?? 0);
+        return {
+          result_status: resultStatus,
+          total: outcomeTotal,
+          share: total > 0 ? Number(((outcomeTotal / total) * 100).toFixed(1)) : 0,
+        };
+      }),
       timeline: timelineRows.map((row) => ({ ...row, total: Number(row.total ?? 0) })),
       recent: recentRows.map(mapEntry),
     });
@@ -568,6 +589,7 @@ inspectorProductionRouter.get(
     const category = trimOrNull(req.query?.category);
     const status = trimOrNull(req.query?.status);
     const evidence = trimOrNull(req.query?.evidence);
+    const resultStatus = trimOrNull(req.query?.result_status);
     const search = trimOrNull(req.query?.search);
 
     if (employeeId) {
@@ -590,6 +612,11 @@ inspectorProductionRouter.get(
           ? "EXISTS (SELECT 1 FROM inspector_production_attachments a WHERE a.entry_id = p.id)"
           : "NOT EXISTS (SELECT 1 FROM inspector_production_attachments a WHERE a.entry_id = p.id)",
       );
+    }
+    if (resultStatus) {
+      if (!RESULT_STATUSES.includes(resultStatus)) throw badRequest("Resultado da atribuição inválido");
+      conditions.push("p.result_status = ?");
+      params.push(resultStatus);
     }
     if (search) {
       const needle = `%${search.toLowerCase().slice(0, 120)}%`;
@@ -683,7 +710,8 @@ inspectorProductionRouter.post(
   asyncHandler(async (req, res) => {
     const title = requireText(req.body?.title, "Atribuição realizada").slice(0, 255);
     const category = requireOneOf(req.body?.category, CATEGORIES, "Categoria", "Outros");
-    const details = requireText(req.body?.details, "Descrição/resultado").slice(0, 10000);
+    const resultStatus = requireOneOf(req.body?.result_status, RESULT_STATUSES, "Resultado da atribuição");
+    const details = requireText(req.body?.details, "Descrição / observações").slice(0, 10000);
     const location = textOrNull(req.body?.location, 255);
     const id = uuid();
 
@@ -726,14 +754,15 @@ inspectorProductionRouter.post(
 
       await connection.execute(
         `INSERT INTO inspector_production_entries
-         (id,executor_employee_id,executor_user_id,executor_name,executor_matricula,title,category,details,location,status,executed_at,created_at,updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,'Registrada',CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))`,
-        [id, employee.id, req.user.id, employee.full_name, employee.matricula, title, category, details, location],
+         (id,executor_employee_id,executor_user_id,executor_name,executor_matricula,title,category,result_status,details,location,status,executed_at,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,'Registrada',CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))`,
+        [id, employee.id, req.user.id, employee.full_name, employee.matricula, title, category, resultStatus, details, location],
       );
       await audit(req.user.id, "INSPECTOR_PRODUCTION_CREATE", "inspector_production_entries", id, {
         executor_employee_id: employee.id,
         executor_matricula: employee.matricula,
         category,
+        result_status: resultStatus,
         title,
         identity_derived_server_side: true,
         execution_time_derived_server_side: true,
