@@ -549,7 +549,7 @@ export function InspectorProductionWorkspace() {
     setHistoryResultStatus("");
   };
 
-  const printExecutiveReport = () => {
+  const printExecutiveReport = async () => {
     const issuedAt = new Date().toISOString();
     const previousTitle = document.title;
     setPrintIssuedAt(issuedAt);
@@ -561,9 +561,21 @@ export function InspectorProductionWorkspace() {
     };
     window.addEventListener("afterprint", restoreTitle);
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => window.print());
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
+
+    const logo = document.querySelector<HTMLImageElement>("#inspector-production-print-report .segempat-print-logo");
+    if (logo && (!logo.complete || logo.naturalWidth === 0)) {
+      await new Promise<void>((resolve) => {
+        const finish = () => resolve();
+        logo.addEventListener("load", finish, { once: true });
+        logo.addEventListener("error", finish, { once: true });
+        window.setTimeout(finish, 2500);
+      });
+    }
+
+    window.print();
   };
 
   const downloadReportCsv = async () => {
