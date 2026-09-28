@@ -114,7 +114,7 @@ function dateSpan(from: string, to: string) {
   return Math.max(0, Math.round((new Date(`${to}T12:00:00Z`).getTime() - new Date(`${from}T12:00:00Z`).getTime()) / 86_400_000));
 }
 
-function balanceState(summary: InspectorProductionSummary) {
+function teamDistributionState(summary: InspectorProductionSummary) {
   const active = summary.ranking.filter((row) => row.total > 0);
   const configured = summary.ranking.length;
   const minimumBase = Math.max(6, configured * 2);
@@ -122,7 +122,7 @@ function balanceState(summary: InspectorProductionSummary) {
   if (summary.totals.executions < minimumBase) {
     return {
       label: "Base em formação",
-      detail: `${summary.totals.executions} registro(s) ativo(s) no período. A leitura percentual permanece descritiva enquanto a base é reduzida.`,
+      detail: `${summary.totals.executions} ${summary.totals.executions === 1 ? "registro ativo" : "registros ativos"} no período. A leitura percentual permanece descritiva enquanto a base é reduzida.`,
       tone: "#64748b",
     };
   }
@@ -130,14 +130,14 @@ function balanceState(summary: InspectorProductionSummary) {
   if (active.length < configured) {
     return {
       label: "Registros distribuídos em parte da equipe",
-      detail: `${active.length} de ${configured} inspetor(es) possuem registro ativo no período. Isso descreve os lançamentos existentes e não permite concluir ausência de atividade.`,
+      detail: `${active.length} de ${configured} integrantes da equipe possuem registros ativos no período. Isso descreve os lançamentos existentes e não permite concluir ausência de atividade.`,
       tone: "#2563eb",
     };
   }
 
   const shares = active.map((row) => row.share);
   const spread = Number((Math.max(...shares) - Math.min(...shares)).toFixed(1));
-  const commonDetail = `Diferença de ${spread} ponto(s) percentual(is) entre a maior e a menor participação registrada no período.`;
+  const commonDetail = `Diferença de ${spread} p.p. entre a maior e a menor participação registrada no período.`;
 
   if (spread <= 15) {
     return { label: "Distribuição mais homogênea", detail: commonDetail, tone: "#2563eb" };
@@ -502,7 +502,7 @@ export function InspectorProductionWorkspace() {
   }
 
   const dashboard = summary.data as InspectorProductionSummary;
-  const balance = balanceState(dashboard);
+  const distributionReading = teamDistributionState(dashboard);
   const timeline = aggregateTimeline(dashboard);
   const maxTimeline = Math.max(1, ...timeline.map((point) => point.total));
   const inspectorRows = [...dashboard.ranking].sort(
@@ -908,12 +908,12 @@ export function InspectorProductionWorkspace() {
                 icon={Activity}
                 title="Leitura da distribuição dos registros"
                 description="Participação percentual dos registros ativos da equipe, sem inferir esforço, qualidade ou desempenho profissional."
-                accent={balance.tone}
+                accent={distributionReading.tone}
               />
               <div className="p-5">
-                <div className="rounded-2xl p-4" style={{ background: `${balance.tone}0c`, border: `1px solid ${balance.tone}26` }}>
-                  <p className="text-sm font-black" style={{ color: balance.tone }}>{balance.label}</p>
-                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{balance.detail}</p>
+                <div className="rounded-2xl p-4" style={{ background: `${distributionReading.tone}0c`, border: `1px solid ${distributionReading.tone}26` }}>
+                  <p className="text-sm font-black" style={{ color: distributionReading.tone }}>{distributionReading.label}</p>
+                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{distributionReading.detail}</p>
                 </div>
                 <div className="mt-5 space-y-4">
                   {inspectorRows.map((row) => (
