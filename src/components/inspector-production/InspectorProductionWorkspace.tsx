@@ -42,6 +42,7 @@ import {
   SystemSectionHeader,
   SystemSurface,
 } from "@/components/system/SystemUI";
+import { InspectorProductionPrintReport } from "@/components/inspector-production/InspectorProductionPrintReport";
 import {
   addInspectorProductionAttachment,
   cancelInspectorProductionEntry,
@@ -285,6 +286,7 @@ function timelineLabel(key: string) {
   return key.slice(8, 10) + "/" + key.slice(5, 7);
 }
 
+
 export function InspectorProductionWorkspace() {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
@@ -293,6 +295,7 @@ export function InspectorProductionWorkspace() {
   const [tab, setTab] = useState<WorkspaceTab>("dashboard");
   const [from, setFrom] = useState(`${today.slice(0, 7)}-01`);
   const [to, setTo] = useState(today);
+  const [printIssuedAt, setPrintIssuedAt] = useState(() => new Date().toISOString());
 
   const membership = useQuery({
     queryKey: ["inspector-production-membership"],
@@ -546,6 +549,23 @@ export function InspectorProductionWorkspace() {
     setHistoryResultStatus("");
   };
 
+  const printExecutiveReport = () => {
+    const issuedAt = new Date().toISOString();
+    const previousTitle = document.title;
+    setPrintIssuedAt(issuedAt);
+    document.title = `EMPAT_Producao_Inspetoria_${from}_a_${to}`;
+
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
+  };
+
   const downloadReportCsv = async () => {
     try {
       const rows: InspectorProductionEntry[] = [];
@@ -592,6 +612,7 @@ export function InspectorProductionWorkspace() {
 
   return (
     <div className="mx-auto w-full max-w-[1536px] space-y-5 pb-10">
+      <InspectorProductionPrintReport dashboard={dashboard} inspectorRows={inspectorRows} issuedAt={printIssuedAt} />
       <SystemPageHero
         icon={ClipboardCheck}
         eyebrow="Gestão de desempenho · Inspetoria"
@@ -1469,8 +1490,8 @@ export function InspectorProductionWorkspace() {
         <div className="space-y-4">
           <SystemSurface className="p-5 lg:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Relatório gerencial</p><h2 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Produção da Inspetoria · {periodLabel(from, to)}</h2><p className="mt-2 max-w-3xl text-sm leading-6" style={{ color: "var(--text-4)" }}>Resumo baseado exclusivamente nos registros preservados no SEGEMPAT no período selecionado. A distribuição por inspetor representa somente volume de execuções registradas e não constitui classificação ou avaliação qualitativa do desempenho profissional.</p></div>
-              <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button><Button className="bg-[#C8102E] text-white hover:bg-[#A00D24]" onClick={() => void downloadReportCsv()}><Download className="mr-2 h-4 w-4" /> Exportar CSV</Button></div>
+              <div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Relatório gerencial</p><h2 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Produção da Inspetoria · {periodLabel(from, to)}</h2><p className="mt-2 max-w-3xl text-sm leading-6" style={{ color: "var(--text-4)" }}>Resumo baseado exclusivamente nos registros preservados no SEGEMPAT no período selecionado. A distribuição por inspetor representa somente volume de execuções registradas e não constitui classificação ou avaliação qualitativa do desempenho profissional.</p><p className="mt-2 text-[11px] font-semibold" style={{ color: "var(--text-4)" }}>A impressão utiliza um documento executivo A4 próprio, sem menus ou controles da interface, com cabeçalho institucional, data de emissão, rodapé e paginação.</p></div>
+              <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={printExecutiveReport}><Printer className="mr-2 h-4 w-4" /> Imprimir / Salvar PDF</Button><Button className="bg-[#C8102E] text-white hover:bg-[#A00D24]" onClick={() => void downloadReportCsv()}><Download className="mr-2 h-4 w-4" /> Exportar CSV</Button></div>
             </div>
           </SystemSurface>
 
