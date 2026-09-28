@@ -1126,7 +1126,7 @@ export function InspectorProductionWorkspace() {
                   <p className="mt-1 text-[10px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>registros aguardando continuidade</p>
                 </div>
                 <p className="max-w-lg text-xs leading-5" style={{ color: "var(--text-4)" }}>
-                  A fila mostra somente a etapa mais recente que ainda precisa de continuidade. Se houver acompanhamento ativo, o registro anterior deixa de aparecer.
+                  A fila mostra as etapas ativas que ainda precisam de continuidade e não possuem acompanhamento ativo. Quando uma etapa recebe continuidade ativa, ela deixa de aparecer na fila.
                 </p>
               </div>
 
