@@ -19,7 +19,7 @@ export type EmployeeForm = Pick<
   "full_name" | "matricula" | "sector" | "access_profile" | "status"
 >;
 
-export const SETORES = ["CFTV", "Vigilância", "Portaria", "Ronda", "Operações", "Administrativo"];
+export const SETORES = ["CFTV", "Vigilância", "Portaria", "Ronda", "Operações", "Unidade de Segurança Portuária", "Administrativo"];
 // A Gestão de Equipe é operacional. O privilégio "Inspetor" é concedido/revogado
 // exclusivamente pela TI no servidor, via `npm run manage-inspector-access`.
 export const PERFIS = ["Operacional"];

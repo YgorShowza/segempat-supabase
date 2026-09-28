@@ -21,7 +21,7 @@ import {
   type TrainingModuleInput,
 } from "@/lib/training-modules";
 
-const TRAINING_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"] as const;
+const TRAINING_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"] as const;
 const STATUS_FILTERS = ["Todos", "Ativo", "Inativo"] as const;
 
 const EMPTY: TrainingModuleInput = {

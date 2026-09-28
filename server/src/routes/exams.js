@@ -24,7 +24,7 @@ export const myExamsRouter = Router();
 
 const EXAM_TYPES = ["Múltipla escolha", "Discursiva", "Mista"];
 const EXAM_STATUS = ["Rascunho", "Publicada"];
-const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"];
+const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"];
 
 function localDate() {
   return new Intl.DateTimeFormat("en-CA", {
