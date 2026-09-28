@@ -4,6 +4,7 @@ import {
   Activity,
   BarChart3,
   Camera,
+  CameraOff,
   CheckCircle2,
   ClipboardCheck,
   Clock3,
@@ -201,20 +202,22 @@ export function InspectorProductionWorkspace() {
   const [historyEmployee, setHistoryEmployee] = useState("");
   const [historyCategory, setHistoryCategory] = useState("");
   const [historyStatus, setHistoryStatus] = useState<InspectorProductionStatus | "">("");
+  const [historyEvidence, setHistoryEvidence] = useState<"with" | "without" | "">("");
   const [historyOffset, setHistoryOffset] = useState(0);
 
   useEffect(() => {
     setHistoryOffset(0);
-  }, [from, to, historyEmployee, historyCategory, historyStatus, historySearch]);
+  }, [from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch]);
 
   const historyQuery = useQuery({
-    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historySearch, historyOffset],
+    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch, historyOffset],
     queryFn: () => listInspectorProductionEntries({
       from,
       to,
       employee_id: historyEmployee || undefined,
       category: historyCategory || undefined,
       status: historyStatus,
+      evidence: historyEvidence,
       search: historySearch || undefined,
       limit: PAGE_SIZE,
       offset: historyOffset,
@@ -372,6 +375,7 @@ export function InspectorProductionWorkspace() {
     setHistoryEmployee("");
     setHistoryCategory("");
     setHistoryStatus("");
+    setHistoryEvidence("");
   };
 
   const downloadReportCsv = async () => {
@@ -496,12 +500,50 @@ export function InspectorProductionWorkspace() {
 
       {tab === "dashboard" && (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <SystemMetricCard label="Execuções registradas" value={dashboard.totals.executions} icon={ClipboardCheck} accent="#C8102E" detail="registros ativos no período" />
             <SystemMetricCard label="Equipe configurada" value={dashboard.totals.configured_inspectors} icon={Users} accent="#2563eb" detail={`${dashboard.totals.participating_inspectors} com participação no período`} />
             <SystemMetricCard label="Média por inspetor" value={dashboard.totals.average_per_inspector} icon={BarChart3} accent="#64748b" detail="média sobre a equipe configurada" />
-            <SystemMetricCard label="Com evidência" value={`${dashboard.totals.evidence_rate}%`} icon={Camera} accent="#10b981" detail={`${dashboard.totals.with_evidence} registros com imagem preservada`} />
+            <SystemMetricCard label="Com evidência" value={dashboard.totals.with_evidence} icon={Camera} accent="#10b981" detail={`${dashboard.totals.evidence_rate}% das execuções ativas`} />
+            <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
           </div>
+
+          <SystemSurface className="p-4 lg:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(16,185,129,.08)", color: "#10b981" }}>
+                  <Camera className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Cobertura de evidências</p>
+                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>
+                    {dashboard.totals.with_evidence} de {dashboard.totals.executions} execuções ativas possuem imagem preservada. A ausência de evidência é informativa e não caracteriza irregularidade automaticamente.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={dashboard.totals.without_evidence === 0}
+                onClick={() => {
+                  setHistoryEvidence("without");
+                  setHistoryStatus("Registrada");
+                  setHistorySearch("");
+                  setHistorySearchDraft("");
+                  setTab("historico");
+                }}
+              >
+                <CameraOff className="mr-2 h-4 w-4" /> Ver sem evidência
+              </Button>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-full" style={{ height: 10, background: "var(--bg-surface-3)" }} aria-label={`${dashboard.totals.evidence_rate}% das execuções possuem evidência`}>
+              <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${dashboard.totals.evidence_rate}%` }} />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold" style={{ color: "var(--text-4)" }}>
+              <span>Com evidência: {dashboard.totals.evidence_rate}%</span>
+              <span>Sem evidência: {dashboard.totals.without_evidence_rate}%</span>
+            </div>
+          </SystemSurface>
 
           <div className="grid gap-4 xl:grid-cols-12">
             <SystemSurface className="overflow-hidden xl:col-span-7">
@@ -528,7 +570,7 @@ export function InspectorProductionWorkspace() {
                         </div>
                         <div className="shrink-0 text-right">
                           <p className="text-2xl font-black" style={{ color: "var(--text-1)" }}>{row.total}</p>
-                          <p className="text-[10px] font-semibold" style={{ color: "var(--text-4)" }}>{row.with_evidence} com evidência</p>
+                          <p className="text-[10px] font-semibold" style={{ color: "var(--text-4)" }}>{row.with_evidence} com · {row.without_evidence} sem evidência</p>
                         </div>
                       </div>
                     </button>
@@ -741,11 +783,12 @@ export function InspectorProductionWorkspace() {
         <SystemSurface className="overflow-hidden">
           <SystemSectionHeader icon={History} title="Histórico da Produção" description="Pesquisa por período, inspetor, categoria e situação. Registros cancelados permanecem visíveis." />
           <div className="space-y-3 border-b p-4 lg:p-5" style={{ borderColor: "var(--border)" }}>
-            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_210px_210px_160px_auto]">
+            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_145px_165px_auto]">
               <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={historySearchDraft} onChange={(event) => setHistorySearchDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitHistorySearch(); }} placeholder="Atribuição, descrição, local ou inspetor" className="pl-9" /></div>
               <select value={historyEmployee} onChange={(event) => setHistoryEmployee(event.target.value)} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todos os inspetores</option>{membership.data?.members.map((member) => <option key={member.employee_id} value={member.employee_id}>{member.full_name}</option>)}</select>
               <select value={historyCategory} onChange={(event) => setHistoryCategory(event.target.value)} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todas as categorias</option>{membership.data?.categories.map((item) => <option key={item}>{item}</option>)}</select>
               <select value={historyStatus} onChange={(event) => setHistoryStatus(event.target.value as InspectorProductionStatus | "")} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todas</option><option value="Registrada">Registradas</option><option value="Cancelada">Canceladas</option></select>
+              <select value={historyEvidence} onChange={(event) => setHistoryEvidence(event.target.value as "with" | "without" | "")} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Evidência: todas</option><option value="with">Com evidência</option><option value="without">Sem evidência</option></select>
               <div className="flex gap-2"><Button variant="outline" size="icon" onClick={submitHistorySearch} aria-label="Pesquisar"><Search className="h-4 w-4" /></Button><Button variant="outline" size="icon" onClick={clearHistoryFilters} aria-label="Limpar filtros"><FilterX className="h-4 w-4" /></Button></div>
             </div>
           </div>
@@ -809,10 +852,11 @@ export function InspectorProductionWorkspace() {
             </div>
           </SystemSurface>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <SystemMetricCard label="Execuções válidas" value={dashboard.totals.executions} icon={CheckCircle2} accent="#10b981" detail="cancelamentos excluídos do ranking" />
             <SystemMetricCard label="Registros cancelados" value={dashboard.totals.canceled} icon={XCircle} accent="#64748b" detail="preservados para rastreabilidade" />
-            <SystemMetricCard label="Evidências" value={dashboard.totals.with_evidence} icon={FileImage} accent="#2563eb" detail={`${dashboard.totals.evidence_rate}% das execuções ativas`} />
+            <SystemMetricCard label="Com evidência" value={dashboard.totals.with_evidence} icon={FileImage} accent="#2563eb" detail={`${dashboard.totals.evidence_rate}% das execuções ativas`} />
+            <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Média por inspetor" value={dashboard.totals.average_per_inspector} icon={Users} accent="#C8102E" detail="equipe oficialmente configurada" />
           </div>
 
@@ -820,7 +864,7 @@ export function InspectorProductionWorkspace() {
             <SystemSurface className="overflow-hidden">
               <SystemSectionHeader icon={Medal} title="Participação por inspetor" description="Ordem definida pelo número de execuções ativas registradas." accent="#C8A000" />
               <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-                {dashboard.ranking.map((row) => <div key={row.employee_id} className="flex items-center gap-4 p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black" style={{ background: `${rankAccent(row.rank)}12`, color: rankAccent(row.rank) }}>{row.rank}º</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}{row.is_leader ? " · Líder" : ""}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{row.total} execuções · {row.with_evidence} com evidência</p></div><div className="text-right"><p className="text-xl font-black" style={{ color: "var(--text-1)" }}>{row.share}%</p><p className="text-[9px]" style={{ color: "var(--text-4)" }}>participação</p></div></div>)}
+                {dashboard.ranking.map((row) => <div key={row.employee_id} className="flex items-center gap-4 p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black" style={{ background: `${rankAccent(row.rank)}12`, color: rankAccent(row.rank) }}>{row.rank}º</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}{row.is_leader ? " · Líder" : ""}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{row.total} execuções · {row.with_evidence} com · {row.without_evidence} sem evidência</p></div><div className="text-right"><p className="text-xl font-black" style={{ color: "var(--text-1)" }}>{row.share}%</p><p className="text-[9px]" style={{ color: "var(--text-4)" }}>participação</p></div></div>)}
                 {dashboard.ranking.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Equipe não configurada.</p>}
               </div>
             </SystemSurface>
