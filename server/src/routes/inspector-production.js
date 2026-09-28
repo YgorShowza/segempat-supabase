@@ -313,6 +313,18 @@ inspectorProductionRouter.get(
       params.push(needle, needle, needle, needle);
     }
 
+    const requestedLimit = Number(req.query?.limit ?? 100);
+    const requestedOffset = Number(req.query?.offset ?? 0);
+    const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 500) : 100;
+    const offset = Number.isInteger(requestedOffset) ? Math.max(requestedOffset, 0) : 0;
+
+    const countRow = await queryOne(
+      `SELECT COUNT(*) AS total
+         FROM inspector_production_entries p
+        WHERE ${conditions.join(" AND ")}`,
+      params,
+    );
+    const total = Number(countRow?.total ?? 0);
     const rows = await query(
       `SELECT p.*,m.is_leader,
               (SELECT COUNT(*) FROM inspector_production_attachments a WHERE a.entry_id = p.id) AS attachment_count
@@ -320,10 +332,14 @@ inspectorProductionRouter.get(
          LEFT JOIN inspector_production_members m ON m.employee_id = p.executor_employee_id
         WHERE ${conditions.join(" AND ")}
         ORDER BY p.executed_at DESC,p.created_at DESC
-        LIMIT 500`,
-      params,
+        LIMIT ? OFFSET ?`,
+      [...params, limit, offset],
     );
-    res.json(rows.map(mapEntry));
+    res.json({
+      items: rows.map(mapEntry),
+      total,
+      next_offset: offset + rows.length < total ? offset + rows.length : null,
+    });
   }),
 );
 
