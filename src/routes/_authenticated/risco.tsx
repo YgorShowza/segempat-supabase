@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { employeeRisk, getOperationalSnapshot } from "@/lib/insights";
 import { operationalYear } from "@/lib/operational-time";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface } from "@/components/system/SystemUI";
 
 export const Route = createFileRoute("/_authenticated/risco")({
   head: () => ({ meta: [{ title: "Zona de Risco · SEGEMPAT" }] }),
@@ -27,22 +28,6 @@ type RiskLevel = "Alto" | "Médio" | "Baixo" | "Normal";
 type RiskFilter = RiskLevel | "Todos";
 
 const RISK_LEVELS: RiskLevel[] = ["Alto", "Médio", "Baixo", "Normal"];
-
-function Card({ children, className = "", role }: { children: React.ReactNode; className?: string; role?: "alert" }) {
-  return (
-    <section
-      role={role}
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      {children}
-    </section>
-  );
-}
 
 function riskColor(level: RiskLevel) {
   if (level === "Alto") return "#ef4444";
@@ -57,36 +42,6 @@ function normalizeSearch(value: string) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
-}
-
-function MetricCard({
-  label,
-  value,
-  icon: Icon,
-  color,
-  sub,
-}: {
-  label: string;
-  value: number;
-  icon: typeof AlertTriangle;
-  color: string;
-  sub: string;
-}) {
-  return (
-    <Card className="relative min-h-[116px] overflow-hidden p-4">
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: color }} />
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="mt-2 text-2xl font-black" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="mt-1 text-[10px] font-semibold" style={{ color }}>{sub}</p>
-        </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: `${color}12`, border: `1px solid ${color}2f` }}>
-          <Icon className="h-4 w-4" style={{ color }} />
-        </div>
-      </div>
-    </Card>
-  );
 }
 
 function RiskPage() {
@@ -121,7 +76,7 @@ function RiskPage() {
 
   if (query.isError || !query.data) {
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center" role="alert">
+      <SystemSurface className="mx-auto max-w-xl p-8 text-center" role="alert">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(245,158,11,.09)", border: "1px solid rgba(245,158,11,.2)" }}>
           <AlertTriangle className="h-6 w-6 text-amber-500" />
         </div>
@@ -133,7 +88,7 @@ function RiskPage() {
           <RefreshCw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
           {query.isFetching ? "Tentando novamente..." : "Tentar novamente"}
         </Button>
-      </Card>
+      </SystemSurface>
     );
   }
 
@@ -183,14 +138,14 @@ function RiskPage() {
       </section>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <MetricCard label="Alto risco" value={high} icon={AlertTriangle} color="#ef4444" sub="8 pontos ou mais" />
-        <MetricCard label="Risco médio" value={medium} icon={Clock3} color="#f59e0b" sub="4 a 7 pontos" />
-        <MetricCard label="Risco baixo" value={low} icon={Clock3} color="#60a5fa" sub="1 a 3 pontos" />
-        <MetricCard label="Normal" value={normal} icon={ShieldCheck} color="#10b981" sub="sem sinal de risco" />
-        <MetricCard label="Monitorados" value={rows.length} icon={UserRoundSearch} color="var(--accent)" sub="ativos operacionais" />
+        <SystemMetricCard label="Alto risco" value={high} icon={AlertTriangle} accent="#ef4444" detail="8 pontos ou mais" />
+        <SystemMetricCard label="Risco médio" value={medium} icon={Clock3} accent="#f59e0b" detail="4 a 7 pontos" />
+        <SystemMetricCard label="Risco baixo" value={low} icon={Clock3} accent="#60a5fa" detail="1 a 3 pontos" />
+        <SystemMetricCard label="Normal" value={normal} icon={ShieldCheck} accent="#10b981" detail="sem sinal de risco" />
+        <SystemMetricCard label="Monitorados" value={rows.length} icon={UserRoundSearch} accent="#C8102E" detail="ativos operacionais" />
       </div>
 
-      <Card className="p-4 md:p-5">
+      <SystemSurface className="p-4 md:p-5">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
             <Gauge className="h-4 w-4" style={{ color: "var(--accent)" }} />
@@ -210,9 +165,9 @@ function RiskPage() {
             </p>
           </div>
         </div>
-      </Card>
+      </SystemSurface>
 
-      <Card className="p-4 md:p-5">
+      <SystemSurface className="p-4 md:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Colaboradores monitorados</p>
@@ -252,14 +207,14 @@ function RiskPage() {
             </SelectContent>
           </Select>
         </div>
-      </Card>
+      </SystemSurface>
 
       <div className="space-y-3">
         {filteredRows.map((row) => {
           const level = row.level as RiskLevel;
           const color = riskColor(level);
           return (
-            <Card key={row.employee.id} className="overflow-hidden">
+            <SystemSurface key={row.employee.id} className="overflow-hidden">
               <div className="h-[3px]" style={{ background: color }} />
               <div className="flex flex-col gap-4 p-4 md:p-5 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0 flex-1">
@@ -286,25 +241,25 @@ function RiskPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </SystemSurface>
           );
         })}
 
         {!rows.length && (
-          <Card className="p-10 text-center">
+          <SystemSurface className="p-10 text-center">
             <ShieldCheck className="mx-auto h-10 w-10 text-emerald-500" />
             <p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Nenhum colaborador ativo para analisar.</p>
             <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Quando houver equipe operacional ativa, os indicadores serão calculados automaticamente.</p>
-          </Card>
+          </SystemSurface>
         )}
 
         {rows.length > 0 && filteredRows.length === 0 && (
-          <Card className="p-9 text-center">
+          <SystemSurface className="p-9 text-center">
             <Search className="mx-auto h-8 w-8" style={{ color: "var(--text-4)" }} />
             <p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Nenhum colaborador corresponde aos filtros.</p>
             <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Ajuste a busca, o nível de risco ou o setor para visualizar outros registros.</p>
             <Button type="button" variant="outline" className="mt-4" onClick={clearFilters}><FilterX className="mr-2 h-4 w-4" /> Limpar filtros</Button>
-          </Card>
+          </SystemSurface>
         )}
       </div>
     </div>
@@ -312,10 +267,5 @@ function RiskPage() {
 }
 
 function Loading() {
-  return (
-    <div className="flex items-center justify-center gap-3 py-20" role="status" aria-live="polite">
-      <div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} />
-      <span className="text-sm font-semibold" style={{ color: "var(--text-3)" }}>Calculando Zona de Risco...</span>
-    </div>
-  );
+  return <SystemDataWorkspaceSkeleton metricCount={5} rowCount={7} />;
 }

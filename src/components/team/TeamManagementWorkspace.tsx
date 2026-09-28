@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { canAccessAdminPath, hasPermission } from "@/lib/access-control";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface as Surface } from "@/components/system/SystemUI";
 import { invalidateEmployeeFlow } from "@/lib/operational-query-sync";
 import {
   PERFIS,
@@ -25,35 +26,6 @@ import {
   type Employee,
   type EmployeeForm,
 } from "@/lib/employees";
-
-function Surface({ children, className = "", style, ...props }: React.ComponentProps<"section">) {
-  return (
-    <section
-      {...props}
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-        ...style,
-      }}
-    >
-      {children}
-    </section>
-  );
-}
-
-function MetricCard({ label, value, icon: Icon, accent, sub }: { label: string; value: number | string; icon: typeof Users; accent: string; sub: string }) {
-  return (
-    <Surface className="relative min-h-[118px] overflow-hidden p-4 xl:p-5">
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
-      <div className="flex items-start justify-between gap-3">
-        <div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-3xl font-black" style={{ color: "var(--text-1)" }}>{value}</p><p className="mt-1 text-[11px] font-semibold" style={{ color: accent }}>{sub}</p></div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}><Icon className="h-4 w-4" style={{ color: accent }} /></div>
-      </div>
-    </Surface>
-  );
-}
 
 function employeeAccent(employee: Employee) {
   if (employee.access_profile === "Inspetor") return "#e11d48";
@@ -191,10 +163,10 @@ export function TeamManagementWorkspace() {
       </section>
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <MetricCard label="Equipe ativa" value={metricValue(operacionaisAtivos)} icon={ShieldCheck} accent="#10b981" sub="operacionais ativos" />
-        <MetricCard label="CFTV" value={metricValue(cftv)} icon={Eye} accent="#3b82f6" sub="operacionais ativos" />
-        <MetricCard label="Vigilância" value={metricValue(vigilancia)} icon={Radio} accent="#f59e0b" sub="operacionais ativos" />
-        <MetricCard label="Inativos" value={metricValue(inativos)} icon={UserX} accent="#e11d48" sub="cadastros preservados" />
+        <SystemMetricCard label="Equipe ativa" value={metricValue(operacionaisAtivos)} icon={ShieldCheck} accent="#10b981" detail="operacionais ativos" />
+        <SystemMetricCard label="CFTV" value={metricValue(cftv)} icon={Eye} accent="#2563eb" detail="operacionais ativos" />
+        <SystemMetricCard label="Vigilância" value={metricValue(vigilancia)} icon={Radio} accent="#f59e0b" detail="operacionais ativos" />
+        <SystemMetricCard label="Inativos" value={metricValue(inativos)} icon={UserX} accent="#64748b" detail="cadastros preservados" />
       </div>
 
       {!canManageTeam && !isError && (
@@ -217,7 +189,7 @@ export function TeamManagementWorkspace() {
       </Surface>
 
       {isLoading ? (
-        <div className="flex items-center justify-center gap-3 p-12" role="status" aria-live="polite"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><span className="text-sm font-semibold" style={{ color: "var(--text-3)" }}>Carregando equipe...</span></div>
+        <SystemDataWorkspaceSkeleton metricCount={4} rowCount={8} />
       ) : isError ? (
         <Surface className="p-7 text-center md:p-9" role="alert">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(225,29,72,.08)", border: "1px solid rgba(225,29,72,.18)" }}><AlertTriangle className="h-6 w-6 text-rose-500" /></div>
