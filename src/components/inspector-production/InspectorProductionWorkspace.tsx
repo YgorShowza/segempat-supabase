@@ -1122,8 +1122,8 @@ export function InspectorProductionWorkspace() {
           ) : (
             <>
               <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[980px] text-left">
-                  <thead><tr className="border-b text-[10px] font-black uppercase tracking-[.11em]" style={{ borderColor: "var(--border)", color: "var(--text-4)" }}><th className="px-5 py-3">Data/hora</th><th className="px-4 py-3">Inspetor</th><th className="px-4 py-3">Atribuição</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3 text-center">Evidência</th><th className="px-4 py-3">Situação</th><th className="px-5 py-3 text-right">Ações</th></tr></thead>
+                <table className="w-full min-w-[1160px] text-left">
+                  <thead><tr className="border-b text-[10px] font-black uppercase tracking-[.11em]" style={{ borderColor: "var(--border)", color: "var(--text-4)" }}><th className="px-5 py-3">Data/hora</th><th className="px-4 py-3">Inspetor</th><th className="px-4 py-3">Atribuição</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3">Resultado</th><th className="px-4 py-3 text-center">Evidência</th><th className="px-4 py-3">Situação</th><th className="px-5 py-3 text-right">Ações</th></tr></thead>
                   <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                     {(historyQuery.data?.items ?? []).map((entry) => (
                       <tr key={entry.id} className="align-top">
@@ -1131,6 +1131,7 @@ export function InspectorProductionWorkspace() {
                         <td className="px-4 py-4"><p className="text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.executor_name}</p><p className="mt-0.5 text-[10px] font-mono" style={{ color: "var(--text-4)" }}>Mat. {entry.executor_matricula}</p></td>
                         <td className="max-w-md px-4 py-4"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 line-clamp-2 text-xs leading-5" style={{ color: "var(--text-4)" }}>{entry.details}</p></td>
                         <td className="px-4 py-4 text-xs font-semibold" style={{ color: "var(--text-3)" }}>{entry.category}</td>
+                        <td className="px-4 py-4"><ResultStatusBadge status={entry.result_status} /></td>
                         <td className="px-4 py-4 text-center"><span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold" style={{ background: entry.attachment_count ? "rgba(16,185,129,.08)" : "var(--bg-surface-2)", color: entry.attachment_count ? "#10b981" : "var(--text-4)" }}><Camera className="h-3 w-3" /> {entry.attachment_count}</span></td>
                         <td className="px-4 py-4"><span className="rounded-full px-2 py-1 text-[9px] font-black" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span></td>
                         <td className="px-5 py-4"><div className="flex justify-end gap-1"><Button size="icon" variant="ghost" onClick={() => setDetailsId(entry.id)} aria-label="Abrir detalhes"><Eye className="h-4 w-4" /></Button>{entry.status === "Registrada" && canCancel(entry) && <Button size="icon" variant="ghost" className="text-red-500" onClick={() => setCancelTarget(entry)} aria-label="Cancelar registro"><XCircle className="h-4 w-4" /></Button>}</div></td>
@@ -1144,6 +1145,7 @@ export function InspectorProductionWorkspace() {
                   <button key={entry.id} type="button" onClick={() => setDetailsId(entry.id)} className="w-full rounded-2xl p-4 text-left" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                     <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {displayDateTime(entry.executed_at)}</p></div><span className="shrink-0 rounded-full px-2 py-1 text-[9px] font-black" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span></div>
                     <p className="mt-3 line-clamp-2 text-xs leading-5" style={{ color: "var(--text-3)" }}>{entry.details}</p>
+                    <div className="mt-3"><ResultStatusBadge status={entry.result_status} /></div>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px]" style={{ color: "var(--text-4)" }}><span>{entry.category}</span>{entry.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {entry.location}</span>}<span className="flex items-center gap-1"><Camera className="h-3 w-3" /> {entry.attachment_count}</span></div>
                   </button>
                 ))}
