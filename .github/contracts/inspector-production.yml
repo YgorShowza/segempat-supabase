@@ -1,0 +1,48 @@
+name: SEGEMPAT Inspector Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-inspector-production-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspector-production-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate Inspector Production module
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROUTE=src/routes/_authenticated/producao-inspetoria.tsx
+          UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
+          API=server/src/routes/inspector-production.js
+          MIG=supabase/migrations/20260928010000_inspector_production.sql
+
+          test -f "$ROUTE"
+          test -f "$UI"
+          test -f "$API"
+          test -f "$MIG"
+
+          grep -F 'Produção da Inspetoria' "$UI" >/dev/null
+          grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
+          grep -F 'identity_derived_server_side: true' "$API" >/dev/null
+          grep -F 'execution_time_derived_server_side: true' "$API" >/dev/null
+          grep -F 'INSPECTOR_PRODUCTION_CREATE' "$API" >/dev/null
+          grep -F 'INSPECTOR_PRODUCTION_CANCEL' "$API" >/dev/null
+          grep -F 'inspector-production-evidence' "$API" >/dev/null
+          grep -F 'Registro de produção pertence ao histórico e não pode ser excluído' "$MIG" >/dev/null
+          grep -F "status IN ('Registrada', 'Cancelada')" "$MIG" >/dev/null
+          grep -F "'inspector_production.view'" "$MIG" >/dev/null
+          grep -F "'inspector_production.record'" "$MIG" >/dev/null
+          grep -F '"/producao-inspetoria"' src/lib/access-control.ts >/dev/null
+          grep -F '"/producao-inspetoria"' src/routes/_authenticated/route.tsx >/dev/null
+
+          echo "Produção da Inspetoria validada: identidade autenticada, histórico imutável, auditoria, evidência privada e dashboard."
