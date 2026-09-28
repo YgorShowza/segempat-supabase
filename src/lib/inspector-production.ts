@@ -131,6 +131,15 @@ export interface InspectorProductionSummary {
   categories: Array<{ category: string; total: number; share: number }>;
   category_concentration: InspectorProductionCategoryConcentration[];
   outcomes: Array<{ result_status: InspectorProductionResultStatus; total: number; share: number }>;
+  follow_ups: {
+    total: number;
+    source_records: number;
+  };
+  executive_summary: {
+    statements: string[];
+    methodology: string;
+    scope_note: string;
+  };
   timeline: Array<{ day: string; executor_employee_id: string; executor_name: string; total: number }>;
   recent: InspectorProductionEntry[];
 }

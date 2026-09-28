@@ -1219,6 +1219,38 @@ export function InspectorProductionWorkspace() {
             </div>
           </SystemSurface>
 
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
+              icon={FileText}
+              title="Resumo executivo automático"
+              description="Síntese determinística dos indicadores do período, sem conteúdo generativo ou inferências além dos registros do SEGEMPAT."
+              accent="#2563eb"
+            />
+            <div className="space-y-3 p-5 lg:p-6">
+              {dashboard.executive_summary.statements.map((statement, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl p-4"
+                  style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
+                >
+                  <p className="text-sm leading-6" style={{ color: "var(--text-2)" }}>{statement}</p>
+                </div>
+              ))}
+              <div className="grid gap-3 pt-1 lg:grid-cols-2">
+                <div className="rounded-2xl p-4" style={{ background: "rgba(37,99,235,.05)", border: "1px solid rgba(37,99,235,.16)" }}>
+                  <p className="text-[10px] font-black uppercase tracking-[.12em] text-blue-600">Como o resumo é gerado</p>
+                  <p className="mt-2 text-xs leading-5" style={{ color: "var(--text-4)" }}>{dashboard.executive_summary.methodology}</p>
+                </div>
+                <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#C8102E]" />
+                    <p className="text-xs leading-5" style={{ color: "var(--text-4)" }}>{dashboard.executive_summary.scope_note}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SystemSurface>
+
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <SystemMetricCard label="Execuções válidas" value={dashboard.totals.executions} icon={CheckCircle2} accent="#10b981" detail="cancelamentos excluídos do ranking" />
             <SystemMetricCard label="Registros cancelados" value={dashboard.totals.canceled} icon={XCircle} accent="#64748b" detail="preservados para rastreabilidade" />

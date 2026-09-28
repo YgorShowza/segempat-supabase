@@ -63,6 +63,12 @@ jobs:
           grep -F 'Registrar acompanhamento' "$UI" >/dev/null
           grep -F 'Cadeia de acompanhamento' "$UI" >/dev/null
           grep -F 'O registro original não será alterado.' "$UI" >/dev/null
+          grep -F 'Resumo executivo automático' "$UI" >/dev/null
+          grep -F 'sem conteúdo generativo ou inferências' "$UI" >/dev/null
+          grep -F 'buildExecutiveSummary' "$API" >/dev/null
+          grep -F 'executive_summary' "$API" >/dev/null
+          grep -F 'follow_ups' "$API" >/dev/null
+          grep -F 'Texto determinístico gerado pelo servidor' "$API" >/dev/null
           grep -F 'Distribuição por categoria e inspetor' "$UI" >/dev/null
           grep -F 'category_concentration' "$API" >/dev/null
           grep -F 'dominant_share' "$API" >/dev/null

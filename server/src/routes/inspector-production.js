@@ -104,6 +104,133 @@ function variation(current, previous) {
   };
 }
 
+function dateTextPtBr(value) {
+  const [year, month, day] = String(value).split("-");
+  return year && month && day ? `${day}/${month}/${year}` : String(value);
+}
+
+function joinPtBr(items) {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} e ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} e ${items.at(-1)}`;
+}
+
+function countText(count, singular, plural) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function buildExecutiveSummary({
+  from,
+  to,
+  total,
+  previousTotal,
+  totalVariation,
+  members,
+  ranking,
+  categories,
+  categoryConcentration,
+  outcomes,
+  withEvidence,
+  withoutEvidence,
+  evidenceRate,
+  canceled,
+  followUps,
+}) {
+  const statements = [];
+  const period = `${dateTextPtBr(from)} a ${dateTextPtBr(to)}`;
+  const participating = ranking.filter((row) => row.total > 0).length;
+
+  if (total === 0) {
+    statements.push(`No período de ${period}, não há execuções ativas registradas na Produção da Inspetoria.`);
+    if (members > 0) {
+      statements.push(`A equipe configurada possui ${countText(members, "inspetor", "inspetores")}; nenhum possui execução ativa registrada no período selecionado.`);
+    }
+    if (previousTotal === 0) {
+      statements.push("O período anterior equivalente também não possui execuções ativas registradas.");
+    } else {
+      statements.push(`O período anterior equivalente possuía ${countText(previousTotal, "execução ativa registrada", "execuções ativas registradas")}; a diferença absoluta no período atual é de -${previousTotal}.`);
+    }
+    if (canceled > 0) {
+      statements.push(`${countText(canceled, "registro cancelado permanece preservado", "registros cancelados permanecem preservados")} no histórico do período.`);
+    }
+    statements.push(
+      followUps.total > 0
+        ? `Foram registrados ${countText(followUps.total, "acompanhamento", "acompanhamentos")} no período, vinculados a ${countText(followUps.source_records, "registro de origem", "registros de origem")}.`
+        : "Não houve acompanhamento vinculado registrado no período.",
+    );
+  } else {
+    statements.push(`No período de ${period}, foram registradas ${countText(total, "execução ativa", "execuções ativas")} por ${participating} de ${countText(members, "inspetor configurado", "inspetores configurados")}.`);
+
+    if (ranking.length > 0) {
+      const distribution = ranking
+        .map((row) => `${row.name}: ${row.total} (${row.share}%)`)
+        .join("; ");
+      statements.push(`Distribuição por inspetor: ${distribution}.`);
+    }
+
+    if (categories.length > 0) {
+      const maxCategoryTotal = Math.max(...categories.map((row) => row.total));
+      const leadingCategories = categories
+        .filter((row) => row.total === maxCategoryTotal)
+        .map((row) => row.category);
+      const categoryShare = categories.find((row) => row.total === maxCategoryTotal)?.share ?? 0;
+      statements.push(
+        leadingCategories.length === 1
+          ? `Foram registradas ${countText(categories.length, "categoria", "categorias")}. A maior participação por categoria foi ${leadingCategories[0]}, com ${countText(maxCategoryTotal, "execução", "execuções")} (${categoryShare}% do volume ativo).`
+          : `Foram registradas ${countText(categories.length, "categoria", "categorias")}. O maior volume foi compartilhado por ${joinPtBr(leadingCategories)}, com ${countText(maxCategoryTotal, "execução", "execuções")} em cada categoria.`,
+      );
+    }
+
+    statements.push(
+      `Resultados registrados: ${outcomes.map((row) => `${row.result_status}: ${row.total} (${row.share}%)`).join("; ")}.`,
+    );
+
+    statements.push(
+      `Evidências: ${countText(withEvidence, "execução com evidência", "execuções com evidência")} (${evidenceRate}%) e ${countText(withoutEvidence, "execução sem evidência", "execuções sem evidência")}. A ausência de evidência é informativa e não caracteriza irregularidade automaticamente.`,
+    );
+
+    if (previousTotal === 0) {
+      statements.push(
+        `O período anterior equivalente não possui execuções ativas registradas; a diferença absoluta é de +${total} e não há base anterior para percentual de variação.`,
+      );
+    } else {
+      const sign = totalVariation.absolute > 0 ? "+" : "";
+      statements.push(
+        `Comparação com o período anterior equivalente: ${countText(previousTotal, "execução", "execuções")} antes e ${total} agora, diferença absoluta de ${sign}${totalVariation.absolute} e variação de ${totalVariation.percentage}%.`,
+      );
+    }
+
+    const concentrationCounts = categoryConcentration.reduce(
+      (acc, row) => {
+        acc[row.concentration] = (acc[row.concentration] ?? 0) + 1;
+        return acc;
+      },
+      { base_forming: 0, shared: 0, moderate: 0, high: 0 },
+    );
+    if (categoryConcentration.length > 0) {
+      statements.push(
+        `Classificação descritiva de concentração por categoria: ${concentrationCounts.shared} compartilhada(s), ${concentrationCounts.moderate} moderada(s), ${concentrationCounts.high} elevada(s) e ${concentrationCounts.base_forming} em formação.`,
+      );
+    }
+
+    statements.push(
+      followUps.total > 0
+        ? `Foram registrados ${countText(followUps.total, "acompanhamento", "acompanhamentos")} no período, vinculados a ${countText(followUps.source_records, "registro de origem", "registros de origem")}.`
+        : "Não houve acompanhamento vinculado registrado no período.",
+    );
+
+    if (canceled > 0) {
+      statements.push(`Além das execuções ativas, ${countText(canceled, "registro cancelado permanece preservado", "registros cancelados permanecem preservados")} para rastreabilidade.`);
+    }
+  }
+
+  return {
+    statements,
+    methodology: "Texto determinístico gerado pelo servidor exclusivamente a partir dos indicadores estruturados do período, sem conteúdo generativo ou inferências não registradas.",
+    scope_note: "O resumo descreve somente dados documentados no SEGEMPAT. Quantidade, evidência, concentração, resultado ou variação não constituem, isoladamente, avaliação de qualidade, esforço ou mérito profissional.",
+  };
+}
+
 function textOrNull(value, maxLength = 500) {
   const text = trimOrNull(value);
   return text ? text.slice(0, maxLength) : null;
@@ -217,7 +344,7 @@ inspectorProductionRouter.get(
     const { from, to } = periodFromRequest(req);
     const previousPeriod = previousComparablePeriod(from, to);
 
-    const [rankingRows, previousRankingRows, categoryRows, categoryInspectorRows, outcomeRows, timelineRows, recentRows, canceledRow] = await Promise.all([
+    const [rankingRows, previousRankingRows, categoryRows, categoryInspectorRows, outcomeRows, timelineRows, recentRows, canceledRow, followUpRow] = await Promise.all([
       query(
         `SELECT m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order,
                 COUNT(p.id) FILTER (WHERE p.status = 'Registrada') AS total,
@@ -306,6 +433,15 @@ inspectorProductionRouter.get(
         `SELECT COUNT(*) AS total
            FROM inspector_production_entries
           WHERE status = 'Cancelada'
+            AND (executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)`,
+        [from, to],
+      ),
+      queryOne(
+        `SELECT COUNT(*) AS total,
+                COUNT(DISTINCT parent_entry_id) AS source_records
+           FROM inspector_production_entries
+          WHERE status = 'Registrada'
+            AND parent_entry_id IS NOT NULL
             AND (executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)`,
         [from, to],
       ),
@@ -405,6 +541,44 @@ inspectorProductionRouter.get(
       };
     });
 
+    const categories = categoryRows.map((row) => ({
+      category: row.category,
+      total: Number(row.total ?? 0),
+      share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
+    }));
+    const outcomes = RESULT_STATUSES.map((resultStatus) => {
+      const row = outcomeRows.find((item) => item.result_status === resultStatus);
+      const outcomeTotal = Number(row?.total ?? 0);
+      return {
+        result_status: resultStatus,
+        total: outcomeTotal,
+        share: total > 0 ? Number(((outcomeTotal / total) * 100).toFixed(1)) : 0,
+      };
+    });
+    const followUps = {
+      total: Number(followUpRow?.total ?? 0),
+      source_records: Number(followUpRow?.source_records ?? 0),
+    };
+    const canceled = Number(canceledRow?.total ?? 0);
+    const evidenceRate = total > 0 ? Number(((withEvidence / total) * 100).toFixed(1)) : 0;
+    const executiveSummary = buildExecutiveSummary({
+      from,
+      to,
+      total,
+      previousTotal,
+      totalVariation,
+      members,
+      ranking: rankingWithShare,
+      categories,
+      categoryConcentration,
+      outcomes,
+      withEvidence,
+      withoutEvidence,
+      evidenceRate,
+      canceled,
+      followUps,
+    });
+
     res.json({
       period: { from, to },
       previous_period: previousPeriod,
@@ -423,26 +597,16 @@ inspectorProductionRouter.get(
         average_per_inspector: members > 0 ? Number((total / members).toFixed(1)) : 0,
         with_evidence: withEvidence,
         without_evidence: withoutEvidence,
-        evidence_rate: total > 0 ? Number(((withEvidence / total) * 100).toFixed(1)) : 0,
+        evidence_rate: evidenceRate,
         without_evidence_rate: total > 0 ? Number(((withoutEvidence / total) * 100).toFixed(1)) : 0,
-        canceled: Number(canceledRow?.total ?? 0),
+        canceled,
       },
       ranking: rankingWithShare,
-      categories: categoryRows.map((row) => ({
-        category: row.category,
-        total: Number(row.total ?? 0),
-        share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
-      })),
+      categories,
       category_concentration: categoryConcentration,
-      outcomes: RESULT_STATUSES.map((resultStatus) => {
-        const row = outcomeRows.find((item) => item.result_status === resultStatus);
-        const outcomeTotal = Number(row?.total ?? 0);
-        return {
-          result_status: resultStatus,
-          total: outcomeTotal,
-          share: total > 0 ? Number(((outcomeTotal / total) * 100).toFixed(1)) : 0,
-        };
-      }),
+      outcomes,
+      follow_ups: followUps,
+      executive_summary: executiveSummary,
       timeline: timelineRows.map((row) => ({ ...row, total: Number(row.total ?? 0) })),
       recent: recentRows.map(mapEntry),
     });
