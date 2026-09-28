@@ -26,7 +26,7 @@ jobs:
           grep -F 'INSPECTOR_DESKTOP_PATHS' src/routes/_authenticated/route.tsx >/dev/null
           grep -F 'segempat-inspector-desktop' src/routes/_authenticated/route.tsx >/dev/null
           grep -F 'data-inspector-route' src/routes/_authenticated/route.tsx >/dev/null
-          for route in /atencao /risco /ia-base /provas-criar /modulos-treinamento /validar-certificados; do
+          for route in /atencao /risco /producao-inspetoria /ia-base /provas-criar /modulos-treinamento /validar-certificados; do
             grep -F "\"${route}\"" src/routes/_authenticated/route.tsx >/dev/null
             grep -F "data-inspector-route=\"${route}\"" src/inspector-desktop.css >/dev/null
           done

@@ -15,6 +15,7 @@ import { Route as AuthenticatedAcessosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAssinaturasProvasRouteImport } from './routes/_authenticated/assinaturas-provas'
+import { Route as AuthenticatedAtencaoRouteImport } from './routes/_authenticated/atencao'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedAvaliacaoPraticaRouteImport } from './routes/_authenticated/avaliacao-pratica'
 import { Route as AuthenticatedBancoQuestoesRouteImport } from './routes/_authenticated/banco-questoes'
@@ -37,6 +38,7 @@ import { Route as AuthenticatedOportunidadesRouteImport } from './routes/_authen
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
 import { Route as AuthenticatedPraticoRouteImport } from './routes/_authenticated/pratico'
+import { Route as AuthenticatedProducaoInspetoriaRouteImport } from './routes/_authenticated/producao-inspetoria'
 import { Route as AuthenticatedProgressoRouteImport } from './routes/_authenticated/progresso'
 import { Route as AuthenticatedProvaRealizarRouteImport } from './routes/_authenticated/prova-realizar'
 import { Route as AuthenticatedProvasRouteImport } from './routes/_authenticated/provas'
@@ -84,6 +86,11 @@ const AuthenticatedAssinaturasProvasRoute =
     path: '/assinaturas-provas',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAtencaoRoute = AuthenticatedAtencaoRouteImport.update({
+  id: '/atencao',
+  path: '/atencao',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
@@ -205,6 +212,12 @@ const AuthenticatedPraticoRoute = AuthenticatedPraticoRouteImport.update({
   path: '/pratico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProducaoInspetoriaRoute =
+  AuthenticatedProducaoInspetoriaRouteImport.update({
+    id: '/producao-inspetoria',
+    path: '/producao-inspetoria',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProgressoRoute = AuthenticatedProgressoRouteImport.update({
   id: '/progresso',
   path: '/progresso',
@@ -300,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/assinaturas-provas': typeof AuthenticatedAssinaturasProvasRoute
+  '/atencao': typeof AuthenticatedAtencaoRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacao-pratica': typeof AuthenticatedAvaliacaoPraticaRoute
   '/banco-questoes': typeof AuthenticatedBancoQuestoesRoute
@@ -322,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/painel': typeof AuthenticatedPainelRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
   '/pratico': typeof AuthenticatedPraticoRoute
+  '/producao-inspetoria': typeof AuthenticatedProducaoInspetoriaRoute
   '/progresso': typeof AuthenticatedProgressoRoute
   '/prova-realizar': typeof AuthenticatedProvaRealizarRoute
   '/provas': typeof AuthenticatedProvasRoute
@@ -345,6 +360,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/assinaturas-provas': typeof AuthenticatedAssinaturasProvasRoute
+  '/atencao': typeof AuthenticatedAtencaoRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacao-pratica': typeof AuthenticatedAvaliacaoPraticaRoute
   '/banco-questoes': typeof AuthenticatedBancoQuestoesRoute
@@ -367,6 +383,7 @@ export interface FileRoutesByTo {
   '/painel': typeof AuthenticatedPainelRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
   '/pratico': typeof AuthenticatedPraticoRoute
+  '/producao-inspetoria': typeof AuthenticatedProducaoInspetoriaRoute
   '/progresso': typeof AuthenticatedProgressoRoute
   '/prova-realizar': typeof AuthenticatedProvaRealizarRoute
   '/provas': typeof AuthenticatedProvasRoute
@@ -392,6 +409,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/assinaturas-provas': typeof AuthenticatedAssinaturasProvasRoute
+  '/_authenticated/atencao': typeof AuthenticatedAtencaoRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/avaliacao-pratica': typeof AuthenticatedAvaliacaoPraticaRoute
   '/_authenticated/banco-questoes': typeof AuthenticatedBancoQuestoesRoute
@@ -414,6 +432,7 @@ export interface FileRoutesById {
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
   '/_authenticated/pratico': typeof AuthenticatedPraticoRoute
+  '/_authenticated/producao-inspetoria': typeof AuthenticatedProducaoInspetoriaRoute
   '/_authenticated/progresso': typeof AuthenticatedProgressoRoute
   '/_authenticated/prova-realizar': typeof AuthenticatedProvaRealizarRoute
   '/_authenticated/provas': typeof AuthenticatedProvasRoute
@@ -439,6 +458,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/assinaturas-provas'
+    | '/atencao'
     | '/auditoria'
     | '/avaliacao-pratica'
     | '/banco-questoes'
@@ -461,6 +481,7 @@ export interface FileRouteTypes {
     | '/painel'
     | '/pendencias'
     | '/pratico'
+    | '/producao-inspetoria'
     | '/progresso'
     | '/prova-realizar'
     | '/provas'
@@ -484,6 +505,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/assinaturas-provas'
+    | '/atencao'
     | '/auditoria'
     | '/avaliacao-pratica'
     | '/banco-questoes'
@@ -506,6 +528,7 @@ export interface FileRouteTypes {
     | '/painel'
     | '/pendencias'
     | '/pratico'
+    | '/producao-inspetoria'
     | '/progresso'
     | '/prova-realizar'
     | '/provas'
@@ -530,6 +553,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/analytics'
     | '/_authenticated/assinaturas-provas'
+    | '/_authenticated/atencao'
     | '/_authenticated/auditoria'
     | '/_authenticated/avaliacao-pratica'
     | '/_authenticated/banco-questoes'
@@ -552,6 +576,7 @@ export interface FileRouteTypes {
     | '/_authenticated/painel'
     | '/_authenticated/pendencias'
     | '/_authenticated/pratico'
+    | '/_authenticated/producao-inspetoria'
     | '/_authenticated/progresso'
     | '/_authenticated/prova-realizar'
     | '/_authenticated/provas'
@@ -617,6 +642,13 @@ declare module '@tanstack/react-router' {
       path: '/assinaturas-provas'
       fullPath: '/assinaturas-provas'
       preLoaderRoute: typeof AuthenticatedAssinaturasProvasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/atencao': {
+      id: '/_authenticated/atencao'
+      path: '/atencao'
+      fullPath: '/atencao'
+      preLoaderRoute: typeof AuthenticatedAtencaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/auditoria': {
@@ -773,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPraticoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/producao-inspetoria': {
+      id: '/_authenticated/producao-inspetoria'
+      path: '/producao-inspetoria'
+      fullPath: '/producao-inspetoria'
+      preLoaderRoute: typeof AuthenticatedProducaoInspetoriaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/progresso': {
       id: '/_authenticated/progresso'
       path: '/progresso'
@@ -893,6 +932,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedAssinaturasProvasRoute: typeof AuthenticatedAssinaturasProvasRoute
+  AuthenticatedAtencaoRoute: typeof AuthenticatedAtencaoRoute
   AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
   AuthenticatedAvaliacaoPraticaRoute: typeof AuthenticatedAvaliacaoPraticaRoute
   AuthenticatedBancoQuestoesRoute: typeof AuthenticatedBancoQuestoesRoute
@@ -915,6 +955,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
   AuthenticatedPraticoRoute: typeof AuthenticatedPraticoRoute
+  AuthenticatedProducaoInspetoriaRoute: typeof AuthenticatedProducaoInspetoriaRoute
   AuthenticatedProgressoRoute: typeof AuthenticatedProgressoRoute
   AuthenticatedProvaRealizarRoute: typeof AuthenticatedProvaRealizarRoute
   AuthenticatedProvasRoute: typeof AuthenticatedProvasRoute
@@ -938,6 +979,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedAssinaturasProvasRoute: AuthenticatedAssinaturasProvasRoute,
+  AuthenticatedAtencaoRoute: AuthenticatedAtencaoRoute,
   AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
   AuthenticatedAvaliacaoPraticaRoute: AuthenticatedAvaliacaoPraticaRoute,
   AuthenticatedBancoQuestoesRoute: AuthenticatedBancoQuestoesRoute,
@@ -960,6 +1002,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
   AuthenticatedPraticoRoute: AuthenticatedPraticoRoute,
+  AuthenticatedProducaoInspetoriaRoute: AuthenticatedProducaoInspetoriaRoute,
   AuthenticatedProgressoRoute: AuthenticatedProgressoRoute,
   AuthenticatedProvaRealizarRoute: AuthenticatedProvaRealizarRoute,
   AuthenticatedProvasRoute: AuthenticatedProvasRoute,

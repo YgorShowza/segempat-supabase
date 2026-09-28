@@ -54,6 +54,7 @@ const adminMenuRoutes = [
   "/atencao",
   "/analytics",
   "/equipe",
+  "/producao-inspetoria",
   "/risco",
   "/individual",
   "/cronograma",
@@ -100,7 +101,7 @@ const families = {
   analytical: ["/analytics", "/individual", "/relatorios", "/relatorio-mensal"],
   governance: ["/acessos", "/auditoria", "/documento-seguranca"],
   training: ["/banco-questoes", "/ciclos-treinamento", "/conteudos", "/assinaturas-provas", "/avaliacao-pratica"],
-  inspector: ["/atencao", "/risco", "/ia-base", "/provas-criar", "/modulos-treinamento", "/validar-certificados"],
+  inspector: ["/atencao", "/risco", "/producao-inspetoria", "/ia-base", "/provas-criar", "/modulos-treinamento", "/validar-certificados"],
 };
 
 for (const route of adminMenuRoutes) {
