@@ -6,7 +6,7 @@ import { asBool, asyncHandler, badRequest, conflict, forbidden, notFound, requir
 
 export const employeesRouter = Router();
 
-const SECTORS = ["CFTV", "Vigilância", "Portaria", "Ronda", "Operações", "Administrativo"];
+const SECTORS = ["CFTV", "Vigilância", "Portaria", "Ronda", "Operações", "Unidade de Segurança Portuária", "Administrativo"];
 const PROFILES = ["Inspetor", "Operacional"];
 const STATUSES = ["Ativo", "Inativo"];
 
