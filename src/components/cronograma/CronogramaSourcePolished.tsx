@@ -29,6 +29,7 @@ import {
   type CronogramaSuspension,
 } from "@/lib/cronograma";
 import { operationalDateParts } from "@/lib/operational-time";
+import { SystemMetricCard, SystemPanelSkeleton, SystemSurface } from "@/components/system/SystemUI";
 
 type PrimaryView = "lista" | "calendario" | "ano";
 
@@ -230,17 +231,14 @@ function MonthlySummary({
   return (
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-5" aria-label="Resumo mensal do cronograma" aria-busy={loading}>
       {cards.map(({ label, value, sub, color, icon: Icon }) => (
-        <div key={label} className="relative min-h-[104px] overflow-hidden rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
-          <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: color }} />
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>{label}</p>
-              <p className="mt-2 text-2xl font-black" style={{ color: loading ? "var(--text-4)" : color }}>{loading ? "…" : value}</p>
-              <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "var(--text-4)" }}>{sub}</p>
-            </div>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: `${color}12`, border: `1px solid ${color}24` }}><Icon className="h-4 w-4" style={{ color }} /></div>
-          </div>
-        </div>
+        <SystemMetricCard
+          key={label}
+          label={label}
+          value={loading ? "…" : value}
+          detail={sub}
+          icon={Icon}
+          accent={color}
+        />
       ))}
     </section>
   );
@@ -463,15 +461,15 @@ function Legend({ icon: Icon, label, color }: { icon: typeof Clock3; label: stri
 
 function QueryError({ onRetry }: { onRetry: () => void }) {
   return (
-    <section className="rounded-2xl px-5 py-10 text-center" role="alert" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
+    <SystemSurface className="px-5 py-10 text-center" role="alert">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.25)" }}><AlertTriangle className="h-6 w-6 text-amber-500" /></div>
       <h2 className="mt-4 text-base font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar o Cronograma</h2>
       <p className="mx-auto mt-1 max-w-md text-sm" style={{ color: "var(--text-4)" }}>A consulta desta visão falhou. Nenhum dado foi alterado; tente novamente quando a conexão estiver disponível.</p>
       <button type="button" onClick={onRetry} className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]" style={{ background: "#C8102E" }}><RefreshCw className="h-4 w-4" />Tentar novamente</button>
-    </section>
+    </SystemSurface>
   );
 }
 
 function Loading({ label = "Carregando cronograma..." }: { label?: string }) {
-  return <div className="flex min-h-[280px] flex-col items-center justify-center py-16" aria-live="polite"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><p className="mt-3 text-xs font-semibold" style={{ color: "var(--text-4)" }}>{label}</p></div>;
+  return <SystemPanelSkeleton rows={6} label={label} />;
 }
