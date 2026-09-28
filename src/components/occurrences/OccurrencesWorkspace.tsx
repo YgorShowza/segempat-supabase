@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { hasPermission } from "@/lib/access-control";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemPanelSkeleton, SystemSurface as Surface } from "@/components/system/SystemUI";
 import { listEmployees, type Employee } from "@/lib/employees";
 import { getCurrentEmployeeByAuth } from "@/lib/insights";
 import {
@@ -50,23 +51,6 @@ import {
   type Occurrence,
   type OccurrencePerson,
 } from "@/lib/occurrences";
-
-function Surface({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      {...props}
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-        ...props.style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 const MACEIO_TIME_ZONE = "America/Maceio";
 const MAX_EVIDENCE_BYTES = 1_250_000;
@@ -758,11 +742,7 @@ export function OccurrencesWorkspace({ operatorTitle = false }: { operatorTitle?
       </Surface>
 
       {occurrences.isLoading ? (
-        <Surface className="p-10 text-center" role="status" aria-live="polite">
-          <RefreshCw className="mx-auto h-7 w-7 animate-spin text-[#C8102E]" />
-          <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>Carregando ocorrências...</p>
-          <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Consultando o registro operacional.</p>
-        </Surface>
+        <SystemPanelSkeleton rows={7} label="Carregando ocorrências" />
       ) : occurrences.isError ? (
         <Surface className="p-8 text-center" role="alert">
           <AlertTriangle className="mx-auto h-9 w-9 text-red-500" />
