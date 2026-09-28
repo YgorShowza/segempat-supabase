@@ -23,6 +23,7 @@ jobs:
           set -euo pipefail
           ROUTE=src/routes/_authenticated/producao-inspetoria.tsx
           UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
+          PRINT=src/components/inspector-production/InspectorProductionPrintReport.tsx
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
           MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
@@ -30,6 +31,7 @@ jobs:
 
           test -f "$ROUTE"
           test -f "$UI"
+          test -f "$PRINT"
           test -f "$API"
           test -f "$MIG"
           test -f "$MIG_RESULT"
@@ -79,16 +81,16 @@ jobs:
           grep -F 'O registro original não será alterado.' "$UI" >/dev/null
           grep -F 'Resumo executivo automático' "$UI" >/dev/null
           grep -F 'Imprimir / Salvar PDF' "$UI" >/dev/null
-          grep -F 'inspector-production-print-report' "$UI" >/dev/null
-          grep -F '@page { size: A4 portrait; margin: 0; }' "$UI" >/dev/null
-          grep -F 'Relatório gerencial' "$UI" >/dev/null
-          grep -F 'Unidade de Segurança Portuária' "$UI" >/dev/null
-          grep -F 'Documento gerado eletronicamente pelo SEGEMPAT' "$UI" >/dev/null
-          grep -F 'Página {page} de 3' "$UI" >/dev/null
+          grep -F 'inspector-production-print-report' "$PRINT" >/dev/null
+          grep -F '@page { size: A4 portrait; margin: 0; }' "$PRINT" >/dev/null
+          grep -F 'Relatório gerencial' "$PRINT" >/dev/null
+          grep -F 'Unidade de Segurança Portuária' "$PRINT" >/dev/null
+          grep -F 'Documento gerado eletronicamente pelo SEGEMPAT' "$PRINT" >/dev/null
+          grep -F 'Página {page} de 3' "$PRINT" >/dev/null
           grep -F 'printExecutiveReport' "$UI" >/dev/null
           grep -F 'setPrintIssuedAt' "$UI" >/dev/null
-          grep -F 'body * {' "$UI" >/dev/null
-          grep -F 'visibility: hidden !important;' "$UI" >/dev/null
+          grep -F 'body * {' "$PRINT" >/dev/null
+          grep -F 'visibility: hidden !important;' "$PRINT" >/dev/null
           grep -F 'sem conteúdo generativo ou inferências' "$UI" >/dev/null
           grep -F 'buildExecutiveSummary' "$API" >/dev/null
           grep -F 'executive_summary' "$API" >/dev/null
