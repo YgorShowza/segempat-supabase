@@ -164,6 +164,16 @@ function resultStatusMeta(status: InspectorProductionResultStatus) {
   };
 }
 
+function ResultStatusBadge({ status }: { status: InspectorProductionResultStatus }) {
+  const meta = resultStatusMeta(status);
+  const Icon = meta.icon;
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black" style={{ background: `${meta.tone}0e`, color: meta.tone, border: `1px solid ${meta.tone}22` }}>
+      <Icon className="h-3 w-3" /> {status}
+    </span>
+  );
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -802,6 +812,55 @@ export function InspectorProductionWorkspace() {
 
           <SystemSurface className="overflow-hidden">
             <SystemSectionHeader
+              icon={CheckCircle2}
+              title="Desfecho das atribuições"
+              description="Separa a execução registrada do resultado operacional informado no momento do lançamento."
+              accent="#10b981"
+            />
+            <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+              {dashboard.outcomes.map((row) => {
+                const meta = resultStatusMeta(row.result_status);
+                const Icon = meta.icon;
+                return (
+                  <button
+                    key={row.result_status}
+                    type="button"
+                    onClick={() => {
+                      setHistoryResultStatus(row.result_status);
+                      setHistoryStatus("Registrada");
+                      setHistoryEmployee("");
+                      setHistoryCategory("");
+                      setHistoryEvidence("");
+                      setHistoryResultStatus("");
+                      setHistorySearch("");
+                      setHistorySearchDraft("");
+                      setTab("historico");
+                    }}
+                    className="rounded-2xl p-4 text-left transition-transform hover:-translate-y-0.5"
+                    style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${meta.tone}10`, color: meta.tone }}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p>
+                        <p className="text-[10px] font-bold" style={{ color: meta.tone }}>{row.share}%</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs font-black" style={{ color: "var(--text-1)" }}>{row.result_status}</p>
+                    <p className="mt-1 text-[10px] leading-4" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+              O desfecho é definido no registro original e permanece imutável. Cancelamento é uma situação histórica separada e não altera o resultado originalmente informado.
+            </div>
+          </SystemSurface>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
               icon={Users}
               title="Concentração por categoria"
               description="Mostra como cada tipo de atribuição está distribuído entre os inspetores no período selecionado."
@@ -858,6 +917,7 @@ export function InspectorProductionWorkspace() {
                           setHistoryEmployee("");
                           setHistoryStatus("Registrada");
                           setHistoryEvidence("");
+                          setHistoryResultStatus("");
                           setHistorySearch("");
                           setHistorySearchDraft("");
                           setTab("historico");
@@ -880,7 +940,7 @@ export function InspectorProductionWorkspace() {
             <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dashboard.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro encontrado.</p> : dashboard.recent.map((entry) => (
                 <button key={entry.id} type="button" onClick={() => setDetailsId(entry.id)} className="grid w-full gap-3 p-4 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025] lg:grid-cols-[minmax(0,1.4fr)_minmax(180px,.7fr)_170px_120px] lg:items-center">
-                  <div className="min-w-0"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}</p></div>
+                  <div className="min-w-0"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}</p><div className="mt-2"><ResultStatusBadge status={entry.result_status} /></div></div>
                   <div className="text-xs" style={{ color: "var(--text-3)" }}>{displayDateTime(entry.executed_at)}</div>
                   <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-3)" }}><Camera className="h-3.5 w-3.5" /> {entry.attachment_count} evidência(s)</div>
                   <span className="justify-self-start rounded-full px-2 py-1 text-[9px] font-black lg:justify-self-end" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span>
@@ -1249,6 +1309,7 @@ export function InspectorProductionWorkspace() {
                       setHistoryCategory("");
                       setHistoryStatus("");
                       setHistoryEvidence("");
+                      setHistoryResultStatus("");
                       setHistorySearch("");
                       setHistorySearchDraft("");
                       setSelectedInspectorId(null);
