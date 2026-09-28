@@ -49,6 +49,7 @@ import {
   cancelInspectorProductionEntry,
   createInspectorProductionEntry,
   getInspectorProductionEntry,
+  getInspectorProductionInspectorDetails,
   getInspectorProductionMembership,
   getInspectorProductionSummary,
   inspectorProductionAttachmentUrl,
@@ -324,6 +325,14 @@ export function InspectorProductionWorkspace() {
     queryKey: ["inspector-production-entry", detailsId],
     queryFn: () => getInspectorProductionEntry(detailsId as string),
     enabled: Boolean(detailsId),
+    staleTime: 10_000,
+  });
+
+  const [selectedInspectorId, setSelectedInspectorId] = useState<string | null>(null);
+  const inspectorDetailsQuery = useQuery({
+    queryKey: ["inspector-production-inspector", selectedInspectorId, from, to],
+    queryFn: () => getInspectorProductionInspectorDetails(selectedInspectorId as string, from, to),
+    enabled: Boolean(selectedInspectorId),
     staleTime: 10_000,
   });
 
@@ -653,7 +662,7 @@ export function InspectorProductionWorkspace() {
                   const accent = rankAccent(row.rank);
                   const max = Math.max(1, dashboard.ranking[0]?.total ?? 1);
                   return (
-                    <button key={row.employee_id} type="button" onClick={() => { setHistoryEmployee(row.employee_id); setTab("historico"); }} className="w-full rounded-2xl p-4 text-left transition-transform hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <button key={row.employee_id} type="button" onClick={() => setSelectedInspectorId(row.employee_id)} className="w-full rounded-2xl p-4 text-left transition-transform hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black" style={{ background: `${accent}12`, border: `1px solid ${accent}30`, color: accent }}>{row.rank}º</div>
                         <div className="min-w-0 flex-1">
@@ -1006,6 +1015,161 @@ export function InspectorProductionWorkspace() {
         </div>
       )}
 
+      <Dialog open={Boolean(selectedInspectorId)} onOpenChange={(open) => { if (!open) setSelectedInspectorId(null); }}>
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Produção individual do inspetor</DialogTitle>
+          </DialogHeader>
+
+          {inspectorDetailsQuery.isLoading ? (
+            <div className="py-14 text-center text-sm" style={{ color: "var(--text-4)" }}>Carregando produção individual...</div>
+          ) : inspectorDetailsQuery.isError ? (
+            <div className="py-10 text-center" role="alert">
+              <UserRound className="mx-auto h-9 w-9 text-red-500" />
+              <p className="mt-3 font-black text-red-500">Não foi possível abrir os dados deste inspetor.</p>
+              <Button variant="outline" className="mt-4" onClick={() => void inspectorDetailsQuery.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
+            </div>
+          ) : inspectorDetailsQuery.data ? (() => {
+            const data = inspectorDetailsQuery.data;
+            const meta = comparisonMeta(data.metrics.executions, data.metrics.previous_executions, data.metrics.percentage_change);
+            const CompareIcon = meta.icon;
+            const monthly = dateSpan(data.period.from, data.period.to) > 62;
+            const buckets = new Map<string, number>();
+            for (const point of data.timeline) {
+              const key = monthly ? point.day.slice(0, 7) : point.day;
+              buckets.set(key, (buckets.get(key) ?? 0) + point.total);
+            }
+            const individualTimeline = Array.from(buckets.entries()).map(([key, total]) => ({ key, total })).slice(-24);
+            const maxIndividualTimeline = Math.max(1, ...individualTimeline.map((point) => point.total));
+
+            return (
+              <div className="space-y-5">
+                <div className="overflow-hidden rounded-2xl" style={{ background: "linear-gradient(135deg,rgba(200,16,46,.10),rgba(37,99,235,.05))", border: "1px solid var(--border)" }}>
+                  <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#C8102E] text-lg font-black text-white">{data.member.full_name.charAt(0).toUpperCase()}</div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-xl font-black" style={{ color: "var(--text-1)" }}>{data.member.full_name}</h3>
+                          {data.member.is_leader && <span className="rounded-full px-2 py-1 text-[9px] font-black" style={{ background: "rgba(200,160,0,.10)", color: "#C8A000" }}>LÍDER</span>}
+                        </div>
+                        <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Mat. {data.member.matricula} · {data.member.sector}</p>
+                        <p className="mt-1 text-xs font-semibold" style={{ color: "var(--text-3)" }}>Período: {periodLabel(data.period.from, data.period.to)}</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" onClick={() => {
+                      setHistoryEmployee(data.member.employee_id);
+                      setHistoryCategory("");
+                      setHistoryStatus("");
+                      setHistoryEvidence("");
+                      setHistorySearch("");
+                      setHistorySearchDraft("");
+                      setSelectedInspectorId(null);
+                      setTab("historico");
+                    }}>
+                      <History className="mr-2 h-4 w-4" /> Ver histórico completo
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                  <InspectorMiniMetric label="Execuções" value={String(data.metrics.executions)} detail="ativas no período" icon={ClipboardCheck} accent="#C8102E" />
+                  <InspectorMiniMetric label="Participação" value={`${data.metrics.participation_share}%`} detail="do volume da equipe" icon={Users} accent="#2563eb" />
+                  <InspectorMiniMetric label="Com evidência" value={String(data.metrics.with_evidence)} detail={`${data.metrics.evidence_rate}% das execuções`} icon={Camera} accent="#10b981" />
+                  <InspectorMiniMetric label="Sem evidência" value={String(data.metrics.without_evidence)} detail="indicador informativo" icon={CameraOff} accent="#64748b" />
+                  <InspectorMiniMetric label="Cancelados" value={String(data.metrics.canceled)} detail="preservados no histórico" icon={XCircle} accent="#64748b" />
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-12">
+                  <div className="rounded-2xl p-5 lg:col-span-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>Comparativo individual</p>
+                        <p className="mt-2 text-3xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{data.metrics.executions}</p>
+                        <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Anterior: {data.metrics.previous_executions}</p>
+                      </div>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${meta.tone}10`, color: meta.tone }}><CompareIcon className="h-5 w-5" /></div>
+                    </div>
+                    <div className="mt-4 rounded-xl px-3 py-2" style={{ background: `${meta.tone}0b` }}>
+                      <p className="text-sm font-black" style={{ color: meta.tone }}>{meta.label}</p>
+                      <p className="mt-0.5 text-[10px]" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                    </div>
+                    <p className="mt-3 text-[10px] leading-5" style={{ color: "var(--text-4)" }}>Comparação com {periodLabel(data.previous_period.from, data.previous_period.to)}, usando a mesma duração do período atual.</p>
+                  </div>
+
+                  <div className="rounded-2xl p-5 lg:col-span-8" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Evolução individual</p><p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{monthly ? "Volume consolidado por mês" : "Volume diário de execuções registradas"}</p></div>
+                      <BarChart3 className="h-5 w-5 text-[#2563eb]" />
+                    </div>
+                    {individualTimeline.length === 0 ? (
+                      <p className="py-12 text-center text-sm" style={{ color: "var(--text-4)" }}>Sem execuções para formar a série no período.</p>
+                    ) : (
+                      <div className="mt-4 overflow-x-auto pb-1">
+                        <div className="flex h-44 min-w-max items-end gap-2">
+                          {individualTimeline.map((point) => (
+                            <div key={point.key} className="flex w-10 flex-col items-center justify-end gap-1.5">
+                              <span className="text-[9px] font-black tabular-nums" style={{ color: "var(--text-3)" }}>{point.total}</span>
+                              <div className="flex h-28 w-full items-end rounded-lg p-1" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                                <div className="w-full rounded-md bg-[#2563eb]" style={{ height: `${Math.max(6, (point.total / maxIndividualTimeline) * 100)}%` }} />
+                              </div>
+                              <span className="text-[8px] font-bold" style={{ color: "var(--text-4)" }}>{timelineLabel(point.key)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
+                    <div className="border-b p-4" style={{ borderColor: "var(--border-subtle)" }}>
+                      <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Categorias executadas</p>
+                      <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>Distribuição das atribuições deste inspetor.</p>
+                    </div>
+                    <div className="space-y-3 p-4">
+                      {data.categories.length === 0 ? <p className="py-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Sem categorias no período.</p> : data.categories.slice(0, 8).map((row) => (
+                        <div key={row.category}>
+                          <div className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold" style={{ color: "var(--text-2)" }}>{row.category}</span><span className="font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total} · {row.share}%</span></div>
+                          <div className="mt-1.5 h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}><div className="h-full rounded-full bg-[#C8102E]" style={{ width: `${row.share}%` }} /></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
+                    <div className="border-b p-4" style={{ borderColor: "var(--border-subtle)" }}>
+                      <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Execuções recentes</p>
+                      <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>Últimos registros do inspetor no período selecionado.</p>
+                    </div>
+                    <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                      {data.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro no período.</p> : data.recent.slice(0, 6).map((entry) => (
+                        <button key={entry.id} type="button" onClick={() => { setSelectedInspectorId(null); setDetailsId(entry.id); }} className="w-full p-3 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025]">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{entry.category} · {displayDateTime(entry.executed_at)}</p></div>
+                            <span className="flex shrink-0 items-center gap-1 text-[9px] font-bold" style={{ color: entry.attachment_count ? "#10b981" : "var(--text-4)" }}><Camera className="h-3 w-3" /> {entry.attachment_count}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#C8102E]" />
+                    <p className="text-[11px] leading-5" style={{ color: "var(--text-4)" }}>
+                      Este painel descreve registros documentados no SEGEMPAT. Participação, evolução e volume não representam isoladamente qualidade, esforço ou mérito profissional.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : null}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={Boolean(detailsId)} onOpenChange={(open) => { if (!open) setDetailsId(null); }}>
         <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader><DialogTitle>Detalhes da execução</DialogTitle></DialogHeader>
@@ -1042,6 +1206,10 @@ export function InspectorProductionWorkspace() {
       </Dialog>
     </div>
   );
+}
+
+function InspectorMiniMetric({ label, value, detail, icon: Icon, accent }: { label: string; value: string; detail: string; icon: typeof UserRound; accent: string }) {
+  return <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><div className="flex items-start justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-1 text-xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{value}</p><p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{detail}</p></div><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}10`, color: accent }}><Icon className="h-4 w-4" /></div></div></div>;
 }
 
 function Info({ label, value, detail, icon: Icon }: { label: string; value: string; detail: string; icon: typeof UserRound }) {
