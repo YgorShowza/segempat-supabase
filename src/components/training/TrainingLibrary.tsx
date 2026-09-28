@@ -29,6 +29,7 @@ import { listTrainingModules, type TrainingModule } from "@/lib/training-modules
 import { getMyTrainingSchedule } from "@/lib/training-schedules";
 import { getCurrentEmployeeByAuth } from "@/lib/insights";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemMetricCard, SystemPanelSkeleton } from "@/components/system/SystemUI";
 
 function formatCycleDate(value: string | null) {
   if (!value) return "—";
@@ -243,7 +244,7 @@ export function TrainingLibrary() {
         </div>
 
         {loading ? (
-          <div role="status" aria-live="polite" className="flex flex-col items-center justify-center gap-3 py-16"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><p className="text-xs" style={{ color: "var(--text-4)" }}>Carregando biblioteca de treinamentos...</p></div>
+          <SystemPanelSkeleton rows={7} label="Carregando biblioteca de treinamentos" />
         ) : loadError ? (
           <section className="rounded-2xl p-10 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <AlertTriangle className="mx-auto h-9 w-9 text-amber-500" />
@@ -284,7 +285,7 @@ export function TrainingLibrary() {
 }
 
 function AcademyMetric({ label, value, icon: Icon, accent, sub }: { label: string; value: string; icon: typeof BookOpen; accent: string; sub: string }) {
-  return <div className="relative overflow-hidden rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><div className="absolute left-0 top-0 h-[3px] w-full" style={{ background: accent }} /><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 break-words text-lg font-black leading-tight" style={{ color: "var(--text-1)" }}>{value}</p><p className="mt-1 break-words text-[10px] font-bold" style={{ color: accent }}>{sub}</p></div><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}12`, border: `1px solid ${accent}28` }}><Icon className="h-4 w-4" style={{ color: accent }} /></div></div></div>;
+  return <SystemMetricCard label={label} value={value} icon={Icon} accent={accent} detail={sub} />;
 }
 
 function AcademyTool({ path, icon: Icon, title, description, accent }: { path: string; icon: typeof Zap; title: string; description: string; accent: string }) {

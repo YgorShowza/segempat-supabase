@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { hasPermission } from "@/lib/access-control";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard } from "@/components/system/SystemUI";
 import {
   createTrainingModule,
   deleteTrainingModule,
@@ -35,10 +36,6 @@ const EMPTY: TrainingModuleInput = {
 
 function normalizeText(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
-function Metric({ label, value, icon: Icon, accent, sub }: { label: string; value: number; icon: typeof Layers3; accent: string; sub: string }) {
-  return <section className="relative overflow-hidden rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}><div className="absolute left-0 top-0 h-[3px] w-full" style={{ background: accent }} /><div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-3xl font-black" style={{ color: "var(--text-1)" }}>{value}</p><p className="mt-1 text-[11px] font-semibold" style={{ color: accent }}>{sub}</p></div><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}><Icon className="h-4 w-4" style={{ color: accent }} /></div></div></section>;
 }
 
 export function TrainingModulesAdmin() {
@@ -155,7 +152,7 @@ export function TrainingModulesAdmin() {
     </section>
 
     {query.isLoading ? <Loading label="Carregando módulos de treinamento..." /> : query.isError ? <section className="rounded-2xl p-8 text-center" style={{background:"var(--bg-surface)",border:"1px solid var(--border)"}}><AlertTriangle className="mx-auto h-8 w-8 text-amber-500"/><p className="mt-3 font-bold" style={{color:"var(--text-1)"}}>Não foi possível carregar os módulos.</p><p className="mt-1 text-sm" style={{color:"var(--text-4)"}}>Tente novamente antes de realizar alterações.</p><Button variant="outline" className="mt-4" onClick={()=>query.refetch()}><RefreshCw className="mr-2 h-4 w-4"/> Tentar novamente</Button></section> : <>
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo dos módulos"><Metric label="Total" value={rows.length} icon={Layers3} accent="#3b82f6" sub="módulos cadastrados"/><Metric label="Ativos" value={activeCount} icon={ShieldCheck} accent="#10b981" sub="visíveis na Academia"/><Metric label="Inativos" value={inactiveCount} icon={CircleOff} accent="#94a3b8" sub="fora da biblioteca"/><Metric label="Setores" value={sectorCount} icon={SlidersHorizontal} accent="#e11d48" sub="segmentações usadas"/></section>
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo dos módulos"><SystemMetricCard label="Total" value={rows.length} icon={Layers3} accent="#C8102E" detail="módulos cadastrados" /><SystemMetricCard label="Ativos" value={activeCount} icon={ShieldCheck} accent="#10b981" detail="visíveis na Academia" /><SystemMetricCard label="Inativos" value={inactiveCount} icon={CircleOff} accent="#64748b" detail="fora da biblioteca" /><SystemMetricCard label="Setores" value={sectorCount} icon={SlidersHorizontal} accent="#2563eb" detail="segmentações usadas" /></section>
 
       <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
         <div className="grid gap-3 lg:grid-cols-[1fr_190px_160px]"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por título, descrição, conteúdo ou setor..." className="pl-10" aria-label="Buscar módulos" /></div><Select value={sector} onValueChange={setSector}><SelectTrigger aria-label="Filtrar por setor"><SelectValue /></SelectTrigger><SelectContent>{TRAINING_SECTORS.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select><Select value={status} onValueChange={setStatus}><SelectTrigger aria-label="Filtrar por situação"><SelectValue /></SelectTrigger><SelectContent>{STATUS_FILTERS.map((value) => <SelectItem key={value} value={value}>{value === "Todos" ? "Todas as situações" : value}</SelectItem>)}</SelectContent></Select></div>
@@ -174,5 +171,5 @@ export function TrainingModulesAdmin() {
 }
 
 function Loading({ label }: { label: string }) {
-  return <div role="status" aria-live="polite" className="flex flex-col items-center justify-center gap-3 py-16"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{borderColor:"var(--border)",borderTopColor:"#C8102E"}}/><p className="text-xs" style={{ color: "var(--text-4)" }}>{label}</p></div>;
+  return <SystemDataWorkspaceSkeleton metricCount={4} rowCount={7} />;
 }
