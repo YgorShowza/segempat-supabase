@@ -22,7 +22,7 @@ export const cronogramaRouter = Router();
 
 const STATUSES = ["Pendente", "Realizado", "Justificado"];
 const TYPES = ["Planejado", "Realizado"];
-const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"];
+const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"];
 const SUSPENSION_TYPES = ["mes_suspenso", "ausencia_operador"];
 
 function mapEntry(row) {
