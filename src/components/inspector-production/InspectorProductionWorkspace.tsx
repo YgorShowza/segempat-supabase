@@ -114,19 +114,38 @@ function dateSpan(from: string, to: string) {
   return Math.max(0, Math.round((new Date(`${to}T12:00:00Z`).getTime() - new Date(`${from}T12:00:00Z`).getTime()) / 86_400_000));
 }
 
-function balanceState(summary: InspectorProductionSummary) {
+function teamDistributionState(summary: InspectorProductionSummary) {
   const active = summary.ranking.filter((row) => row.total > 0);
-  if (summary.totals.executions < Math.max(6, summary.ranking.length * 2)) {
-    return { label: "Base em formação", detail: "Ainda há poucos registros no período para interpretar a distribuição com segurança.", tone: "#64748b" };
+  const configured = summary.ranking.length;
+  const minimumBase = Math.max(6, configured * 2);
+
+  if (summary.totals.executions < minimumBase) {
+    return {
+      label: "Base em formação",
+      detail: `${summary.totals.executions} ${summary.totals.executions === 1 ? "registro ativo" : "registros ativos"} no período. A leitura percentual permanece descritiva enquanto a base é reduzida.`,
+      tone: "#64748b",
+    };
   }
-  if (active.length < summary.ranking.length) {
-    return { label: "Participação incompleta", detail: "Há integrante configurado sem execução registrada no período.", tone: "#f59e0b" };
+
+  if (active.length < configured) {
+    return {
+      label: "Registros distribuídos em parte da equipe",
+      detail: `${active.length} de ${configured} integrantes da equipe possuem registros ativos no período. Isso descreve os lançamentos existentes e não permite concluir ausência de atividade.`,
+      tone: "#2563eb",
+    };
   }
+
   const shares = active.map((row) => row.share);
-  const spread = Math.max(...shares) - Math.min(...shares);
-  if (spread <= 15) return { label: "Distribuição equilibrada", detail: "As execuções registradas estão relativamente distribuídas entre os inspetores.", tone: "#10b981" };
-  if (spread <= 30) return { label: "Distribuição em atenção", detail: "Existe diferença relevante de participação registrada entre os inspetores.", tone: "#f59e0b" };
-  return { label: "Concentração elevada", detail: "Uma parcela significativa das execuções registradas está concentrada em parte da equipe.", tone: "#C8102E" };
+  const spread = Number((Math.max(...shares) - Math.min(...shares)).toFixed(1));
+  const commonDetail = `Diferença de ${spread} p.p. entre a maior e a menor participação registrada no período.`;
+
+  if (spread <= 15) {
+    return { label: "Distribuição mais homogênea", detail: commonDetail, tone: "#2563eb" };
+  }
+  if (spread <= 30) {
+    return { label: "Diferença moderada de participação", detail: commonDetail, tone: "#2563eb" };
+  }
+  return { label: "Maior concentração de registros", detail: commonDetail, tone: "#2563eb" };
 }
 
 function categoryConcentrationMeta(level: "base_forming" | "shared" | "moderate" | "high") {
@@ -483,7 +502,7 @@ export function InspectorProductionWorkspace() {
   }
 
   const dashboard = summary.data as InspectorProductionSummary;
-  const balance = balanceState(dashboard);
+  const distributionReading = teamDistributionState(dashboard);
   const timeline = aggregateTimeline(dashboard);
   const maxTimeline = Math.max(1, ...timeline.map((point) => point.total));
   const inspectorRows = [...dashboard.ranking].sort(
@@ -885,11 +904,16 @@ export function InspectorProductionWorkspace() {
             </SystemSurface>
 
             <SystemSurface className="overflow-hidden xl:col-span-5">
-              <SystemSectionHeader icon={Activity} title="Distribuição da carga registrada" description="Leitura da participação percentual, sem classificar qualidade ou mérito profissional." accent={balance.tone} />
+              <SystemSectionHeader
+                icon={Activity}
+                title="Leitura da distribuição dos registros"
+                description="Participação percentual dos registros ativos da equipe, sem inferir esforço, qualidade ou desempenho profissional."
+                accent={distributionReading.tone}
+              />
               <div className="p-5">
-                <div className="rounded-2xl p-4" style={{ background: `${balance.tone}0c`, border: `1px solid ${balance.tone}26` }}>
-                  <p className="text-sm font-black" style={{ color: balance.tone }}>{balance.label}</p>
-                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{balance.detail}</p>
+                <div className="rounded-2xl p-4" style={{ background: `${distributionReading.tone}0c`, border: `1px solid ${distributionReading.tone}26` }}>
+                  <p className="text-sm font-black" style={{ color: distributionReading.tone }}>{distributionReading.label}</p>
+                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{distributionReading.detail}</p>
                 </div>
                 <div className="mt-5 space-y-4">
                   {inspectorRows.map((row) => (
@@ -899,13 +923,19 @@ export function InspectorProductionWorkspace() {
                         <span className="font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.share}%</span>
                       </div>
                       <div className="mt-1.5 h-2.5 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}>
-                        <div className="h-full rounded-full bg-[#C8102E]" style={{ width: `${row.share}%` }} />
+                        <div className="h-full rounded-full bg-[#2563eb]" style={{ width: `${row.share}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="mt-5 text-[11px] leading-5" style={{ color: "var(--text-4)" }}>
-                  O indicador considera somente registros ativos no SEGEMPAT. Atividades não registradas não podem ser interpretadas como não realizadas.
+                <div className="mt-5 rounded-2xl p-3" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <p className="text-[10px] font-black uppercase tracking-[.11em]" style={{ color: "var(--text-4)" }}>Critério de leitura</p>
+                  <p className="mt-1 text-[11px] leading-5" style={{ color: "var(--text-4)" }}>
+                    Com base suficiente e todos os integrantes representados, a diferença entre a maior e a menor participação registrada é descrita em faixas: até 15 p.p. como distribuição mais homogênea; acima de 15 até 30 p.p. como diferença moderada; acima de 30 p.p. como maior concentração de registros. Essas faixas não são metas nem classificações de desempenho.
+                  </p>
+                </div>
+                <p className="mt-3 text-[11px] leading-5" style={{ color: "var(--text-4)" }}>
+                  O indicador considera somente registros ativos no SEGEMPAT. Escala, especialização, disponibilidade, divisão operacional e atividades não registradas podem influenciar a distribuição; ausência de registro não equivale automaticamente a ausência de atividade.
                 </p>
               </div>
             </SystemSurface>
