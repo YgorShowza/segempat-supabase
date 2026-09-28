@@ -60,6 +60,7 @@ const adminSections: MenuSection[] = [
   ] },
   { section: "Equipe & Desempenho", icon: Users, items: [
     { path: "/equipe", label: "Equipe", icon: Users },
+    { path: "/producao-inspetoria", label: "Produção da Inspetoria", icon: ClipboardList },
     { path: "/risco", label: "Zona de Risco", icon: Target },
     { path: "/individual", label: "Análise Individual", icon: FileBarChart },
   ] },
