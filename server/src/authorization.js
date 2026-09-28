@@ -14,6 +14,8 @@ export const ACCESS_PERMISSIONS = [
   { code: "team.view", label: "Visualizar equipe completa", group: "Equipe & Desempenho", sortOrder: 30 },
   { code: "team.manage", label: "Cadastrar e editar colaboradores", group: "Equipe & Desempenho", sortOrder: 40 },
   { code: "risk.view", label: "Visualizar Zona de Risco", group: "Equipe & Desempenho", sortOrder: 50 },
+  { code: "inspector_production.view", label: "Visualizar Produção da Inspetoria", group: "Equipe & Desempenho", sortOrder: 55 },
+  { code: "inspector_production.record", label: "Registrar Produção da Inspetoria", group: "Equipe & Desempenho", sortOrder: 56 },
   { code: "schedule.manage", label: "Gerenciar cronograma", group: "Operação", sortOrder: 60 },
   { code: "occurrences.manage", label: "Gerenciar ocorrências", group: "Operação", sortOrder: 70 },
   { code: "practical.manage", label: "Gerenciar avaliações práticas", group: "Operação", sortOrder: 80 },
@@ -193,6 +195,11 @@ export function enforceGranularApiPermissions(req, _res, next) {
   if (path.startsWith("/api/employees/") && path !== "/api/employees/me") {
     if (!safeRead) return requireForRequest(req, next, "team.manage");
     if (privileged) return requireAnyForRequest(req, next, [...ADMIN_READ_PERMISSIONS, "team.manage"]);
+  }
+
+  if (path.startsWith("/api/inspector-production")) {
+    if (safeRead) return requireForRequest(req, next, "inspector_production.view");
+    return requireForRequest(req, next, "inspector_production.record");
   }
 
   if (path.startsWith("/api/cronograma")) {
