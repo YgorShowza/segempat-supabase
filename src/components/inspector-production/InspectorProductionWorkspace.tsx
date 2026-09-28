@@ -632,7 +632,10 @@ export function InspectorProductionWorkspace() {
                 disabled={dashboard.totals.without_evidence === 0}
                 onClick={() => {
                   setHistoryEvidence("without");
+                  setHistoryResultStatus("");
                   setHistoryStatus("Registrada");
+                  setHistoryEmployee("");
+                  setHistoryCategory("");
                   setHistorySearch("");
                   setHistorySearchDraft("");
                   setTab("historico");
@@ -831,7 +834,6 @@ export function InspectorProductionWorkspace() {
                       setHistoryEmployee("");
                       setHistoryCategory("");
                       setHistoryEvidence("");
-                      setHistoryResultStatus("");
                       setHistorySearch("");
                       setHistorySearchDraft("");
                       setTab("historico");
