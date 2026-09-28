@@ -56,6 +56,7 @@ import {
   listInspectorProductionEntries,
   listInspectorProductionSuggestions,
   type InspectorProductionEntry,
+  type InspectorProductionResultStatus,
   type InspectorProductionStatus,
   type InspectorProductionSummary,
 } from "@/lib/inspector-production";
@@ -143,6 +144,34 @@ function categoryConcentrationMeta(level: "base_forming" | "shared" | "moderate"
     detail: "Ainda há poucos registros nesta categoria para interpretar sua distribuição com segurança.",
     tone: "#64748b",
   };
+}
+
+function resultStatusMeta(status: InspectorProductionResultStatus) {
+  if (status === "Concluído") return {
+    tone: "#10b981",
+    icon: CheckCircle2,
+    detail: "Atividade finalizada sem pendência registrada.",
+  };
+  if (status === "Concluído com pendência") return {
+    tone: "#d97706",
+    icon: Clock3,
+    detail: "Atividade executada, mas há pendência associada ao resultado.",
+  };
+  return {
+    tone: "#2563eb",
+    icon: RefreshCw,
+    detail: "A atividade exige nova verificação, providência ou continuidade.",
+  };
+}
+
+function ResultStatusBadge({ status }: { status: InspectorProductionResultStatus }) {
+  const meta = resultStatusMeta(status);
+  const Icon = meta.icon;
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black" style={{ background: `${meta.tone}0e`, color: meta.tone, border: `1px solid ${meta.tone}22` }}>
+      <Icon className="h-3 w-3" /> {status}
+    </span>
+  );
 }
 
 function readFileAsDataUrl(file: File) {
@@ -264,14 +293,15 @@ export function InspectorProductionWorkspace() {
   const [historyCategory, setHistoryCategory] = useState("");
   const [historyStatus, setHistoryStatus] = useState<InspectorProductionStatus | "">("");
   const [historyEvidence, setHistoryEvidence] = useState<"with" | "without" | "">("");
+  const [historyResultStatus, setHistoryResultStatus] = useState<InspectorProductionResultStatus | "">("");
   const [historyOffset, setHistoryOffset] = useState(0);
 
   useEffect(() => {
     setHistoryOffset(0);
-  }, [from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch]);
+  }, [from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historyResultStatus, historySearch]);
 
   const historyQuery = useQuery({
-    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch, historyOffset],
+    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historyResultStatus, historySearch, historyOffset],
     queryFn: () => listInspectorProductionEntries({
       from,
       to,
@@ -279,6 +309,7 @@ export function InspectorProductionWorkspace() {
       category: historyCategory || undefined,
       status: historyStatus,
       evidence: historyEvidence,
+      result_status: historyResultStatus,
       search: historySearch || undefined,
       limit: PAGE_SIZE,
       offset: historyOffset,
@@ -289,6 +320,7 @@ export function InspectorProductionWorkspace() {
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Inspeção");
+  const [resultStatus, setResultStatus] = useState<InspectorProductionResultStatus>("Concluído");
   const [details, setDetails] = useState("");
   const [location, setLocation] = useState("");
   const [pendingEvidence, setPendingEvidence] = useState<PendingEvidence[]>([]);
@@ -305,6 +337,7 @@ export function InspectorProductionWorkspace() {
       const created = await createInspectorProductionEntry({
         title: title.trim(),
         category,
+        result_status: resultStatus,
         details: details.trim(),
         location: location.trim() || null,
       });
@@ -330,6 +363,7 @@ export function InspectorProductionWorkspace() {
       ]);
       setTitle("");
       setCategory(membership.data?.categories?.[0] || "Inspeção");
+      setResultStatus(membership.data?.result_statuses?.[0] || "Concluído");
       setDetails("");
       setLocation("");
       setPendingEvidence([]);
@@ -445,6 +479,7 @@ export function InspectorProductionWorkspace() {
     setHistoryCategory("");
     setHistoryStatus("");
     setHistoryEvidence("");
+    setHistoryResultStatus("");
   };
 
   const downloadReportCsv = async () => {
@@ -459,7 +494,7 @@ export function InspectorProductionWorkspace() {
         if (rows.length > 20_000) throw new Error("O período possui registros demais para uma única exportação. Reduza o período.");
       }
       const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-      const header = ["Data/hora", "Inspetor", "Matrícula", "Atribuição", "Categoria", "Descrição/resultado", "Local", "Evidências", "Situação", "Motivo cancelamento"];
+      const header = ["Data/hora", "Inspetor", "Matrícula", "Atribuição", "Categoria", "Resultado da atribuição", "Descrição / observações", "Local", "Evidências", "Situação do registro", "Motivo cancelamento"];
       const csv = [
         header.map(escape).join(";"),
         ...rows.map((row) => [
@@ -468,6 +503,7 @@ export function InspectorProductionWorkspace() {
           row.executor_matricula,
           row.title,
           row.category,
+          row.result_status,
           row.details,
           row.location ?? "",
           row.attachment_count,
@@ -596,7 +632,10 @@ export function InspectorProductionWorkspace() {
                 disabled={dashboard.totals.without_evidence === 0}
                 onClick={() => {
                   setHistoryEvidence("without");
+                  setHistoryResultStatus("");
                   setHistoryStatus("Registrada");
+                  setHistoryEmployee("");
+                  setHistoryCategory("");
                   setHistorySearch("");
                   setHistorySearchDraft("");
                   setTab("historico");
@@ -776,6 +815,54 @@ export function InspectorProductionWorkspace() {
 
           <SystemSurface className="overflow-hidden">
             <SystemSectionHeader
+              icon={CheckCircle2}
+              title="Desfecho das atribuições"
+              description="Separa a execução registrada do resultado operacional informado no momento do lançamento."
+              accent="#10b981"
+            />
+            <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+              {dashboard.outcomes.map((row) => {
+                const meta = resultStatusMeta(row.result_status);
+                const Icon = meta.icon;
+                return (
+                  <button
+                    key={row.result_status}
+                    type="button"
+                    onClick={() => {
+                      setHistoryResultStatus(row.result_status);
+                      setHistoryStatus("Registrada");
+                      setHistoryEmployee("");
+                      setHistoryCategory("");
+                      setHistoryEvidence("");
+                      setHistorySearch("");
+                      setHistorySearchDraft("");
+                      setTab("historico");
+                    }}
+                    className="rounded-2xl p-4 text-left transition-transform hover:-translate-y-0.5"
+                    style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${meta.tone}10`, color: meta.tone }}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p>
+                        <p className="text-[10px] font-bold" style={{ color: meta.tone }}>{row.share}%</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs font-black" style={{ color: "var(--text-1)" }}>{row.result_status}</p>
+                    <p className="mt-1 text-[10px] leading-4" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+              O desfecho é definido no registro original e permanece imutável. Cancelamento é uma situação histórica separada e não altera o resultado originalmente informado.
+            </div>
+          </SystemSurface>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
               icon={Users}
               title="Concentração por categoria"
               description="Mostra como cada tipo de atribuição está distribuído entre os inspetores no período selecionado."
@@ -832,6 +919,7 @@ export function InspectorProductionWorkspace() {
                           setHistoryEmployee("");
                           setHistoryStatus("Registrada");
                           setHistoryEvidence("");
+                          setHistoryResultStatus("");
                           setHistorySearch("");
                           setHistorySearchDraft("");
                           setTab("historico");
@@ -854,7 +942,7 @@ export function InspectorProductionWorkspace() {
             <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dashboard.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro encontrado.</p> : dashboard.recent.map((entry) => (
                 <button key={entry.id} type="button" onClick={() => setDetailsId(entry.id)} className="grid w-full gap-3 p-4 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025] lg:grid-cols-[minmax(0,1.4fr)_minmax(180px,.7fr)_170px_120px] lg:items-center">
-                  <div className="min-w-0"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}</p></div>
+                  <div className="min-w-0"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}</p><div className="mt-2"><ResultStatusBadge status={entry.result_status} /></div></div>
                   <div className="text-xs" style={{ color: "var(--text-3)" }}>{displayDateTime(entry.executed_at)}</div>
                   <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-3)" }}><Camera className="h-3.5 w-3.5" /> {entry.attachment_count} evidência(s)</div>
                   <span className="justify-self-start rounded-full px-2 py-1 text-[9px] font-black lg:justify-self-end" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span>
@@ -911,8 +999,38 @@ export function InspectorProductionWorkspace() {
                     </div>
 
                     <div className="space-y-1.5 md:col-span-2">
-                      <Label htmlFor="production-details">Descrição / resultado</Label>
-                      <Textarea id="production-details" rows={5} maxLength={10000} value={details} onChange={(event) => setDetails(event.target.value)} placeholder="Descreva objetivamente o que foi executado, o resultado e, quando aplicável, a providência adotada." />
+                      <Label htmlFor="production-result-status">Resultado da atribuição</Label>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        {(membership.data?.result_statuses ?? ["Concluído", "Concluído com pendência", "Requer acompanhamento"]).map((item) => {
+                          const meta = resultStatusMeta(item);
+                          const Icon = meta.icon;
+                          const selected = resultStatus === item;
+                          return (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => setResultStatus(item)}
+                              className="rounded-2xl p-3 text-left transition-colors"
+                              style={selected
+                                ? { background: `${meta.tone}10`, border: `1px solid ${meta.tone}35` }
+                                : { background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
+                              aria-pressed={selected}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4 shrink-0" style={{ color: meta.tone }} />
+                                <span className="text-xs font-black" style={{ color: selected ? meta.tone : "var(--text-2)" }}>{item}</span>
+                              </div>
+                              <p className="mt-2 text-[10px] leading-4" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px]" style={{ color: "var(--text-4)" }}>O resultado é gravado junto com a execução e não poderá ser alterado depois. A situação “Registrada/Cancelada” continua sendo um controle separado do histórico.</p>
+                    </div>
+
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label htmlFor="production-details">Descrição / observações</Label>
+                      <Textarea id="production-details" rows={5} maxLength={10000} value={details} onChange={(event) => setDetails(event.target.value)} placeholder="Descreva objetivamente o que foi executado, o resultado observado e, quando aplicável, a pendência ou providência necessária." />
                     </div>
                   </div>
 
@@ -956,7 +1074,7 @@ export function InspectorProductionWorkspace() {
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                    <Button variant="outline" onClick={() => { setTitle(""); setDetails(""); setLocation(""); setPendingEvidence([]); }}>Limpar</Button>
+                    <Button variant="outline" onClick={() => { setTitle(""); setCategory(membership.data?.categories?.[0] || "Inspeção"); setResultStatus(membership.data?.result_statuses?.[0] || "Concluído"); setDetails(""); setLocation(""); setPendingEvidence([]); }}>Limpar</Button>
                     <Button
                       className="bg-[#C8102E] font-bold text-white hover:bg-[#A00D24]"
                       disabled={createMutation.isPending || title.trim().length < 3 || details.trim().length < 5}
@@ -975,7 +1093,7 @@ export function InspectorProductionWorkspace() {
               <div className="flex items-start gap-3"><UserRound className="mt-0.5 h-5 w-5 text-[#C8102E]" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Quem recebe o crédito?</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-4)" }}>A atribuição é contabilizada exclusivamente para o inspetor autenticado que realizou o lançamento. O formulário não permite escolher outro executor.</p></div></div>
             </SystemSurface>
             <SystemSurface className="p-5">
-              <div className="flex items-start gap-3"><History className="mt-0.5 h-5 w-5 text-[#2563eb]" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Histórico preservado</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-4)" }}>Depois de registrado, título, categoria, descrição, executor e horário não são editáveis. Em caso de erro, o registro é cancelado com motivo e continua auditável.</p></div></div>
+              <div className="flex items-start gap-3"><History className="mt-0.5 h-5 w-5 text-[#2563eb]" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Histórico preservado</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-4)" }}>Depois de registrado, título, categoria, resultado, descrição, executor e horário não são editáveis. Em caso de erro, o registro é cancelado com motivo e continua auditável.</p></div></div>
             </SystemSurface>
             <SystemSurface className="p-5">
               <div className="flex items-start gap-3"><Camera className="mt-0.5 h-5 w-5 text-emerald-500" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Evidência fortalece o registro</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-4)" }}>A imagem não é obrigatória para toda atribuição, mas quando anexada fica em armazenamento privado e vinculada permanentemente ao lançamento.</p></div></div>
@@ -986,12 +1104,13 @@ export function InspectorProductionWorkspace() {
 
       {tab === "historico" && (
         <SystemSurface className="overflow-hidden">
-          <SystemSectionHeader icon={History} title="Histórico da Produção" description="Pesquisa por período, inspetor, categoria e situação. Registros cancelados permanecem visíveis." />
+          <SystemSectionHeader icon={History} title="Histórico da Produção" description="Pesquisa por período, inspetor, categoria, resultado e situação. Registros cancelados permanecem visíveis." />
           <div className="space-y-3 border-b p-4 lg:p-5" style={{ borderColor: "var(--border)" }}>
-            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_145px_165px_auto]">
+            <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_175px_175px_210px_135px_155px_auto]">
               <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={historySearchDraft} onChange={(event) => setHistorySearchDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitHistorySearch(); }} placeholder="Atribuição, descrição, local ou inspetor" className="pl-9" /></div>
               <select value={historyEmployee} onChange={(event) => setHistoryEmployee(event.target.value)} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todos os inspetores</option>{membership.data?.members.map((member) => <option key={member.employee_id} value={member.employee_id}>{member.full_name}</option>)}</select>
               <select value={historyCategory} onChange={(event) => setHistoryCategory(event.target.value)} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todas as categorias</option>{membership.data?.categories.map((item) => <option key={item}>{item}</option>)}</select>
+              <select value={historyResultStatus} onChange={(event) => setHistoryResultStatus(event.target.value as InspectorProductionResultStatus | "")} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todos os resultados</option>{membership.data?.result_statuses.map((item) => <option key={item}>{item}</option>)}</select>
               <select value={historyStatus} onChange={(event) => setHistoryStatus(event.target.value as InspectorProductionStatus | "")} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Todas</option><option value="Registrada">Registradas</option><option value="Cancelada">Canceladas</option></select>
               <select value={historyEvidence} onChange={(event) => setHistoryEvidence(event.target.value as "with" | "without" | "")} className="h-10 rounded-md border px-3 text-sm" style={{ background: "var(--bg-surface)", borderColor: "var(--border)", color: "var(--text-2)" }}><option value="">Evidência: todas</option><option value="with">Com evidência</option><option value="without">Sem evidência</option></select>
               <div className="flex gap-2"><Button variant="outline" size="icon" onClick={submitHistorySearch} aria-label="Pesquisar"><Search className="h-4 w-4" /></Button><Button variant="outline" size="icon" onClick={clearHistoryFilters} aria-label="Limpar filtros"><FilterX className="h-4 w-4" /></Button></div>
@@ -1005,8 +1124,8 @@ export function InspectorProductionWorkspace() {
           ) : (
             <>
               <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[980px] text-left">
-                  <thead><tr className="border-b text-[10px] font-black uppercase tracking-[.11em]" style={{ borderColor: "var(--border)", color: "var(--text-4)" }}><th className="px-5 py-3">Data/hora</th><th className="px-4 py-3">Inspetor</th><th className="px-4 py-3">Atribuição</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3 text-center">Evidência</th><th className="px-4 py-3">Situação</th><th className="px-5 py-3 text-right">Ações</th></tr></thead>
+                <table className="w-full min-w-[1160px] text-left">
+                  <thead><tr className="border-b text-[10px] font-black uppercase tracking-[.11em]" style={{ borderColor: "var(--border)", color: "var(--text-4)" }}><th className="px-5 py-3">Data/hora</th><th className="px-4 py-3">Inspetor</th><th className="px-4 py-3">Atribuição</th><th className="px-4 py-3">Categoria</th><th className="px-4 py-3">Resultado</th><th className="px-4 py-3 text-center">Evidência</th><th className="px-4 py-3">Situação</th><th className="px-5 py-3 text-right">Ações</th></tr></thead>
                   <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                     {(historyQuery.data?.items ?? []).map((entry) => (
                       <tr key={entry.id} className="align-top">
@@ -1014,6 +1133,7 @@ export function InspectorProductionWorkspace() {
                         <td className="px-4 py-4"><p className="text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.executor_name}</p><p className="mt-0.5 text-[10px] font-mono" style={{ color: "var(--text-4)" }}>Mat. {entry.executor_matricula}</p></td>
                         <td className="max-w-md px-4 py-4"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 line-clamp-2 text-xs leading-5" style={{ color: "var(--text-4)" }}>{entry.details}</p></td>
                         <td className="px-4 py-4 text-xs font-semibold" style={{ color: "var(--text-3)" }}>{entry.category}</td>
+                        <td className="px-4 py-4"><ResultStatusBadge status={entry.result_status} /></td>
                         <td className="px-4 py-4 text-center"><span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold" style={{ background: entry.attachment_count ? "rgba(16,185,129,.08)" : "var(--bg-surface-2)", color: entry.attachment_count ? "#10b981" : "var(--text-4)" }}><Camera className="h-3 w-3" /> {entry.attachment_count}</span></td>
                         <td className="px-4 py-4"><span className="rounded-full px-2 py-1 text-[9px] font-black" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span></td>
                         <td className="px-5 py-4"><div className="flex justify-end gap-1"><Button size="icon" variant="ghost" onClick={() => setDetailsId(entry.id)} aria-label="Abrir detalhes"><Eye className="h-4 w-4" /></Button>{entry.status === "Registrada" && canCancel(entry) && <Button size="icon" variant="ghost" className="text-red-500" onClick={() => setCancelTarget(entry)} aria-label="Cancelar registro"><XCircle className="h-4 w-4" /></Button>}</div></td>
@@ -1027,6 +1147,7 @@ export function InspectorProductionWorkspace() {
                   <button key={entry.id} type="button" onClick={() => setDetailsId(entry.id)} className="w-full rounded-2xl p-4 text-left" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                     <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{entry.executor_name} · {displayDateTime(entry.executed_at)}</p></div><span className="shrink-0 rounded-full px-2 py-1 text-[9px] font-black" style={entry.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{entry.status.toUpperCase()}</span></div>
                     <p className="mt-3 line-clamp-2 text-xs leading-5" style={{ color: "var(--text-3)" }}>{entry.details}</p>
+                    <div className="mt-3"><ResultStatusBadge status={entry.result_status} /></div>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px]" style={{ color: "var(--text-4)" }}><span>{entry.category}</span>{entry.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {entry.location}</span>}<span className="flex items-center gap-1"><Camera className="h-3 w-3" /> {entry.attachment_count}</span></div>
                   </button>
                 ))}
@@ -1064,6 +1185,26 @@ export function InspectorProductionWorkspace() {
             <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Média por inspetor" value={dashboard.totals.average_per_inspector} icon={Users} accent="#C8102E" detail="equipe oficialmente configurada" />
           </div>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader icon={CheckCircle2} title="Desfecho das atribuições" description="Distribuição dos resultados operacionais registrados no período." accent="#10b981" />
+            <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+              {dashboard.outcomes.map((row) => {
+                const meta = resultStatusMeta(row.result_status);
+                const Icon = meta.icon;
+                return (
+                  <div key={row.result_status} className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${meta.tone}10`, color: meta.tone }}><Icon className="h-5 w-5" /></div>
+                      <div className="text-right"><p className="text-2xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p><p className="text-[10px] font-black" style={{ color: meta.tone }}>{row.share}%</p></div>
+                    </div>
+                    <p className="mt-3 text-xs font-black" style={{ color: "var(--text-1)" }}>{row.result_status}</p>
+                    <p className="mt-1 text-[10px] leading-4" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </SystemSurface>
 
           <SystemSurface className="p-5">
             {(() => {
@@ -1192,6 +1333,7 @@ export function InspectorProductionWorkspace() {
                       setHistoryCategory("");
                       setHistoryStatus("");
                       setHistoryEvidence("");
+                      setHistoryResultStatus("");
                       setHistorySearch("");
                       setHistorySearchDraft("");
                       setSelectedInspectorId(null);
@@ -1252,6 +1394,32 @@ export function InspectorProductionWorkspace() {
                   </div>
                 </div>
 
+                <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Desfechos no período</p>
+                      <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>Como as execuções deste inspetor foram encerradas no momento do registro.</p>
+                    </div>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    {data.outcomes.map((row) => {
+                      const outcomeMeta = resultStatusMeta(row.result_status);
+                      const OutcomeIcon = outcomeMeta.icon;
+                      return (
+                        <div key={row.result_status} className="rounded-xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                          <div className="flex items-center justify-between gap-2">
+                            <OutcomeIcon className="h-4 w-4" style={{ color: outcomeMeta.tone }} />
+                            <span className="text-sm font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</span>
+                          </div>
+                          <p className="mt-2 text-[10px] font-black" style={{ color: outcomeMeta.tone }}>{row.result_status}</p>
+                          <p className="mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{row.share}% das execuções</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
                     <div className="border-b p-4" style={{ borderColor: "var(--border-subtle)" }}>
@@ -1277,7 +1445,7 @@ export function InspectorProductionWorkspace() {
                       {data.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro no período.</p> : data.recent.slice(0, 6).map((entry) => (
                         <button key={entry.id} type="button" onClick={() => { setSelectedInspectorId(null); setDetailsId(entry.id); }} className="w-full p-3 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025]">
                           <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{entry.category} · {displayDateTime(entry.executed_at)}</p></div>
+                            <div className="min-w-0"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{entry.category} · {displayDateTime(entry.executed_at)}</p><div className="mt-2"><ResultStatusBadge status={entry.result_status} /></div></div>
                             <span className="flex shrink-0 items-center gap-1 text-[9px] font-bold" style={{ color: entry.attachment_count ? "#10b981" : "var(--text-4)" }}><Camera className="h-3 w-3" /> {entry.attachment_count}</span>
                           </div>
                         </button>
@@ -1306,13 +1474,14 @@ export function InspectorProductionWorkspace() {
           {detailsQuery.isLoading ? <div className="py-10 text-center text-sm" style={{ color: "var(--text-4)" }}>Carregando registro...</div> : detailsQuery.isError ? <div className="py-8 text-center text-sm text-red-500">Não foi possível abrir o registro.</div> : detailsQuery.data ? (
             <div className="space-y-4">
               <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
-                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>{detailsQuery.data.category}</p><h3 className="mt-1 text-lg font-black" style={{ color: "var(--text-1)" }}>{detailsQuery.data.title}</h3></div><span className="rounded-full px-2 py-1 text-[9px] font-black" style={detailsQuery.data.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{detailsQuery.data.status.toUpperCase()}</span></div>
+                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>{detailsQuery.data.category}</p><h3 className="mt-1 text-lg font-black" style={{ color: "var(--text-1)" }}>{detailsQuery.data.title}</h3><div className="mt-2"><ResultStatusBadge status={detailsQuery.data.result_status} /></div></div><span className="rounded-full px-2 py-1 text-[9px] font-black" style={detailsQuery.data.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{detailsQuery.data.status.toUpperCase()}</span></div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6" style={{ color: "var(--text-2)" }}>{detailsQuery.data.details}</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Info label="Executor" value={detailsQuery.data.executor_name} detail={`Mat. ${detailsQuery.data.executor_matricula}`} icon={UserRound} />
                 <Info label="Data/hora" value={displayDateTime(detailsQuery.data.executed_at)} detail="Gravada pelo servidor" icon={Clock3} />
                 <Info label="Local / área" value={detailsQuery.data.location || "Não informado"} detail="Contexto do registro" icon={MapPin} />
+                <Info label="Resultado" value={detailsQuery.data.result_status} detail="Desfecho imutável da atribuição" icon={resultStatusMeta(detailsQuery.data.result_status).icon} />
                 <Info label="Evidências" value={String(detailsQuery.data.attachment_count)} detail="Imagens preservadas" icon={Camera} />
               </div>
               {detailsQuery.data.status === "Cancelada" && <div className="rounded-2xl p-4" style={{ background: "rgba(239,68,68,.06)", border: "1px solid rgba(239,68,68,.20)" }}><p className="text-sm font-black text-red-500">Registro cancelado</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-3)" }}>{detailsQuery.data.canceled_reason}</p><p className="mt-2 text-[11px]" style={{ color: "var(--text-4)" }}>Por {detailsQuery.data.canceled_by_name || "usuário autorizado"} · {displayDateTime(detailsQuery.data.canceled_at)}</p></div>}

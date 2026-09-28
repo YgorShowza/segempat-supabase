@@ -1,6 +1,7 @@
 import { apiRequest, buildSegempatApiUrl } from "@/lib/backend/api-client";
 
 export type InspectorProductionStatus = "Registrada" | "Cancelada";
+export type InspectorProductionResultStatus = "Concluído" | "Concluído com pendência" | "Requer acompanhamento";
 
 export interface InspectorProductionMember {
   employee_id: string;
@@ -17,6 +18,7 @@ export interface InspectorProductionMembership {
   current_member: InspectorProductionMember | null;
   members: InspectorProductionMember[];
   categories: string[];
+  result_statuses: InspectorProductionResultStatus[];
 }
 
 export interface InspectorProductionEntry {
@@ -27,6 +29,7 @@ export interface InspectorProductionEntry {
   executor_matricula: string;
   title: string;
   category: string;
+  result_status: InspectorProductionResultStatus;
   details: string;
   location: string | null;
   status: InspectorProductionStatus;
@@ -120,6 +123,7 @@ export interface InspectorProductionSummary {
   ranking: InspectorProductionRankingRow[];
   categories: Array<{ category: string; total: number; share: number }>;
   category_concentration: InspectorProductionCategoryConcentration[];
+  outcomes: Array<{ result_status: InspectorProductionResultStatus; total: number; share: number }>;
   timeline: Array<{ day: string; executor_employee_id: string; executor_name: string; total: number }>;
   recent: InspectorProductionEntry[];
 }
@@ -149,6 +153,7 @@ export interface InspectorProductionInspectorDetails {
     last_execution_at: string | null;
   };
   categories: Array<{ category: string; total: number; share: number }>;
+  outcomes: Array<{ result_status: InspectorProductionResultStatus; total: number; share: number }>;
   timeline: Array<{ day: string; total: number }>;
   recent: InspectorProductionEntry[];
 }
@@ -189,6 +194,7 @@ export function listInspectorProductionEntries(input: {
   category?: string;
   status?: InspectorProductionStatus | "";
   evidence?: "with" | "without" | "";
+  result_status?: InspectorProductionResultStatus | "";
   search?: string;
   limit?: number;
   offset?: number;
@@ -203,6 +209,7 @@ export function listInspectorProductionEntries(input: {
   if (input.category) params.set("category", input.category);
   if (input.status) params.set("status", input.status);
   if (input.evidence) params.set("evidence", input.evidence);
+  if (input.result_status) params.set("result_status", input.result_status);
   if (input.search?.trim()) params.set("search", input.search.trim());
   return apiRequest<InspectorProductionEntryPage>(`/api/inspector-production/entries?${params.toString()}`);
 }
@@ -221,6 +228,7 @@ export function getInspectorProductionEntry(id: string): Promise<InspectorProduc
 export function createInspectorProductionEntry(input: {
   title: string;
   category: string;
+  result_status: InspectorProductionResultStatus;
   details: string;
   location?: string | null;
 }): Promise<InspectorProductionEntry> {
