@@ -24,6 +24,7 @@ jobs:
           ROUTE=src/routes/_authenticated/producao-inspetoria.tsx
           UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
           PRINT=src/components/inspector-production/InspectorProductionPrintReport.tsx
+          LOGO=public/empat-logo-report.jpg
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
           MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
@@ -32,6 +33,8 @@ jobs:
           test -f "$ROUTE"
           test -f "$UI"
           test -f "$PRINT"
+          test -f "$LOGO"
+          test -s "$LOGO"
           test -f "$API"
           test -f "$MIG"
           test -f "$MIG_RESULT"
@@ -92,6 +95,11 @@ jobs:
           grep -F 'body > *:not(.inspector-production-print-report):not(style):not(script)' "$PRINT" >/dev/null
           grep -F 'createPortal' "$PRINT" >/dev/null
           grep -F 'document.body' "$PRINT" >/dev/null
+          grep -F 'src="/empat-logo-report.jpg"' "$PRINT" >/dev/null
+          grep -F 'EMPAT - Empresa Alagoana de Terminais' "$PRINT" >/dev/null
+          grep -F 'Sem distribuição por categoria no período' "$PRINT" >/dev/null
+          grep -F 'Sem base para distribuição por categoria e inspetor' "$PRINT" >/dev/null
+          grep -F 'uso gerencial' "$PRINT" >/dev/null
           grep -F 'sem conteúdo generativo ou inferências' "$UI" >/dev/null
           grep -F 'buildExecutiveSummary' "$API" >/dev/null
           grep -F 'executive_summary' "$API" >/dev/null
