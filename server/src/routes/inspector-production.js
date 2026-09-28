@@ -242,12 +242,17 @@ inspectorProductionRouter.get(
         display_order: Number(row.display_order ?? 0),
         total: Number(row.total ?? 0),
         with_evidence: Number(row.with_evidence ?? 0),
+        without_evidence: Math.max(0, Number(row.total ?? 0) - Number(row.with_evidence ?? 0)),
+        evidence_rate: Number(row.total ?? 0) > 0
+          ? Number(((Number(row.with_evidence ?? 0) / Number(row.total ?? 0)) * 100).toFixed(1))
+          : 0,
         last_execution_at: row.last_execution_at ?? null,
       }))
       .sort((a, b) => b.total - a.total || a.display_order - b.display_order || a.name.localeCompare(b.name, "pt-BR"));
 
     const total = ranking.reduce((sum, row) => sum + row.total, 0);
     const withEvidence = ranking.reduce((sum, row) => sum + row.with_evidence, 0);
+    const withoutEvidence = Math.max(0, total - withEvidence);
     const members = ranking.length;
     const rankingWithShare = ranking.map((row, index) => ({
       ...row,
@@ -264,7 +269,9 @@ inspectorProductionRouter.get(
         participating_inspectors: ranking.filter((row) => row.total > 0).length,
         average_per_inspector: members > 0 ? Number((total / members).toFixed(1)) : 0,
         with_evidence: withEvidence,
+        without_evidence: withoutEvidence,
         evidence_rate: total > 0 ? Number(((withEvidence / total) * 100).toFixed(1)) : 0,
+        without_evidence_rate: total > 0 ? Number(((withoutEvidence / total) * 100).toFixed(1)) : 0,
         canceled: Number(canceledRow?.total ?? 0),
       },
       ranking: rankingWithShare,
@@ -292,6 +299,7 @@ inspectorProductionRouter.get(
     const employeeId = trimOrNull(req.query?.employee_id);
     const category = trimOrNull(req.query?.category);
     const status = trimOrNull(req.query?.status);
+    const evidence = trimOrNull(req.query?.evidence);
     const search = trimOrNull(req.query?.search);
 
     if (employeeId) {
@@ -306,6 +314,14 @@ inspectorProductionRouter.get(
       if (!["Registrada", "Cancelada"].includes(status)) throw badRequest("Situação inválida");
       conditions.push("p.status = ?");
       params.push(status);
+    }
+    if (evidence) {
+      if (!["with", "without"].includes(evidence)) throw badRequest("Filtro de evidência inválido");
+      conditions.push(
+        evidence === "with"
+          ? "EXISTS (SELECT 1 FROM inspector_production_attachments a WHERE a.entry_id = p.id)"
+          : "NOT EXISTS (SELECT 1 FROM inspector_production_attachments a WHERE a.entry_id = p.id)",
+      );
     }
     if (search) {
       const needle = `%${search.toLowerCase().slice(0, 120)}%`;
