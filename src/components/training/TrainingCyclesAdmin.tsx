@@ -13,6 +13,7 @@ import { hasPermission } from "@/lib/access-control";
 import { listEmployees } from "@/lib/employees";
 import { operationalDate } from "@/lib/operational-time";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemPanelSkeleton } from "@/components/system/SystemUI";
 import {
   calculateTrainingWindow,
   createTrainingSchedule,
@@ -248,5 +249,5 @@ function Metric({ label, value, color, icon: Icon, active, onClick }: { label: s
 }
 
 function Loading({ label }: { label: string }) {
-  return <div role="status" aria-live="polite" className="flex flex-col items-center justify-center gap-3 py-16"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><p className="text-xs" style={{ color: "var(--text-4)" }}>{label}</p></div>;
+  return <SystemPanelSkeleton rows={6} label={label} />;
 }
