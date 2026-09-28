@@ -78,6 +78,17 @@ jobs:
           grep -F 'Cadeia de acompanhamento' "$UI" >/dev/null
           grep -F 'O registro original não será alterado.' "$UI" >/dev/null
           grep -F 'Resumo executivo automático' "$UI" >/dev/null
+          grep -F 'Imprimir / Salvar PDF' "$UI" >/dev/null
+          grep -F 'inspector-production-print-report' "$UI" >/dev/null
+          grep -F '@page { size: A4 portrait; margin: 0; }' "$UI" >/dev/null
+          grep -F 'Relatório gerencial' "$UI" >/dev/null
+          grep -F 'Unidade de Segurança Portuária' "$UI" >/dev/null
+          grep -F 'Documento gerado eletronicamente pelo SEGEMPAT' "$UI" >/dev/null
+          grep -F 'Página {page} de 3' "$UI" >/dev/null
+          grep -F 'printExecutiveReport' "$UI" >/dev/null
+          grep -F 'setPrintIssuedAt' "$UI" >/dev/null
+          grep -F 'body * {' "$UI" >/dev/null
+          grep -F 'visibility: hidden !important;' "$UI" >/dev/null
           grep -F 'sem conteúdo generativo ou inferências' "$UI" >/dev/null
           grep -F 'buildExecutiveSummary' "$API" >/dev/null
           grep -F 'executive_summary' "$API" >/dev/null
