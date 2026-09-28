@@ -26,12 +26,14 @@ jobs:
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
           MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
+          MIG_FOLLOW_UP=supabase/migrations/20260928030000_inspector_production_follow_up.sql
 
           test -f "$ROUTE"
           test -f "$UI"
           test -f "$API"
           test -f "$MIG"
           test -f "$MIG_RESULT"
+          test -f "$MIG_FOLLOW_UP"
 
           grep -F 'Produção da Inspetoria' "$UI" >/dev/null
           grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
@@ -47,6 +49,19 @@ jobs:
           grep -F "Concluído com pendência" "$MIG_RESULT" >/dev/null
           grep -F "Requer acompanhamento" "$MIG_RESULT" >/dev/null
           grep -F 'NEW.result_status IS DISTINCT FROM OLD.result_status' "$MIG_RESULT" >/dev/null
+          grep -F 'parent_entry_id UUID NULL' "$MIG_FOLLOW_UP" >/dev/null
+          grep -F 'ON DELETE RESTRICT' "$MIG_FOLLOW_UP" >/dev/null
+          grep -F 'NEW.parent_entry_id IS DISTINCT FROM OLD.parent_entry_id' "$MIG_FOLLOW_UP" >/dev/null
+          grep -F 'segempat_inspector_production_parent_guard' "$MIG_FOLLOW_UP" >/dev/null
+          grep -F "Concluído com pendência" "$MIG_FOLLOW_UP" >/dev/null
+          grep -F "Requer acompanhamento" "$MIG_FOLLOW_UP" >/dev/null
+          grep -F 'parent_entry_id' "$API" >/dev/null
+          grep -F 'FOLLOW_UP_SOURCE_RESULTS' "$API" >/dev/null
+          grep -F 'follow_up_chain' "$API" >/dev/null
+          grep -F 'follow_up_record: Boolean(parentEntryId)' "$API" >/dev/null
+          grep -F 'Registrar acompanhamento' "$UI" >/dev/null
+          grep -F 'Cadeia de acompanhamento' "$UI" >/dev/null
+          grep -F 'O registro original não será alterado.' "$UI" >/dev/null
           grep -F 'Distribuição por categoria e inspetor' "$UI" >/dev/null
           grep -F 'category_concentration' "$API" >/dev/null
           grep -F 'dominant_share' "$API" >/dev/null
