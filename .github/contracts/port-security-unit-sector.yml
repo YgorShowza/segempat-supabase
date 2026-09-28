@@ -1,0 +1,29 @@
+name: SEGEMPAT Port Security Unit Sector
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-port-security-unit-sector-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sector-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate Port Security Unit sector coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          SECTOR='Unidade de Segurança Portuária'
+          for file in             server/src/routes/employees.js             server/src/routes/exams.js             server/src/routes/training.js             server/src/routes/cronograma.js             server/src/routes/question-bank.js             src/lib/employees.ts             src/lib/exams.ts             src/components/training/TrainingModulesAdmin.tsx             src/components/question-bank/QuestionBankAdmin.tsx
+          do
+            grep -F "$SECTOR" "$file" >/dev/null || { echo "$file sem o setor oficial"; exit 1; }
+          done
+          echo "Setor Unidade de Segurança Portuária coberto nos cadastros e fluxos segmentados."
