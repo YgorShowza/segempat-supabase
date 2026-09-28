@@ -29,6 +29,7 @@ import { trainingRouter, adminTrainingRouter, myTrainingRouter } from "./routes/
 import { practicalIntegrityRouter } from "./routes/practical-integrity.js";
 import { occurrenceIntegrityRouter } from "./routes/occurrence-integrity.js";
 import { operationsRouter } from "./routes/operations.js";
+import { inspectorProductionRouter } from "./routes/inspector-production.js";
 import { myPracticalRouter } from "./routes/practical-self.js";
 import { HttpError } from "./util.js";
 
@@ -64,6 +65,9 @@ const READINESS_TABLES = [
   "occurrence_updates",
   "occurrence_attachments",
   "audit_logs",
+  "inspector_production_members",
+  "inspector_production_entries",
+  "inspector_production_attachments",
 ];
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
@@ -276,6 +280,7 @@ export function createApp() {
   app.use("/api/operations", practicalIntegrityRouter);
   app.use("/api/operations", occurrenceIntegrityRouter);
   app.use("/api/operations", operationsRouter);
+  app.use("/api/inspector-production", inspectorProductionRouter);
 
   app.use((_req, _res, next) => next(new HttpError(404, "Rota não encontrada", "NOT_FOUND")));
   app.use((error, _req, res, _next) => {
