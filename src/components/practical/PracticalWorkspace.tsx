@@ -38,6 +38,7 @@ import {
   type PracticalEvaluation,
 } from "@/lib/operations";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface as Card } from "@/components/system/SystemUI";
 
 const STATUS_OPTIONS = ["Todos", "Planejada", "Em andamento", "Concluída"] as const;
 const defaultChecklist = [
@@ -47,21 +48,6 @@ const defaultChecklist = [
   "Uso correto dos recursos",
   "Cumprimento das normas de segurança",
 ].map((label, index) => ({ id: String(index + 1), label, done: false }));
-
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 function Metric({
   label,
@@ -76,30 +62,7 @@ function Metric({
   accent: string;
   sub: string;
 }) {
-  return (
-    <Card className="relative overflow-hidden p-4">
-      <div className="absolute left-0 top-0 h-[3px] w-full" style={{ background: accent }} />
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-black" style={{ color: "var(--text-1)" }}>
-            {value}
-          </p>
-          <p className="mt-1 text-[11px] font-semibold" style={{ color: accent }}>
-            {sub}
-          </p>
-        </div>
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}
-        >
-          <Icon className="h-4 w-4" style={{ color: accent }} />
-        </div>
-      </div>
-    </Card>
-  );
+  return <SystemMetricCard label={label} value={value} icon={Icon} accent={accent} detail={sub} />;
 }
 
 function dateLabel(value?: string | null) {
@@ -389,17 +352,7 @@ export function PracticalWorkspace({ operatorTitle = false }: { operatorTitle?: 
   const approved = rows.filter((row) => row.status === "Concluída" && isPracticalApproved(row)).length;
 
   if (!user || query.isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-20" role="status" aria-live="polite">
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-4"
-          style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }}
-        />
-        <p className="text-sm font-semibold" style={{ color: "var(--text-4)" }}>
-          Carregando avaliações práticas...
-        </p>
-      </div>
-    );
+    return <SystemDataWorkspaceSkeleton metricCount={4} rowCount={7} />;
   }
 
   if (query.isError) {
