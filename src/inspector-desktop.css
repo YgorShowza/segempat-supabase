@@ -12,6 +12,7 @@
 
   .segempat-inspector-desktop[data-inspector-route="/atencao"] > div,
   .segempat-inspector-desktop[data-inspector-route="/risco"] > div,
+  .segempat-inspector-desktop[data-inspector-route="/producao-inspetoria"] > div,
   .segempat-inspector-desktop[data-inspector-route="/ia-base"] > div,
   .segempat-inspector-desktop[data-inspector-route="/modulos-treinamento"] > div,
   .segempat-inspector-desktop[data-inspector-route="/validar-certificados"] > div {
