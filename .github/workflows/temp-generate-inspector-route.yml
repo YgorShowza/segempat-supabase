@@ -1,0 +1,46 @@
+name: TEMP Generate SEGEMPAT Route Tree
+
+on:
+  push:
+    branches: [feature-inspector-production]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature-inspector-production
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile --registry https://registry.npmjs.org
+      - name: Generate route tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          VITE_SEGEMPAT_REQUIRE_API=false bun run build:dev >/tmp/route-build.log 2>&1 || {
+            cat /tmp/route-build.log
+            exit 1
+          }
+          test -f src/routeTree.gen.ts
+          grep -F '/producao-inspetoria' src/routeTree.gen.ts >/dev/null
+      - name: Commit generated route tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/routeTree.gen.ts
+          if git diff --cached --quiet; then
+            echo "Route tree already current."
+            exit 0
+          fi
+          git commit -m "Generate Inspector Production route tree"
+          git push origin HEAD:feature-inspector-production
