@@ -153,7 +153,11 @@ function buildExecutiveSummary({
     if (canceled > 0) {
       statements.push(`${countText(canceled, "registro cancelado permanece preservado", "registros cancelados permanecem preservados")} no histórico do período.`);
     }
-    statements.push("Não houve acompanhamento vinculado registrado no período.");
+    statements.push(
+      followUps.total > 0
+        ? `Foram registrados ${countText(followUps.total, "acompanhamento", "acompanhamentos")} no período, vinculados a ${countText(followUps.source_records, "registro de origem", "registros de origem")}.`
+        : "Não houve acompanhamento vinculado registrado no período.",
+    );
   } else {
     statements.push(`No período de ${period}, foram registradas ${countText(total, "execução ativa", "execuções ativas")} por ${participating} de ${countText(members, "inspetor configurado", "inspetores configurados")}.`);
 
