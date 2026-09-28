@@ -1,17 +1,15 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 
 export function SystemSurface({
   children,
   className = "",
   style,
-}: {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-}) {
+  ...props
+}: ComponentProps<"section"> & { style?: CSSProperties }) {
   return (
     <section
+      {...props}
       className={`rounded-2xl ${className}`}
       style={{
         background: "var(--bg-surface)",
@@ -130,6 +128,45 @@ export function SystemMetricCard({
         </div>
       </div>
     </SystemSurface>
+  );
+}
+
+export function SystemDataWorkspaceSkeleton({
+  metricCount = 4,
+  rowCount = 6,
+}: {
+  metricCount?: number;
+  rowCount?: number;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-[1536px] space-y-5 pb-10" role="status" aria-live="polite" aria-label="Carregando área de trabalho">
+      <SystemSurface className="p-6 lg:p-7">
+        <Skeleton className="h-3 w-36" />
+        <Skeleton className="mt-4 h-8 w-full max-w-sm" />
+        <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
+      </SystemSurface>
+      <div className={`grid gap-3 sm:grid-cols-2 ${metricCount >= 5 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
+        {Array.from({ length: metricCount }, (_, index) => (
+          <SystemSurface key={index} className="min-h-[116px] p-4">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="mt-4 h-8 w-16" />
+            <Skeleton className="mt-3 h-3 w-32" />
+          </SystemSurface>
+        ))}
+      </div>
+      <SystemSurface className="p-4 lg:p-5">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_180px]">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </SystemSurface>
+      <SystemSurface className="overflow-hidden p-4 lg:p-5">
+        <div className="space-y-3">
+          {Array.from({ length: rowCount }, (_, index) => <Skeleton key={index} className="h-14 w-full" />)}
+        </div>
+      </SystemSurface>
+    </div>
   );
 }
 
