@@ -37,6 +37,10 @@ jobs:
           grep -F 'Cobertura de evidências' "$UI" >/dev/null
           grep -F 'Comparativo com o período anterior' "$UI" >/dev/null
           grep -F 'Produção individual do inspetor' "$UI" >/dev/null
+          grep -F 'Concentração por categoria' "$UI" >/dev/null
+          grep -F 'Distribuição por categoria e inspetor' "$UI" >/dev/null
+          grep -F 'category_concentration' "$API" >/dev/null
+          grep -F 'dominant_share' "$API" >/dev/null
           grep -F 'Ver histórico completo' "$UI" >/dev/null
           grep -F '"/inspectors/:employeeId"' "$API" >/dev/null
           grep -F 'participation_share' "$API" >/dev/null
