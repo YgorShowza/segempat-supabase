@@ -95,6 +95,12 @@ export interface InspectorProductionSuggestion {
   last_used: string;
 }
 
+export interface InspectorProductionEntryPage {
+  items: InspectorProductionEntry[];
+  total: number;
+  next_offset: number | null;
+}
+
 function periodQuery(from: string, to: string) {
   const params = new URLSearchParams({ from, to });
   return params.toString();
@@ -115,13 +121,20 @@ export function listInspectorProductionEntries(input: {
   category?: string;
   status?: InspectorProductionStatus | "";
   search?: string;
-}): Promise<InspectorProductionEntry[]> {
-  const params = new URLSearchParams({ from: input.from, to: input.to });
+  limit?: number;
+  offset?: number;
+}): Promise<InspectorProductionEntryPage> {
+  const params = new URLSearchParams({
+    from: input.from,
+    to: input.to,
+    limit: String(input.limit ?? 100),
+    offset: String(input.offset ?? 0),
+  });
   if (input.employee_id) params.set("employee_id", input.employee_id);
   if (input.category) params.set("category", input.category);
   if (input.status) params.set("status", input.status);
   if (input.search?.trim()) params.set("search", input.search.trim());
-  return apiRequest<InspectorProductionEntry[]>(`/api/inspector-production/entries?${params.toString()}`);
+  return apiRequest<InspectorProductionEntryPage>(`/api/inspector-production/entries?${params.toString()}`);
 }
 
 export function listInspectorProductionSuggestions(query = ""): Promise<InspectorProductionSuggestion[]> {
