@@ -56,6 +56,7 @@ import {
   listInspectorProductionEntries,
   listInspectorProductionSuggestions,
   type InspectorProductionEntry,
+  type InspectorProductionResultStatus,
   type InspectorProductionStatus,
   type InspectorProductionSummary,
 } from "@/lib/inspector-production";
@@ -142,6 +143,24 @@ function categoryConcentrationMeta(level: "base_forming" | "shared" | "moderate"
     label: "Base em formação",
     detail: "Ainda há poucos registros nesta categoria para interpretar sua distribuição com segurança.",
     tone: "#64748b",
+  };
+}
+
+function resultStatusMeta(status: InspectorProductionResultStatus) {
+  if (status === "Concluído") return {
+    tone: "#10b981",
+    icon: CheckCircle2,
+    detail: "Atividade finalizada sem pendência registrada.",
+  };
+  if (status === "Concluído com pendência") return {
+    tone: "#d97706",
+    icon: Clock3,
+    detail: "Atividade executada, mas há pendência associada ao resultado.",
+  };
+  return {
+    tone: "#2563eb",
+    icon: RefreshCw,
+    detail: "A atividade exige nova verificação, providência ou continuidade.",
   };
 }
 
@@ -264,14 +283,15 @@ export function InspectorProductionWorkspace() {
   const [historyCategory, setHistoryCategory] = useState("");
   const [historyStatus, setHistoryStatus] = useState<InspectorProductionStatus | "">("");
   const [historyEvidence, setHistoryEvidence] = useState<"with" | "without" | "">("");
+  const [historyResultStatus, setHistoryResultStatus] = useState<InspectorProductionResultStatus | "">("");
   const [historyOffset, setHistoryOffset] = useState(0);
 
   useEffect(() => {
     setHistoryOffset(0);
-  }, [from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch]);
+  }, [from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historyResultStatus, historySearch]);
 
   const historyQuery = useQuery({
-    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historySearch, historyOffset],
+    queryKey: ["inspector-production-history", from, to, historyEmployee, historyCategory, historyStatus, historyEvidence, historyResultStatus, historySearch, historyOffset],
     queryFn: () => listInspectorProductionEntries({
       from,
       to,
@@ -279,6 +299,7 @@ export function InspectorProductionWorkspace() {
       category: historyCategory || undefined,
       status: historyStatus,
       evidence: historyEvidence,
+      result_status: historyResultStatus,
       search: historySearch || undefined,
       limit: PAGE_SIZE,
       offset: historyOffset,
@@ -289,6 +310,7 @@ export function InspectorProductionWorkspace() {
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Inspeção");
+  const [resultStatus, setResultStatus] = useState<InspectorProductionResultStatus>("Concluído");
   const [details, setDetails] = useState("");
   const [location, setLocation] = useState("");
   const [pendingEvidence, setPendingEvidence] = useState<PendingEvidence[]>([]);
@@ -305,6 +327,7 @@ export function InspectorProductionWorkspace() {
       const created = await createInspectorProductionEntry({
         title: title.trim(),
         category,
+        result_status: resultStatus,
         details: details.trim(),
         location: location.trim() || null,
       });
@@ -330,6 +353,7 @@ export function InspectorProductionWorkspace() {
       ]);
       setTitle("");
       setCategory(membership.data?.categories?.[0] || "Inspeção");
+      setResultStatus(membership.data?.result_statuses?.[0] || "Concluído");
       setDetails("");
       setLocation("");
       setPendingEvidence([]);
@@ -445,6 +469,7 @@ export function InspectorProductionWorkspace() {
     setHistoryCategory("");
     setHistoryStatus("");
     setHistoryEvidence("");
+    setHistoryResultStatus("");
   };
 
   const downloadReportCsv = async () => {
@@ -459,7 +484,7 @@ export function InspectorProductionWorkspace() {
         if (rows.length > 20_000) throw new Error("O período possui registros demais para uma única exportação. Reduza o período.");
       }
       const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-      const header = ["Data/hora", "Inspetor", "Matrícula", "Atribuição", "Categoria", "Descrição/resultado", "Local", "Evidências", "Situação", "Motivo cancelamento"];
+      const header = ["Data/hora", "Inspetor", "Matrícula", "Atribuição", "Categoria", "Resultado da atribuição", "Descrição / observações", "Local", "Evidências", "Situação do registro", "Motivo cancelamento"];
       const csv = [
         header.map(escape).join(";"),
         ...rows.map((row) => [
@@ -468,6 +493,7 @@ export function InspectorProductionWorkspace() {
           row.executor_matricula,
           row.title,
           row.category,
+          row.result_status,
           row.details,
           row.location ?? "",
           row.attachment_count,
