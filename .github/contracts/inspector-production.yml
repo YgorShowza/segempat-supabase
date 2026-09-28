@@ -33,6 +33,10 @@ jobs:
 
           grep -F 'Produção da Inspetoria' "$UI" >/dev/null
           grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
+          grep -F 'Sem evidência' "$UI" >/dev/null
+          grep -F 'Cobertura de evidências' "$UI" >/dev/null
+          grep -F 'without_evidence' "$API" >/dev/null
+          grep -F 'Filtro de evidência inválido' "$API" >/dev/null
           grep -F 'identity_derived_server_side: true' "$API" >/dev/null
           grep -F 'execution_time_derived_server_side: true' "$API" >/dev/null
           grep -F 'INSPECTOR_PRODUCTION_CREATE' "$API" >/dev/null
