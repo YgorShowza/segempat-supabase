@@ -8,6 +8,7 @@ import { listCertificateRecords, type CertificateRecord } from "@/lib/certificat
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { SystemMetricCard, SystemPanelSkeleton } from "@/components/system/SystemUI";
 
 function fmt(value?: string | null) {
   if (!value) return "—";
@@ -145,13 +146,10 @@ function ProcessStep({ number, title, text }: { number: string; title: string; t
 
 function Metric({ label, value, state }: { label: string; value: number | string; state: WorkflowState }) {
   const meta = STATE_META[state];
-  return <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}><div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-2xl font-black" style={{ color: "var(--text-1)" }}>{value}</p></div><div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: meta.background, color: meta.color }}>{state === "valid" ? <Award className="h-4 w-4" /> : state === "revoked" ? <XCircle className="h-4 w-4" /> : <Clock3 className="h-4 w-4" />}</div></div></section>;
-}
-
-function Restricted() {
-  return <div className="mx-auto max-w-xl rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><ShieldCheck className="mx-auto h-10 w-10" style={{ color: "var(--accent)" }} /><h1 className="mt-3 text-lg font-black" style={{ color: "var(--text-1)" }}>Acesso restrito</h1><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Seu nível de acesso não possui permissão para gerenciar certificados e assinaturas.</p></div>;
+  const Icon = state === "valid" ? CheckCircle2 : state === "revoked" ? XCircle : Clock3;
+  return <SystemMetricCard label={label} value={value} icon={Icon} accent={meta.color} detail={meta.label} />;
 }
 
 function Loading() {
-  return <div className="flex flex-col items-center justify-center gap-3 py-14" role="status" aria-live="polite"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><p className="text-xs font-semibold" style={{ color: "var(--text-4)" }}>Carregando fluxo documental...</p></div>;
+  return <SystemPanelSkeleton rows={6} label="Carregando fluxo documental" />;
 }
