@@ -30,6 +30,7 @@ export interface InspectorProductionEntry {
   title: string;
   category: string;
   result_status: InspectorProductionResultStatus;
+  parent_entry_id: string | null;
   details: string;
   location: string | null;
   status: InspectorProductionStatus;
@@ -56,8 +57,14 @@ export interface InspectorProductionAttachment {
   created_at: string;
 }
 
+export interface InspectorProductionFollowUpChainItem extends InspectorProductionEntry {
+  depth: number;
+  is_current: boolean;
+}
+
 export interface InspectorProductionEntryDetails extends InspectorProductionEntry {
   attachments: InspectorProductionAttachment[];
+  follow_up_chain: InspectorProductionFollowUpChainItem[];
 }
 
 export interface InspectorProductionRankingRow {
@@ -229,6 +236,7 @@ export function createInspectorProductionEntry(input: {
   title: string;
   category: string;
   result_status: InspectorProductionResultStatus;
+  parent_entry_id?: string | null;
   details: string;
   location?: string | null;
 }): Promise<InspectorProductionEntry> {
