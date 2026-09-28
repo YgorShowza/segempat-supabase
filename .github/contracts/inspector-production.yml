@@ -25,11 +25,13 @@ jobs:
           UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
+          MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
 
           test -f "$ROUTE"
           test -f "$UI"
           test -f "$API"
           test -f "$MIG"
+          test -f "$MIG_RESULT"
 
           grep -F 'Produção da Inspetoria' "$UI" >/dev/null
           grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
@@ -38,6 +40,13 @@ jobs:
           grep -F 'Comparativo com o período anterior' "$UI" >/dev/null
           grep -F 'Produção individual do inspetor' "$UI" >/dev/null
           grep -F 'Concentração por categoria' "$UI" >/dev/null
+          grep -F 'Resultado da atribuição' "$UI" >/dev/null
+          grep -F 'Desfecho das atribuições' "$UI" >/dev/null
+          grep -F 'result_status' "$API" >/dev/null
+          grep -F 'RESULT_STATUSES' "$API" >/dev/null
+          grep -F "Concluído com pendência" "$MIG_RESULT" >/dev/null
+          grep -F "Requer acompanhamento" "$MIG_RESULT" >/dev/null
+          grep -F 'NEW.result_status IS DISTINCT FROM OLD.result_status' "$MIG_RESULT" >/dev/null
           grep -F 'Distribuição por categoria e inspetor' "$UI" >/dev/null
           grep -F 'category_concentration' "$API" >/dev/null
           grep -F 'dominant_share' "$API" >/dev/null
