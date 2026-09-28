@@ -354,6 +354,142 @@ inspectorProductionRouter.get(
 );
 
 inspectorProductionRouter.get(
+  "/inspectors/:employeeId",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { from, to } = periodFromRequest(req);
+    const previousPeriod = previousComparablePeriod(from, to);
+    const employeeId = String(req.params.employeeId || "").trim();
+
+    const member = await queryOne(
+      `SELECT m.employee_id,m.is_leader,m.active,m.display_order,
+              e.full_name,e.matricula,e.sector,e.status
+         FROM inspector_production_members m
+         JOIN employees e ON e.id = m.employee_id
+        WHERE m.employee_id = ?
+        LIMIT 1`,
+      [employeeId],
+    );
+    if (!member) throw notFound("Inspetor não configurado neste módulo");
+
+    const [currentRow, previousRow, teamRow, categoryRows, timelineRows, recentRows] = await Promise.all([
+      queryOne(
+        `SELECT
+            COUNT(*) FILTER (WHERE p.status = 'Registrada') AS total,
+            COUNT(*) FILTER (
+              WHERE p.status = 'Registrada'
+                AND EXISTS (SELECT 1 FROM inspector_production_attachments a WHERE a.entry_id = p.id)
+            ) AS with_evidence,
+            COUNT(*) FILTER (WHERE p.status = 'Cancelada') AS canceled,
+            MAX(p.executed_at) FILTER (WHERE p.status = 'Registrada') AS last_execution_at
+           FROM inspector_production_entries p
+          WHERE p.executor_employee_id = ?
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)`,
+        [employeeId, from, to],
+      ),
+      queryOne(
+        `SELECT COUNT(*) FILTER (WHERE p.status = 'Registrada') AS total
+           FROM inspector_production_entries p
+          WHERE p.executor_employee_id = ?
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)`,
+        [employeeId, previousPeriod.from, previousPeriod.to],
+      ),
+      queryOne(
+        `SELECT COUNT(*) AS total
+           FROM inspector_production_entries p
+          WHERE p.status = 'Registrada'
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)`,
+        [from, to],
+      ),
+      query(
+        `SELECT p.category,COUNT(*) AS total
+           FROM inspector_production_entries p
+          WHERE p.executor_employee_id = ?
+            AND p.status = 'Registrada'
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)
+          GROUP BY p.category
+          ORDER BY total DESC,p.category ASC`,
+        [employeeId, from, to],
+      ),
+      query(
+        `SELECT TO_CHAR((p.executed_at AT TIME ZONE 'America/Maceio')::date,'YYYY-MM-DD') AS day,
+                COUNT(*) AS total
+           FROM inspector_production_entries p
+          WHERE p.executor_employee_id = ?
+            AND p.status = 'Registrada'
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)
+          GROUP BY day
+          ORDER BY day ASC`,
+        [employeeId, from, to],
+      ),
+      query(
+        `SELECT p.*,
+                m.is_leader,
+                (SELECT COUNT(*) FROM inspector_production_attachments a WHERE a.entry_id = p.id) AS attachment_count
+           FROM inspector_production_entries p
+           LEFT JOIN inspector_production_members m ON m.employee_id = p.executor_employee_id
+          WHERE p.executor_employee_id = ?
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)
+          ORDER BY p.executed_at DESC,p.created_at DESC
+          LIMIT 8`,
+        [employeeId, from, to],
+      ),
+    ]);
+
+    const total = Number(currentRow?.total ?? 0);
+    const previousTotal = Number(previousRow?.total ?? 0);
+    const withEvidence = Number(currentRow?.with_evidence ?? 0);
+    const withoutEvidence = Math.max(0, total - withEvidence);
+    const teamTotal = Number(teamRow?.total ?? 0);
+    const compare = variation(total, previousTotal);
+
+    res.json({
+      member: {
+        employee_id: member.employee_id,
+        full_name: member.full_name,
+        matricula: member.matricula,
+        sector: member.sector,
+        status: member.status,
+        is_leader: Number(member.is_leader) === 1,
+        active: Number(member.active) === 1,
+        display_order: Number(member.display_order ?? 0),
+      },
+      period: { from, to },
+      previous_period: previousPeriod,
+      metrics: {
+        executions: total,
+        previous_executions: previousTotal,
+        absolute_change: compare.absolute,
+        percentage_change: compare.percentage,
+        comparison_baseline_available: compare.baseline_available,
+        participation_share: teamTotal > 0 ? Number(((total / teamTotal) * 100).toFixed(1)) : 0,
+        with_evidence: withEvidence,
+        without_evidence: withoutEvidence,
+        evidence_rate: total > 0 ? Number(((withEvidence / total) * 100).toFixed(1)) : 0,
+        canceled: Number(currentRow?.canceled ?? 0),
+        last_execution_at: currentRow?.last_execution_at ?? null,
+      },
+      categories: categoryRows.map((row) => ({
+        category: row.category,
+        total: Number(row.total ?? 0),
+        share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
+      })),
+      timeline: timelineRows.map((row) => ({
+        day: row.day,
+        total: Number(row.total ?? 0),
+      })),
+      recent: recentRows.map(mapEntry),
+    });
+  }),
+);
+
+inspectorProductionRouter.get(
   "/entries",
   requireAuth,
   asyncHandler(async (req, res) => {

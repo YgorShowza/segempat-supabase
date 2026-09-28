@@ -36,6 +36,10 @@ jobs:
           grep -F 'Sem evidência' "$UI" >/dev/null
           grep -F 'Cobertura de evidências' "$UI" >/dev/null
           grep -F 'Comparativo com o período anterior' "$UI" >/dev/null
+          grep -F 'Produção individual do inspetor' "$UI" >/dev/null
+          grep -F 'Ver histórico completo' "$UI" >/dev/null
+          grep -F '"/inspectors/:employeeId"' "$API" >/dev/null
+          grep -F 'participation_share' "$API" >/dev/null
           grep -F 'previous_period' "$API" >/dev/null
           grep -F 'percentage_change' "$API" >/dev/null
           grep -F 'without_evidence' "$API" >/dev/null
