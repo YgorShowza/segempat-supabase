@@ -7,6 +7,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { SystemMetricCard, SystemPanelSkeleton } from "@/components/system/SystemUI";
 
 function normalizeCode(value: string) {
   return value.trim().toUpperCase().replace(/\s+/g, "");
@@ -172,7 +173,8 @@ function RecordRow({ row, onSelect }: { row: CertificateRecord; onSelect: () => 
 
 function Metric({ label, value, state }: { label: string; value: number; state: CertificateState }) {
   const meta = STATE_META[state];
-  return <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-2xl font-black" style={{ color: "var(--text-1)" }}>{value}</p></div><div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: meta.background, color: meta.color }}>{state === "valid" ? <CheckCircle2 className="h-4 w-4" /> : state === "revoked" ? <XCircle className="h-4 w-4" /> : <Clock3 className="h-4 w-4" />}</div></div></section>;
+  const Icon = state === "valid" ? CheckCircle2 : state === "revoked" ? XCircle : Clock3;
+  return <SystemMetricCard label={label} value={value} icon={Icon} accent={meta.color} detail={meta.short} />;
 }
 
 function InfoCard({ icon: Icon, label, value, detail }: { icon: typeof UserRound; label: string; value: string; detail: string }) {
@@ -188,5 +190,5 @@ function Restricted() {
 }
 
 function Loading() {
-  return <div className="flex flex-col items-center justify-center gap-3 py-14" role="status" aria-live="polite"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /><p className="text-xs font-semibold" style={{ color: "var(--text-4)" }}>Carregando registros de certificados...</p></div>;
+  return <SystemPanelSkeleton rows={6} label="Carregando registros de certificados" />;
 }
