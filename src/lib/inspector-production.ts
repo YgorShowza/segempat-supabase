@@ -64,6 +64,10 @@ export interface InspectorProductionRankingRow {
   is_leader: boolean;
   display_order: number;
   total: number;
+  previous_total: number;
+  absolute_change: number;
+  percentage_change: number | null;
+  comparison_baseline_available: boolean;
   with_evidence: number;
   without_evidence: number;
   evidence_rate: number;
@@ -74,6 +78,14 @@ export interface InspectorProductionRankingRow {
 
 export interface InspectorProductionSummary {
   period: { from: string; to: string };
+  previous_period: { from: string; to: string; inclusive_days: number };
+  comparison: {
+    current_total: number;
+    previous_total: number;
+    absolute_change: number;
+    percentage_change: number | null;
+    baseline_available: boolean;
+  };
   generated_at: string;
   totals: {
     executions: number;
