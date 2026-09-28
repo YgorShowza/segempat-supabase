@@ -458,7 +458,7 @@ inspectorProductionRouter.get(
     );
     if (!member) throw notFound("Inspetor não configurado neste módulo");
 
-    const [currentRow, previousRow, teamRow, categoryRows, timelineRows, recentRows] = await Promise.all([
+    const [currentRow, previousRow, teamRow, categoryRows, outcomeRows, timelineRows, recentRows] = await Promise.all([
       queryOne(
         `SELECT
             COUNT(*) FILTER (WHERE p.status = 'Registrada') AS total,
@@ -499,6 +499,17 @@ inspectorProductionRouter.get(
                 BETWEEN CAST(? AS date) AND CAST(? AS date)
           GROUP BY p.category
           ORDER BY total DESC,p.category ASC`,
+        [employeeId, from, to],
+      ),
+      query(
+        `SELECT p.result_status,COUNT(*) AS total
+           FROM inspector_production_entries p
+          WHERE p.executor_employee_id = ?
+            AND p.status = 'Registrada'
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)
+          GROUP BY p.result_status
+          ORDER BY total DESC,p.result_status ASC`,
         [employeeId, from, to],
       ),
       query(
@@ -566,6 +577,15 @@ inspectorProductionRouter.get(
         total: Number(row.total ?? 0),
         share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
       })),
+      outcomes: RESULT_STATUSES.map((resultStatus) => {
+        const row = outcomeRows.find((item) => item.result_status === resultStatus);
+        const outcomeTotal = Number(row?.total ?? 0);
+        return {
+          result_status: resultStatus,
+          total: outcomeTotal,
+          share: total > 0 ? Number(((outcomeTotal / total) * 100).toFixed(1)) : 0,
+        };
+      }),
       timeline: timelineRows.map((row) => ({
         day: row.day,
         total: Number(row.total ?? 0),
