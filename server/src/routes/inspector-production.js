@@ -20,6 +20,7 @@ import {
 export const inspectorProductionRouter = Router();
 
 const RESULT_STATUSES = ["Concluído", "Concluído com pendência", "Requer acompanhamento"];
+const FOLLOW_UP_SOURCE_RESULTS = ["Concluído com pendência", "Requer acompanhamento"];
 
 const CATEGORIES = [
   "Inspeção",
@@ -106,6 +107,15 @@ function variation(current, previous) {
 function textOrNull(value, maxLength = 500) {
   const text = trimOrNull(value);
   return text ? text.slice(0, maxLength) : null;
+}
+
+function optionalUuid(value, label) {
+  const text = trimOrNull(value);
+  if (!text) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)) {
+    throw badRequest(`${label} inválido`);
+  }
+  return text;
 }
 
 function mapEntry(row) {
@@ -713,14 +723,55 @@ inspectorProductionRouter.get(
     );
     if (!entry) throw notFound("Registro de produção não encontrado");
 
-    const attachments = await query(
-      `SELECT id,entry_id,original_name,mime_type,size_bytes,caption,uploaded_by,uploaded_by_name,created_at
-         FROM inspector_production_attachments
-        WHERE entry_id = ?
-        ORDER BY created_at ASC`,
-      [entry.id],
-    );
-    res.json({ ...mapEntry(entry), attachments });
+    const [attachments, chainRows] = await Promise.all([
+      query(
+        `SELECT id,entry_id,original_name,mime_type,size_bytes,caption,uploaded_by,uploaded_by_name,created_at
+           FROM inspector_production_attachments
+          WHERE entry_id = ?
+          ORDER BY created_at ASC`,
+        [entry.id],
+      ),
+      query(
+        `WITH RECURSIVE ancestors AS (
+           SELECT p.id,p.parent_entry_id
+             FROM inspector_production_entries p
+            WHERE p.id = ?
+           UNION ALL
+           SELECT parent.id,parent.parent_entry_id
+             FROM inspector_production_entries parent
+             JOIN ancestors child ON child.parent_entry_id = parent.id
+         ),
+         root AS (
+           SELECT id
+             FROM ancestors
+            WHERE parent_entry_id IS NULL
+            LIMIT 1
+         ),
+         chain AS (
+           SELECT p.*,0::int AS depth
+             FROM inspector_production_entries p
+             JOIN root r ON r.id = p.id
+           UNION ALL
+           SELECT child.*,chain.depth + 1
+             FROM inspector_production_entries child
+             JOIN chain ON child.parent_entry_id = chain.id
+         )
+         SELECT chain.*,
+                (SELECT COUNT(*) FROM inspector_production_attachments a WHERE a.entry_id = chain.id) AS attachment_count
+           FROM chain
+          ORDER BY chain.depth ASC,chain.executed_at ASC,chain.created_at ASC`,
+        [entry.id],
+      ),
+    ]);
+    res.json({
+      ...mapEntry(entry),
+      attachments,
+      follow_up_chain: chainRows.map((row) => ({
+        ...mapEntry(row),
+        depth: Number(row.depth ?? 0),
+        is_current: row.id === entry.id,
+      })),
+    });
   }),
 );
 
@@ -733,6 +784,7 @@ inspectorProductionRouter.post(
     const resultStatus = requireOneOf(req.body?.result_status, RESULT_STATUSES, "Resultado da atribuição");
     const details = requireText(req.body?.details, "Descrição / observações").slice(0, 10000);
     const location = textOrNull(req.body?.location, 255);
+    const parentEntryId = optionalUuid(req.body?.parent_entry_id, "Registro de origem");
     const id = uuid();
 
     let responseEntry = null;
@@ -751,6 +803,31 @@ inspectorProductionRouter.post(
       const employee = employees[0];
       if (!employee || employee.status !== "Ativo") throw forbidden("Cadastro funcional não está ativo");
 
+      let parentEntry = null;
+      if (parentEntryId) {
+        const [parentRows] = await connection.execute(
+          `SELECT id,title,category,result_status,status,executor_name,executed_at
+             FROM inspector_production_entries
+            WHERE id = ?
+            LIMIT 1
+            FOR UPDATE`,
+          [parentEntryId],
+        );
+        parentEntry = parentRows[0] ?? null;
+        if (!parentEntry) throw notFound("Registro de origem do acompanhamento não encontrado");
+        if (parentEntry.status !== "Registrada") {
+          throw conflict("Registro cancelado não pode originar novo acompanhamento");
+        }
+        if (!FOLLOW_UP_SOURCE_RESULTS.includes(parentEntry.result_status)) {
+          throw conflict("Somente uma execução com pendência ou que requeira acompanhamento pode originar continuidade");
+        }
+      }
+
+      const duplicateParentSql = parentEntryId ? "AND parent_entry_id = ?" : "AND parent_entry_id IS NULL";
+      const duplicateParams = parentEntryId
+        ? [employee.id, title, category, parentEntryId]
+        : [employee.id, title, category];
+
       const [duplicates] = await connection.execute(
         `SELECT id,executed_at
            FROM inspector_production_entries
@@ -758,10 +835,11 @@ inspectorProductionRouter.post(
             AND status = 'Registrada'
             AND LOWER(TRIM(title)) = LOWER(TRIM(?))
             AND LOWER(TRIM(category)) = LOWER(TRIM(?))
+            ${duplicateParentSql}
             AND executed_at >= CURRENT_TIMESTAMP - INTERVAL '3 minutes'
           ORDER BY executed_at DESC
           LIMIT 1`,
-        [employee.id, title, category],
+        duplicateParams,
       );
       if (duplicates.length) {
         throw new HttpError(
@@ -774,15 +852,17 @@ inspectorProductionRouter.post(
 
       await connection.execute(
         `INSERT INTO inspector_production_entries
-         (id,executor_employee_id,executor_user_id,executor_name,executor_matricula,title,category,result_status,details,location,status,executed_at,created_at,updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,'Registrada',CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))`,
-        [id, employee.id, req.user.id, employee.full_name, employee.matricula, title, category, resultStatus, details, location],
+         (id,executor_employee_id,executor_user_id,executor_name,executor_matricula,title,category,result_status,parent_entry_id,details,location,status,executed_at,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,'Registrada',CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))`,
+        [id, employee.id, req.user.id, employee.full_name, employee.matricula, title, category, resultStatus, parentEntryId, details, location],
       );
       await audit(req.user.id, "INSPECTOR_PRODUCTION_CREATE", "inspector_production_entries", id, {
         executor_employee_id: employee.id,
         executor_matricula: employee.matricula,
         category,
         result_status: resultStatus,
+        parent_entry_id: parentEntryId,
+        follow_up_record: Boolean(parentEntryId),
         title,
         identity_derived_server_side: true,
         execution_time_derived_server_side: true,
