@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getOperationalSnapshot } from "@/lib/insights";
 import { operationalYear } from "@/lib/operational-time";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface } from "@/components/system/SystemUI";
 import {
   availableReportingSectors,
   examReporting,
@@ -32,17 +33,6 @@ export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics · SEGEMPAT" }] }),
   component: AnalyticsPage,
 });
-
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <section
-      className={`rounded-2xl ${className}`}
-      style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}
-    >
-      {children}
-    </section>
-  );
-}
 
 function AnalyticsPage() {
   const currentYear = operationalYear();
@@ -62,12 +52,12 @@ function AnalyticsPage() {
   if (query.isLoading && !query.data) return <Loading />;
   if (query.isError || !query.data) {
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center">
+      <SystemSurface className="mx-auto max-w-xl p-8 text-center">
         <AlertTriangle className="mx-auto h-9 w-9 text-amber-500" />
         <h1 className="mt-3 text-lg font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar o Analytics.</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Nenhum indicador é estimado quando a fonte operacional falha.</p>
         <Button variant="outline" className="mt-4" onClick={() => query.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
-      </Card>
+      </SystemSurface>
     );
   }
 
@@ -101,7 +91,7 @@ function AnalyticsPage() {
         </div>
       </section>
 
-      <Card className="p-4">
+      <SystemSurface className="p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[.16em]" style={{ color: "var(--accent)" }}>Escopo analítico</p>
@@ -125,7 +115,7 @@ function AnalyticsPage() {
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px]" style={{ color: "var(--text-4)" }}><span>Ano operacional: <strong style={{ color: "var(--text-2)" }}>{year}</strong></span><span>Setor: <strong style={{ color: "var(--text-2)" }}>{sector}</strong></span><span>Atualizado: <strong style={{ color: "var(--text-2)" }}>{updatedAt}</strong></span></div>
-      </Card>
+      </SystemSurface>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <KPI label="Equipe ativa" value={summary.activeEmployees} detail="fora do perfil Inspetor" icon={Users} />
@@ -136,20 +126,20 @@ function AnalyticsPage() {
       </div>
 
       {!hasVolume && (
-        <Card className="p-5">
+        <SystemSurface className="p-5">
           <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Sem volume operacional neste escopo</p><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>A página está carregada corretamente, mas não há equipe ativa, cronograma ou avaliações suficientes para produzir indicadores neste recorte.</p></div></div>
-        </Card>
+        </SystemSurface>
       )}
 
-      <Card className="p-4 md:p-5">
+      <SystemSurface className="p-4 md:p-5">
         <SectionHeading icon={BarChart3} title="Evolução mensal" subtitle="Execução do cronograma e aprovação em avaliações, mês a mês, no mesmo escopo dos indicadores acima." />
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12">
           {months.map((month) => <MonthCard key={month.month} month={month} />)}
         </div>
-      </Card>
+      </SystemSurface>
 
       <div className="grid gap-4 xl:grid-cols-[1.08fr_.92fr]">
-        <Card className="overflow-hidden">
+        <SystemSurface className="overflow-hidden">
           <div className="p-4 md:p-5"><SectionHeading icon={Users} title="Desempenho por setor" subtitle="Volumes e percentuais mantêm seus denominadores visíveis para evitar interpretações fora de contexto." /></div>
           {sectorRows.length === 0 ? <EmptyState text="Nenhum setor disponível neste recorte." /> : (
             <div className="overflow-x-auto">
@@ -159,21 +149,21 @@ function AnalyticsPage() {
               </table>
             </div>
           )}
-        </Card>
+        </SystemSurface>
 
-        <Card className="overflow-hidden">
+        <SystemSurface className="overflow-hidden">
           <div className="p-4 md:p-5"><SectionHeading icon={ClipboardList} title="Avaliações no período" subtitle="Ranking por volume de tentativas. O mínimo exibido é o critério individual configurado em cada prova." /></div>
           {exams.length === 0 ? <EmptyState text="Nenhuma avaliação concluída neste escopo." /> : (
             <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {exams.slice(0, 8).map((exam) => <div key={exam.examId} className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{exam.title}</p><p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{exam.type} · mínimo individual {exam.minApprovalPct}% · {exam.attempts} tentativa{exam.attempts === 1 ? "" : "s"}</p></div><div className="shrink-0 text-right"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{formatScore(exam.averageScore)}</p><p className="text-[9px] font-bold uppercase" style={{ color: "var(--text-4)" }}>média</p></div></div><div className="mt-3 flex items-center gap-3"><div className="h-2 flex-1 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}><div className="h-full rounded-full" style={{ width: `${exam.approvalRate ?? 0}%`, background: rateColor(exam.approvalRate) }} /></div><span className="w-12 text-right text-xs font-black" style={{ color: rateColor(exam.approvalRate) }}>{formatPercent(exam.approvalRate)}</span></div></div>)}
             </div>
           )}
-        </Card>
+        </SystemSurface>
       </div>
 
-      <Card className="p-4 md:p-5">
+      <SystemSurface className="p-4 md:p-5">
         <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--accent)" }} /><div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Critérios de leitura e rastreabilidade</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>O Analytics é determinístico e usa os registros operacionais do SEGEMPAT, sem julgamento de IA. O escopo considera colaboradores ativos fora do perfil Inspetor; cronograma é vinculado por ID ou matrícula normalizada; avaliações são vinculadas pela matrícula. “—” significa ausência de denominador suficiente, e não desempenho igual a zero.</p></div></div>
-      </Card>
+      </SystemSurface>
     </div>
   );
 }
@@ -183,7 +173,7 @@ function HeaderLink({ to, icon: Icon, label }: { to: "/individual" | "/relatorio
 }
 
 function KPI({ label, value, detail, icon: Icon }: { label: string; value: string | number; detail: string; icon: typeof Users }) {
-  return <Card className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-[9px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-2xl font-black md:text-3xl" style={{ color: "var(--text-1)" }}>{value}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{detail}</p></div><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", border: "1px solid rgba(200,16,46,.16)" }}><Icon className="h-4 w-4" style={{ color: "var(--accent)" }} /></div></div></Card>;
+  return <SystemMetricCard label={label} value={value} detail={detail} icon={Icon} accent="#C8102E" />;
 }
 
 function SectionHeading({ icon: Icon, title, subtitle }: { icon: typeof BarChart3; title: string; subtitle: string }) {
@@ -222,5 +212,5 @@ function rateColor(value: number | null) {
 }
 
 function Loading() {
-  return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} /></div>;
+  return <SystemDataWorkspaceSkeleton metricCount={5} rowCount={7} />;
 }
