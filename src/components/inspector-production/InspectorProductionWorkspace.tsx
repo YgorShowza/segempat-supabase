@@ -813,7 +813,7 @@ export function InspectorProductionWorkspace() {
               })()}
 
               <div className="space-y-2">
-                {dashboard.ranking.map((row) => {
+                {inspectorRows.map((row) => {
                   const meta = comparisonMeta(row.total, row.previous_total, row.percentage_change);
                   const Icon = meta.icon;
                   return (
@@ -892,7 +892,7 @@ export function InspectorProductionWorkspace() {
                   <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-3)" }}>{balance.detail}</p>
                 </div>
                 <div className="mt-5 space-y-4">
-                  {dashboard.ranking.map((row) => (
+                  {inspectorRows.map((row) => (
                     <div key={row.employee_id}>
                       <div className="flex items-center justify-between gap-3 text-xs">
                         <span className="truncate font-bold" style={{ color: "var(--text-2)" }}>{row.name}</span>
