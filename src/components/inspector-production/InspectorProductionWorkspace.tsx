@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
+  ArrowDownRight,
+  ArrowUpRight,
   BarChart3,
   Camera,
   CameraOff,
@@ -17,6 +19,7 @@ import {
   ImagePlus,
   MapPin,
   Medal,
+  Minus,
   Plus,
   Printer,
   RefreshCw,
@@ -158,6 +161,40 @@ function rankAccent(rank: number) {
   if (rank === 2) return "#64748b";
   if (rank === 3) return "#b45309";
   return "#C8102E";
+}
+
+function comparisonMeta(current: number, previous: number, percentage: number | null) {
+  const absolute = current - previous;
+  if (previous === 0 && current > 0) {
+    return {
+      label: "Sem base anterior",
+      detail: `+${current} execução(ões) em relação a um período anterior sem registros`,
+      icon: ArrowUpRight,
+      tone: "#2563eb",
+    };
+  }
+  if (absolute > 0) {
+    return {
+      label: percentage === null ? `+${absolute}` : `+${percentage}%`,
+      detail: `+${absolute} execução(ões) registradas`,
+      icon: ArrowUpRight,
+      tone: "#2563eb",
+    };
+  }
+  if (absolute < 0) {
+    return {
+      label: percentage === null ? String(absolute) : `${percentage}%`,
+      detail: `${absolute} execução(ões) registradas`,
+      icon: ArrowDownRight,
+      tone: "#64748b",
+    };
+  }
+  return {
+    label: "0%",
+    detail: "Mesmo volume registrado",
+    icon: Minus,
+    tone: "#64748b",
+  };
 }
 
 function aggregateTimeline(summary: InspectorProductionSummary) {
@@ -545,6 +582,67 @@ export function InspectorProductionWorkspace() {
             </div>
           </SystemSurface>
 
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
+              icon={Activity}
+              title="Comparativo com o período anterior"
+              description={`Mesma janela de ${dashboard.previous_period.inclusive_days} dia(s): ${periodLabel(dashboard.previous_period.from, dashboard.previous_period.to)}.`}
+              accent="#2563eb"
+            />
+            <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.9fr)] lg:p-5">
+              {(() => {
+                const meta = comparisonMeta(
+                  dashboard.comparison.current_total,
+                  dashboard.comparison.previous_total,
+                  dashboard.comparison.percentage_change,
+                );
+                const Icon = meta.icon;
+                return (
+                  <div className="rounded-2xl p-5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>Volume da equipe</p>
+                        <p className="mt-2 text-3xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{dashboard.comparison.current_total}</p>
+                        <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Período anterior: {dashboard.comparison.previous_total}</p>
+                      </div>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: `${meta.tone}10`, color: meta.tone, border: `1px solid ${meta.tone}24` }}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <div className="mt-4 rounded-xl px-3 py-2" style={{ background: `${meta.tone}0b` }}>
+                      <p className="text-sm font-black" style={{ color: meta.tone }}>{meta.label}</p>
+                      <p className="mt-0.5 text-[11px]" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="space-y-2">
+                {dashboard.ranking.map((row) => {
+                  const meta = comparisonMeta(row.total, row.previous_total, row.percentage_change);
+                  const Icon = meta.icon;
+                  return (
+                    <div key={row.employee_id} className="grid gap-3 rounded-2xl p-3 sm:grid-cols-[minmax(0,1fr)_110px_110px_145px] sm:items-center" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{row.name}</p>
+                        <p className="mt-0.5 text-[10px]" style={{ color: "var(--text-4)" }}>Mat. {row.matricula}{row.is_leader ? " · Líder" : ""}</p>
+                      </div>
+                      <div><p className="text-[9px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>Atual</p><p className="mt-1 text-sm font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p></div>
+                      <div><p className="text-[9px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>Anterior</p><p className="mt-1 text-sm font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.previous_total}</p></div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" style={{ background: `${meta.tone}0f`, color: meta.tone }}><Icon className="h-4 w-4" /></div>
+                        <div><p className="text-xs font-black" style={{ color: meta.tone }}>{meta.label}</p><p className="text-[9px]" style={{ color: "var(--text-4)" }}>{row.absolute_change >= 0 ? "+" : ""}{row.absolute_change} execução(ões)</p></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+              Comparação de volume registrado em janelas de igual duração. A variação não representa, isoladamente, avaliação de qualidade, esforço ou mérito profissional.
+            </div>
+          </SystemSurface>
+
           <div className="grid gap-4 xl:grid-cols-12">
             <SystemSurface className="overflow-hidden xl:col-span-7">
               <SystemSectionHeader icon={Trophy} title="Ranking de Execuções Registradas" description="Ordenação objetiva pela quantidade de atribuições ativas registradas no período." accent="#C8A000" />
@@ -859,6 +957,34 @@ export function InspectorProductionWorkspace() {
             <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Média por inspetor" value={dashboard.totals.average_per_inspector} icon={Users} accent="#C8102E" detail="equipe oficialmente configurada" />
           </div>
+
+          <SystemSurface className="p-5">
+            {(() => {
+              const meta = comparisonMeta(
+                dashboard.comparison.current_total,
+                dashboard.comparison.previous_total,
+                dashboard.comparison.percentage_change,
+              );
+              const Icon = meta.icon;
+              return (
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>Comparativo de volume</p>
+                    <p className="mt-1 text-sm font-black" style={{ color: "var(--text-1)" }}>
+                      {dashboard.comparison.current_total} execuções no período atual · {dashboard.comparison.previous_total} no período anterior
+                    </p>
+                    <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>
+                      Período anterior equivalente: {periodLabel(dashboard.previous_period.from, dashboard.previous_period.to)}.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl px-4 py-3" style={{ background: `${meta.tone}0b`, border: `1px solid ${meta.tone}20` }}>
+                    <Icon className="h-5 w-5" style={{ color: meta.tone }} />
+                    <div><p className="text-sm font-black" style={{ color: meta.tone }}>{meta.label}</p><p className="text-[10px]" style={{ color: "var(--text-4)" }}>{meta.detail}</p></div>
+                  </div>
+                </div>
+              );
+            })()}
+          </SystemSurface>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <SystemSurface className="overflow-hidden">

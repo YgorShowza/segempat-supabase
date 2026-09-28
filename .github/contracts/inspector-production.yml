@@ -35,6 +35,9 @@ jobs:
           grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
           grep -F 'Sem evidência' "$UI" >/dev/null
           grep -F 'Cobertura de evidências' "$UI" >/dev/null
+          grep -F 'Comparativo com o período anterior' "$UI" >/dev/null
+          grep -F 'previous_period' "$API" >/dev/null
+          grep -F 'percentage_change' "$API" >/dev/null
           grep -F 'without_evidence' "$API" >/dev/null
           grep -F 'Filtro de evidência inválido' "$API" >/dev/null
           grep -F 'identity_derived_server_side: true' "$API" >/dev/null

@@ -72,6 +72,35 @@ function periodFromRequest(req) {
   return { from, to };
 }
 
+function shiftDateText(value, days) {
+  const date = new Date(`${value}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function previousComparablePeriod(from, to) {
+  const inclusiveDays = Math.floor((new Date(`${to}T12:00:00Z`) - new Date(`${from}T12:00:00Z`)) / 86_400_000) + 1;
+  const previousTo = shiftDateText(from, -1);
+  const previousFrom = shiftDateText(previousTo, -(inclusiveDays - 1));
+  return { from: previousFrom, to: previousTo, inclusive_days: inclusiveDays };
+}
+
+function variation(current, previous) {
+  const absolute = current - previous;
+  if (previous === 0) {
+    return {
+      absolute,
+      percentage: current === 0 ? 0 : null,
+      baseline_available: current === 0,
+    };
+  }
+  return {
+    absolute,
+    percentage: Number(((absolute / previous) * 100).toFixed(1)),
+    baseline_available: true,
+  };
+}
+
 function textOrNull(value, maxLength = 500) {
   const text = trimOrNull(value);
   return text ? text.slice(0, maxLength) : null;
@@ -173,8 +202,9 @@ inspectorProductionRouter.get(
   requireAuth,
   asyncHandler(async (req, res) => {
     const { from, to } = periodFromRequest(req);
+    const previousPeriod = previousComparablePeriod(from, to);
 
-    const [rankingRows, categoryRows, timelineRows, recentRows, canceledRow] = await Promise.all([
+    const [rankingRows, previousRankingRows, categoryRows, timelineRows, recentRows, canceledRow] = await Promise.all([
       query(
         `SELECT m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order,
                 COUNT(p.id) FILTER (WHERE p.status = 'Registrada') AS total,
@@ -193,6 +223,20 @@ inspectorProductionRouter.get(
           GROUP BY m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order
           ORDER BY m.display_order ASC,m.is_leader DESC,e.full_name ASC`,
         [from, to],
+      ),
+      query(
+        `SELECT m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order,
+                COUNT(p.id) FILTER (WHERE p.status = 'Registrada') AS total
+           FROM inspector_production_members m
+           JOIN employees e ON e.id = m.employee_id
+           LEFT JOIN inspector_production_entries p
+             ON p.executor_employee_id = m.employee_id
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date
+                BETWEEN CAST(? AS date) AND CAST(? AS date)
+          WHERE m.active = 1
+          GROUP BY m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order
+          ORDER BY m.display_order ASC,m.is_leader DESC,e.full_name ASC`,
+        [previousPeriod.from, previousPeriod.to],
       ),
       query(
         `SELECT category,COUNT(*) AS total
@@ -233,24 +277,39 @@ inspectorProductionRouter.get(
       ),
     ]);
 
+    const previousByEmployee = new Map(
+      previousRankingRows.map((row) => [row.employee_id, Number(row.total ?? 0)]),
+    );
+
     const ranking = rankingRows
-      .map((row) => ({
-        employee_id: row.employee_id,
-        name: row.full_name,
-        matricula: row.matricula,
-        is_leader: Number(row.is_leader) === 1,
-        display_order: Number(row.display_order ?? 0),
-        total: Number(row.total ?? 0),
-        with_evidence: Number(row.with_evidence ?? 0),
-        without_evidence: Math.max(0, Number(row.total ?? 0) - Number(row.with_evidence ?? 0)),
-        evidence_rate: Number(row.total ?? 0) > 0
-          ? Number(((Number(row.with_evidence ?? 0) / Number(row.total ?? 0)) * 100).toFixed(1))
-          : 0,
-        last_execution_at: row.last_execution_at ?? null,
-      }))
+      .map((row) => {
+        const total = Number(row.total ?? 0);
+        const previousTotal = previousByEmployee.get(row.employee_id) ?? 0;
+        const comparison = variation(total, previousTotal);
+        return {
+          employee_id: row.employee_id,
+          name: row.full_name,
+          matricula: row.matricula,
+          is_leader: Number(row.is_leader) === 1,
+          display_order: Number(row.display_order ?? 0),
+          total,
+          previous_total: previousTotal,
+          absolute_change: comparison.absolute,
+          percentage_change: comparison.percentage,
+          comparison_baseline_available: comparison.baseline_available,
+          with_evidence: Number(row.with_evidence ?? 0),
+          without_evidence: Math.max(0, total - Number(row.with_evidence ?? 0)),
+          evidence_rate: total > 0
+            ? Number(((Number(row.with_evidence ?? 0) / total) * 100).toFixed(1))
+            : 0,
+          last_execution_at: row.last_execution_at ?? null,
+        };
+      })
       .sort((a, b) => b.total - a.total || a.display_order - b.display_order || a.name.localeCompare(b.name, "pt-BR"));
 
     const total = ranking.reduce((sum, row) => sum + row.total, 0);
+    const previousTotal = ranking.reduce((sum, row) => sum + row.previous_total, 0);
+    const totalVariation = variation(total, previousTotal);
     const withEvidence = ranking.reduce((sum, row) => sum + row.with_evidence, 0);
     const withoutEvidence = Math.max(0, total - withEvidence);
     const members = ranking.length;
@@ -262,6 +321,14 @@ inspectorProductionRouter.get(
 
     res.json({
       period: { from, to },
+      previous_period: previousPeriod,
+      comparison: {
+        current_total: total,
+        previous_total: previousTotal,
+        absolute_change: totalVariation.absolute,
+        percentage_change: totalVariation.percentage,
+        baseline_available: totalVariation.baseline_available,
+      },
       generated_at: new Date().toISOString(),
       totals: {
         executions: total,
