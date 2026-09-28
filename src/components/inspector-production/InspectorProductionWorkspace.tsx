@@ -1102,7 +1102,7 @@ export function InspectorProductionWorkspace() {
 
       {tab === "historico" && (
         <SystemSurface className="overflow-hidden">
-          <SystemSectionHeader icon={History} title="Histórico da Produção" description="Pesquisa por período, inspetor, categoria e situação. Registros cancelados permanecem visíveis." />
+          <SystemSectionHeader icon={History} title="Histórico da Produção" description="Pesquisa por período, inspetor, categoria, resultado e situação. Registros cancelados permanecem visíveis." />
           <div className="space-y-3 border-b p-4 lg:p-5" style={{ borderColor: "var(--border)" }}>
             <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_175px_175px_210px_135px_155px_auto]">
               <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={historySearchDraft} onChange={(event) => setHistorySearchDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitHistorySearch(); }} placeholder="Atribuição, descrição, local ou inspetor" className="pl-9" /></div>
@@ -1183,6 +1183,26 @@ export function InspectorProductionWorkspace() {
             <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Média por inspetor" value={dashboard.totals.average_per_inspector} icon={Users} accent="#C8102E" detail="equipe oficialmente configurada" />
           </div>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader icon={CheckCircle2} title="Desfecho das atribuições" description="Distribuição dos resultados operacionais registrados no período." accent="#10b981" />
+            <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+              {dashboard.outcomes.map((row) => {
+                const meta = resultStatusMeta(row.result_status);
+                const Icon = meta.icon;
+                return (
+                  <div key={row.result_status} className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${meta.tone}10`, color: meta.tone }}><Icon className="h-5 w-5" /></div>
+                      <div className="text-right"><p className="text-2xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p><p className="text-[10px] font-black" style={{ color: meta.tone }}>{row.share}%</p></div>
+                    </div>
+                    <p className="mt-3 text-xs font-black" style={{ color: "var(--text-1)" }}>{row.result_status}</p>
+                    <p className="mt-1 text-[10px] leading-4" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </SystemSurface>
 
           <SystemSurface className="p-5">
             {(() => {
@@ -1372,6 +1392,32 @@ export function InspectorProductionWorkspace() {
                   </div>
                 </div>
 
+                <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Desfechos no período</p>
+                      <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>Como as execuções deste inspetor foram encerradas no momento do registro.</p>
+                    </div>
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    {data.outcomes.map((row) => {
+                      const outcomeMeta = resultStatusMeta(row.result_status);
+                      const OutcomeIcon = outcomeMeta.icon;
+                      return (
+                        <div key={row.result_status} className="rounded-xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                          <div className="flex items-center justify-between gap-2">
+                            <OutcomeIcon className="h-4 w-4" style={{ color: outcomeMeta.tone }} />
+                            <span className="text-sm font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</span>
+                          </div>
+                          <p className="mt-2 text-[10px] font-black" style={{ color: outcomeMeta.tone }}>{row.result_status}</p>
+                          <p className="mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{row.share}% das execuções</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid var(--border)" }}>
                     <div className="border-b p-4" style={{ borderColor: "var(--border-subtle)" }}>
@@ -1397,7 +1443,7 @@ export function InspectorProductionWorkspace() {
                       {data.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro no período.</p> : data.recent.slice(0, 6).map((entry) => (
                         <button key={entry.id} type="button" onClick={() => { setSelectedInspectorId(null); setDetailsId(entry.id); }} className="w-full p-3 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025]">
                           <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{entry.category} · {displayDateTime(entry.executed_at)}</p></div>
+                            <div className="min-w-0"><p className="truncate text-xs font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p><p className="mt-1 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{entry.category} · {displayDateTime(entry.executed_at)}</p><div className="mt-2"><ResultStatusBadge status={entry.result_status} /></div></div>
                             <span className="flex shrink-0 items-center gap-1 text-[9px] font-bold" style={{ color: entry.attachment_count ? "#10b981" : "var(--text-4)" }}><Camera className="h-3 w-3" /> {entry.attachment_count}</span>
                           </div>
                         </button>
@@ -1426,13 +1472,14 @@ export function InspectorProductionWorkspace() {
           {detailsQuery.isLoading ? <div className="py-10 text-center text-sm" style={{ color: "var(--text-4)" }}>Carregando registro...</div> : detailsQuery.isError ? <div className="py-8 text-center text-sm text-red-500">Não foi possível abrir o registro.</div> : detailsQuery.data ? (
             <div className="space-y-4">
               <div className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
-                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>{detailsQuery.data.category}</p><h3 className="mt-1 text-lg font-black" style={{ color: "var(--text-1)" }}>{detailsQuery.data.title}</h3></div><span className="rounded-full px-2 py-1 text-[9px] font-black" style={detailsQuery.data.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{detailsQuery.data.status.toUpperCase()}</span></div>
+                <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-wider" style={{ color: "var(--text-4)" }}>{detailsQuery.data.category}</p><h3 className="mt-1 text-lg font-black" style={{ color: "var(--text-1)" }}>{detailsQuery.data.title}</h3><div className="mt-2"><ResultStatusBadge status={detailsQuery.data.result_status} /></div></div><span className="rounded-full px-2 py-1 text-[9px] font-black" style={detailsQuery.data.status === "Registrada" ? { background: "rgba(16,185,129,.09)", color: "#10b981" } : { background: "rgba(239,68,68,.08)", color: "#ef4444" }}>{detailsQuery.data.status.toUpperCase()}</span></div>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6" style={{ color: "var(--text-2)" }}>{detailsQuery.data.details}</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Info label="Executor" value={detailsQuery.data.executor_name} detail={`Mat. ${detailsQuery.data.executor_matricula}`} icon={UserRound} />
                 <Info label="Data/hora" value={displayDateTime(detailsQuery.data.executed_at)} detail="Gravada pelo servidor" icon={Clock3} />
                 <Info label="Local / área" value={detailsQuery.data.location || "Não informado"} detail="Contexto do registro" icon={MapPin} />
+                <Info label="Resultado" value={detailsQuery.data.result_status} detail="Desfecho imutável da atribuição" icon={resultStatusMeta(detailsQuery.data.result_status).icon} />
                 <Info label="Evidências" value={String(detailsQuery.data.attachment_count)} detail="Imagens preservadas" icon={Camera} />
               </div>
               {detailsQuery.data.status === "Cancelada" && <div className="rounded-2xl p-4" style={{ background: "rgba(239,68,68,.06)", border: "1px solid rgba(239,68,68,.20)" }}><p className="text-sm font-black text-red-500">Registro cancelado</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-3)" }}>{detailsQuery.data.canceled_reason}</p><p className="mt-2 text-[11px]" style={{ color: "var(--text-4)" }}>Por {detailsQuery.data.canceled_by_name || "usuário autorizado"} · {displayDateTime(detailsQuery.data.canceled_at)}</p></div>}
