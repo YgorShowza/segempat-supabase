@@ -76,6 +76,25 @@ export interface InspectorProductionRankingRow {
   share: number;
 }
 
+export interface InspectorProductionCategoryConcentration {
+  category: string;
+  total: number;
+  participants: number;
+  dominant_employee_id: string | null;
+  dominant_name: string | null;
+  dominant_share: number;
+  concentration: "base_forming" | "shared" | "moderate" | "high";
+  inspectors: Array<{
+    employee_id: string;
+    name: string;
+    matricula: string;
+    is_leader: boolean;
+    display_order: number;
+    total: number;
+    share: number;
+  }>;
+}
+
 export interface InspectorProductionSummary {
   period: { from: string; to: string };
   previous_period: { from: string; to: string; inclusive_days: number };
@@ -100,6 +119,7 @@ export interface InspectorProductionSummary {
   };
   ranking: InspectorProductionRankingRow[];
   categories: Array<{ category: string; total: number; share: number }>;
+  category_concentration: InspectorProductionCategoryConcentration[];
   timeline: Array<{ day: string; executor_employee_id: string; executor_name: string; total: number }>;
   recent: InspectorProductionEntry[];
 }

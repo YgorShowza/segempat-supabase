@@ -122,6 +122,29 @@ function balanceState(summary: InspectorProductionSummary) {
   return { label: "Concentração elevada", detail: "Uma parcela significativa das execuções registradas está concentrada em parte da equipe.", tone: "#C8102E" };
 }
 
+function categoryConcentrationMeta(level: "base_forming" | "shared" | "moderate" | "high") {
+  if (level === "shared") return {
+    label: "Distribuição compartilhada",
+    detail: "A categoria está distribuída entre mais de um inspetor sem concentração predominante.",
+    tone: "#10b981",
+  };
+  if (level === "moderate") return {
+    label: "Concentração moderada",
+    detail: "Metade ou mais dos registros desta categoria está concentrada em um inspetor.",
+    tone: "#d97706",
+  };
+  if (level === "high") return {
+    label: "Concentração elevada",
+    detail: "Pelo menos 75% dos registros desta categoria está concentrado em um inspetor.",
+    tone: "#7c3aed",
+  };
+  return {
+    label: "Base em formação",
+    detail: "Ainda há poucos registros nesta categoria para interpretar sua distribuição com segurança.",
+    tone: "#64748b",
+  };
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -752,6 +775,81 @@ export function InspectorProductionWorkspace() {
           </div>
 
           <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
+              icon={Users}
+              title="Concentração por categoria"
+              description="Mostra como cada tipo de atribuição está distribuído entre os inspetores no período selecionado."
+              accent="#7c3aed"
+            />
+            <div className="grid gap-4 p-4 lg:grid-cols-2 lg:p-5">
+              {dashboard.category_concentration.length === 0 ? (
+                <p className="py-10 text-center text-sm lg:col-span-2" style={{ color: "var(--text-4)" }}>Ainda não há categorias com execuções registradas no período.</p>
+              ) : dashboard.category_concentration.map((categoryRow) => {
+                const meta = categoryConcentrationMeta(categoryRow.concentration);
+                return (
+                  <div key={categoryRow.category} className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{categoryRow.category}</p>
+                        <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{categoryRow.total} execução(ões) · {categoryRow.participants} inspetor(es) participante(s)</p>
+                      </div>
+                      <div className="shrink-0 rounded-xl px-3 py-2 text-right" style={{ background: `${meta.tone}0c`, border: `1px solid ${meta.tone}20` }}>
+                        <p className="text-[9px] font-black uppercase tracking-wider" style={{ color: meta.tone }}>{meta.label}</p>
+                        <p className="mt-0.5 text-xs font-black tabular-nums" style={{ color: "var(--text-1)" }}>{categoryRow.dominant_share}%</p>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 text-[10px] leading-5" style={{ color: "var(--text-4)" }}>{meta.detail}</p>
+
+                    <div className="mt-4 space-y-3">
+                      {categoryRow.inspectors.map((inspector) => (
+                        <button
+                          key={inspector.employee_id}
+                          type="button"
+                          onClick={() => setSelectedInspectorId(inspector.employee_id)}
+                          className="block w-full text-left"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="truncate text-xs font-bold" style={{ color: inspector.total > 0 ? "var(--text-2)" : "var(--text-4)" }}>{inspector.name}</span>
+                            <span className="shrink-0 text-[10px] font-black tabular-nums" style={{ color: inspector.total > 0 ? "var(--text-1)" : "var(--text-4)" }}>{inspector.total} · {inspector.share}%</span>
+                          </div>
+                          <div className="mt-1.5 h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}>
+                            <div className="h-full rounded-full bg-[#7c3aed] transition-[width]" style={{ width: `${inspector.share}%` }} />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t pt-3" style={{ borderColor: "var(--border-subtle)" }}>
+                      <p className="min-w-0 truncate text-[10px]" style={{ color: "var(--text-4)" }}>
+                        {categoryRow.dominant_name ? `Maior participação registrada: ${categoryRow.dominant_name}` : "Sem participação registrada"}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setHistoryCategory(categoryRow.category);
+                          setHistoryEmployee("");
+                          setHistoryStatus("Registrada");
+                          setHistoryEvidence("");
+                          setHistorySearch("");
+                          setHistorySearchDraft("");
+                          setTab("historico");
+                        }}
+                      >
+                        <History className="mr-2 h-3.5 w-3.5" /> Ver registros
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+              Concentração descreve apenas a distribuição dos registros por categoria. Ela pode refletir especialização, escala, disponibilidade ou divisão operacional e não representa, isoladamente, desequilíbrio ou desempenho.
+            </div>
+          </SystemSurface>
+
+          <SystemSurface className="overflow-hidden">
             <SystemSectionHeader icon={Clock3} title="Registros mais recentes" description="Últimas movimentações do período, preservando inclusive cancelamentos." />
             <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dashboard.recent.length === 0 ? <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum registro encontrado.</p> : dashboard.recent.map((entry) => (
@@ -1008,6 +1106,38 @@ export function InspectorProductionWorkspace() {
               <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>{dashboard.categories.map((row) => <div key={row.category} className="flex items-center justify-between gap-4 p-4"><div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{row.category}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{row.share}% do volume</p></div><p className="text-xl font-black" style={{ color: "var(--text-1)" }}>{row.total}</p></div>)}{dashboard.categories.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Sem registros no período.</p>}</div>
             </SystemSurface>
           </div>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader icon={Users} title="Distribuição por categoria e inspetor" description="Leitura gerencial da concentração dos registros no período." accent="#7c3aed" />
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left">
+                <thead>
+                  <tr className="border-b text-[9px] font-black uppercase tracking-[.11em]" style={{ borderColor: "var(--border)", color: "var(--text-4)" }}>
+                    <th className="px-5 py-3">Categoria</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                    <th className="px-4 py-3">Maior participação</th>
+                    <th className="px-4 py-3 text-right">Concentração</th>
+                    <th className="px-5 py-3">Leitura</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                  {dashboard.category_concentration.map((row) => {
+                    const meta = categoryConcentrationMeta(row.concentration);
+                    return (
+                      <tr key={row.category}>
+                        <td className="px-5 py-4 text-xs font-black" style={{ color: "var(--text-1)" }}>{row.category}</td>
+                        <td className="px-4 py-4 text-right text-xs font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</td>
+                        <td className="px-4 py-4 text-xs" style={{ color: "var(--text-3)" }}>{row.dominant_name || "—"}</td>
+                        <td className="px-4 py-4 text-right text-xs font-black tabular-nums" style={{ color: meta.tone }}>{row.dominant_share}%</td>
+                        <td className="px-5 py-4 text-[10px] font-bold" style={{ color: meta.tone }}>{meta.label}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {dashboard.category_concentration.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Sem dados de concentração no período.</p>}
+            </div>
+          </SystemSurface>
 
           <SystemSurface className="p-5">
             <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#C8102E]" /><div><p className="font-black" style={{ color: "var(--text-1)" }}>Critérios de confiabilidade</p><p className="mt-1 text-sm leading-6" style={{ color: "var(--text-4)" }}>Identidade derivada da sessão autenticada · data/hora do lançamento definida pelo servidor · conteúdo imutável após gravação · cancelamentos com motivo e autor preservados · evidências armazenadas de forma privada · operações críticas registradas na auditoria do SEGEMPAT.</p></div></div>

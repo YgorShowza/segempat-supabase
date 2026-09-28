@@ -204,7 +204,7 @@ inspectorProductionRouter.get(
     const { from, to } = periodFromRequest(req);
     const previousPeriod = previousComparablePeriod(from, to);
 
-    const [rankingRows, previousRankingRows, categoryRows, timelineRows, recentRows, canceledRow] = await Promise.all([
+    const [rankingRows, previousRankingRows, categoryRows, categoryInspectorRows, timelineRows, recentRows, canceledRow] = await Promise.all([
       query(
         `SELECT m.employee_id,e.full_name,e.matricula,m.is_leader,m.display_order,
                 COUNT(p.id) FILTER (WHERE p.status = 'Registrada') AS total,
@@ -245,6 +245,18 @@ inspectorProductionRouter.get(
             AND (executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)
           GROUP BY category
           ORDER BY total DESC,category ASC`,
+        [from, to],
+      ),
+      query(
+        `SELECT p.category,p.executor_employee_id,p.executor_name,e.matricula,m.is_leader,m.display_order,
+                COUNT(*) AS total
+           FROM inspector_production_entries p
+           JOIN employees e ON e.id = p.executor_employee_id
+           LEFT JOIN inspector_production_members m ON m.employee_id = p.executor_employee_id
+          WHERE p.status = 'Registrada'
+            AND (p.executed_at AT TIME ZONE 'America/Maceio')::date BETWEEN CAST(? AS date) AND CAST(? AS date)
+          GROUP BY p.category,p.executor_employee_id,p.executor_name,e.matricula,m.is_leader,m.display_order
+          ORDER BY p.category ASC,total DESC,m.display_order ASC,p.executor_name ASC`,
         [from, to],
       ),
       query(
@@ -319,6 +331,58 @@ inspectorProductionRouter.get(
       share: total > 0 ? Number(((row.total / total) * 100).toFixed(1)) : 0,
     }));
 
+    const categoryConcentration = categoryRows.map((categoryRow) => {
+      const categoryTotal = Number(categoryRow.total ?? 0);
+      const recorded = categoryInspectorRows
+        .filter((row) => row.category === categoryRow.category)
+        .map((row) => ({
+          employee_id: row.executor_employee_id,
+          name: row.executor_name,
+          matricula: row.matricula,
+          is_leader: Number(row.is_leader ?? 0) === 1,
+          display_order: Number(row.display_order ?? 999),
+          total: Number(row.total ?? 0),
+        }));
+      const byEmployee = new Map(recorded.map((row) => [row.employee_id, row]));
+
+      const inspectors = ranking
+        .map((member) => {
+          const recordedMember = byEmployee.get(member.employee_id);
+          const memberTotal = recordedMember?.total ?? 0;
+          return {
+            employee_id: member.employee_id,
+            name: member.name,
+            matricula: member.matricula,
+            is_leader: member.is_leader,
+            display_order: member.display_order,
+            total: memberTotal,
+            share: categoryTotal > 0 ? Number(((memberTotal / categoryTotal) * 100).toFixed(1)) : 0,
+          };
+        })
+        .sort((a, b) => b.total - a.total || a.display_order - b.display_order || a.name.localeCompare(b.name, "pt-BR"));
+
+      const participants = inspectors.filter((row) => row.total > 0);
+      const dominant = participants[0] ?? null;
+      const dominantShare = dominant?.share ?? 0;
+      let concentration = "base_forming";
+      if (categoryTotal >= 4) {
+        if (dominantShare >= 75) concentration = "high";
+        else if (dominantShare >= 50) concentration = "moderate";
+        else concentration = "shared";
+      }
+
+      return {
+        category: categoryRow.category,
+        total: categoryTotal,
+        participants: participants.length,
+        dominant_employee_id: dominant?.employee_id ?? null,
+        dominant_name: dominant?.name ?? null,
+        dominant_share: dominantShare,
+        concentration,
+        inspectors,
+      };
+    });
+
     res.json({
       period: { from, to },
       previous_period: previousPeriod,
@@ -347,6 +411,7 @@ inspectorProductionRouter.get(
         total: Number(row.total ?? 0),
         share: total > 0 ? Number(((Number(row.total ?? 0) / total) * 100).toFixed(1)) : 0,
       })),
+      category_concentration: categoryConcentration,
       timeline: timelineRows.map((row) => ({ ...row, total: Number(row.total ?? 0) })),
       recent: recentRows.map(mapEntry),
     });
