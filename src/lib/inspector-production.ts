@@ -62,6 +62,18 @@ export interface InspectorProductionFollowUpChainItem extends InspectorProductio
   is_current: boolean;
 }
 
+export interface InspectorProductionFollowUpQueueItem extends InspectorProductionEntry {
+  waiting_days: number;
+}
+
+export interface InspectorProductionFollowUpQueuePage {
+  scope: "all_history";
+  definition: string;
+  items: InspectorProductionFollowUpQueueItem[];
+  total: number;
+  next_offset: number | null;
+}
+
 export interface InspectorProductionEntryDetails extends InspectorProductionEntry {
   attachments: InspectorProductionAttachment[];
   follow_up_chain: InspectorProductionFollowUpChainItem[];
@@ -200,6 +212,19 @@ export function getInspectorProductionInspectorDetails(
 ): Promise<InspectorProductionInspectorDetails> {
   return apiRequest<InspectorProductionInspectorDetails>(
     `/api/inspector-production/inspectors/${encodeURIComponent(employeeId)}?${periodQuery(from, to)}`,
+  );
+}
+
+export function listInspectorProductionFollowUpQueue(input: {
+  limit?: number;
+  offset?: number;
+} = {}): Promise<InspectorProductionFollowUpQueuePage> {
+  const params = new URLSearchParams({
+    limit: String(input.limit ?? 100),
+    offset: String(input.offset ?? 0),
+  });
+  return apiRequest<InspectorProductionFollowUpQueuePage>(
+    `/api/inspector-production/follow-up-queue?${params.toString()}`,
   );
 }
 

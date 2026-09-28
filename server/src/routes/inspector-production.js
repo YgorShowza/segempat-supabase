@@ -614,6 +614,62 @@ inspectorProductionRouter.get(
 );
 
 inspectorProductionRouter.get(
+  "/follow-up-queue",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const requestedLimit = Number(req.query?.limit ?? 100);
+    const requestedOffset = Number(req.query?.offset ?? 0);
+    const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 500) : 100;
+    const offset = Number.isInteger(requestedOffset) ? Math.max(requestedOffset, 0) : 0;
+
+    const where = `
+      p.status = 'Registrada'
+      AND p.result_status IN ('Concluído com pendência', 'Requer acompanhamento')
+      AND NOT EXISTS (
+        SELECT 1
+          FROM inspector_production_entries child
+         WHERE child.parent_entry_id = p.id
+           AND child.status = 'Registrada'
+      )`;
+
+    const countRow = await queryOne(
+      `SELECT COUNT(*) AS total
+         FROM inspector_production_entries p
+        WHERE ${where}`,
+    );
+    const total = Number(countRow?.total ?? 0);
+
+    const rows = await query(
+      `SELECT p.*,
+              m.is_leader,
+              (SELECT COUNT(*) FROM inspector_production_attachments a WHERE a.entry_id = p.id) AS attachment_count,
+              GREATEST(
+                0,
+                (CURRENT_TIMESTAMP AT TIME ZONE 'America/Maceio')::date
+                - (p.executed_at AT TIME ZONE 'America/Maceio')::date
+              ) AS waiting_days
+         FROM inspector_production_entries p
+         LEFT JOIN inspector_production_members m ON m.employee_id = p.executor_employee_id
+        WHERE ${where}
+        ORDER BY p.executed_at ASC,p.created_at ASC
+        LIMIT ? OFFSET ?`,
+      [limit, offset],
+    );
+
+    res.json({
+      scope: "all_history",
+      definition: "Registros ativos com resultado que exige continuidade e sem acompanhamento ativo vinculado.",
+      items: rows.map((row) => ({
+        ...mapEntry(row),
+        waiting_days: Number(row.waiting_days ?? 0),
+      })),
+      total,
+      next_offset: offset + rows.length < total ? offset + rows.length : null,
+    });
+  }),
+);
+
+inspectorProductionRouter.get(
   "/inspectors/:employeeId",
   requireAuth,
   asyncHandler(async (req, res) => {

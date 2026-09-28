@@ -54,6 +54,7 @@ import {
   getInspectorProductionSummary,
   inspectorProductionAttachmentUrl,
   listInspectorProductionEntries,
+  listInspectorProductionFollowUpQueue,
   listInspectorProductionSuggestions,
   type InspectorProductionEntry,
   type InspectorProductionResultStatus,
@@ -63,7 +64,7 @@ import {
 import { addOperationalDays, operationalDate, operationalYear } from "@/lib/operational-time";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-type WorkspaceTab = "dashboard" | "registrar" | "historico" | "relatorio";
+type WorkspaceTab = "dashboard" | "registrar" | "acompanhamentos" | "historico" | "relatorio";
 
 interface PendingEvidence {
   id: string;
@@ -103,6 +104,12 @@ function displayDate(value?: string | null) {
 function periodLabel(from: string, to: string) {
   const date = (value: string) => new Date(`${value}T12:00:00Z`).toLocaleDateString("pt-BR", { timeZone: "UTC" });
   return `${date(from)} a ${date(to)}`;
+}
+
+function waitingDaysLabel(days: number) {
+  if (days <= 0) return "registrado hoje";
+  if (days === 1) return "1 dia desde o registro";
+  return `${days} dias desde o registro`;
 }
 
 function dateSpan(from: string, to: string) {
@@ -288,6 +295,20 @@ export function InspectorProductionWorkspace() {
     staleTime: 15_000,
   });
 
+  const followUpPreview = useQuery({
+    queryKey: ["inspector-production-follow-up-queue", "preview"],
+    queryFn: () => listInspectorProductionFollowUpQueue({ limit: 5, offset: 0 }),
+    enabled: tab === "dashboard",
+    staleTime: 10_000,
+  });
+  const [followUpOffset, setFollowUpOffset] = useState(0);
+  const followUpQueue = useQuery({
+    queryKey: ["inspector-production-follow-up-queue", "full", followUpOffset],
+    queryFn: () => listInspectorProductionFollowUpQueue({ limit: PAGE_SIZE, offset: followUpOffset }),
+    enabled: tab === "acompanhamentos",
+    staleTime: 10_000,
+  });
+
   const [historySearchDraft, setHistorySearchDraft] = useState("");
   const [historySearch, setHistorySearch] = useState("");
   const [historyEmployee, setHistoryEmployee] = useState("");
@@ -364,6 +385,7 @@ export function InspectorProductionWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["inspector-production-history"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-suggestions"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-entry"] }),
+        queryClient.invalidateQueries({ queryKey: ["inspector-production-follow-up-queue"] }),
       ]);
       const wasFollowUp = Boolean(created.parent_entry_id);
       setTitle("");
@@ -411,6 +433,7 @@ export function InspectorProductionWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["inspector-production-summary"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-history"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-entry"] }),
+        queryClient.invalidateQueries({ queryKey: ["inspector-production-follow-up-queue"] }),
       ]);
       toast.success("Registro cancelado e preservado no histórico");
       setCancelTarget(null);
@@ -439,6 +462,8 @@ export function InspectorProductionWorkspace() {
     await Promise.all([
       membership.refetch(),
       summary.refetch(),
+      tab === "dashboard" ? followUpPreview.refetch() : Promise.resolve(),
+      tab === "acompanhamentos" ? followUpQueue.refetch() : Promise.resolve(),
       tab === "historico" ? historyQuery.refetch() : Promise.resolve(),
     ]);
     toast.success("Dados atualizados");
@@ -448,6 +473,7 @@ export function InspectorProductionWorkspace() {
   const tabs: Array<{ id: WorkspaceTab; label: string; icon: typeof BarChart3 }> = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "registrar", label: "Registrar", icon: Plus },
+    { id: "acompanhamentos", label: "Acompanhamentos", icon: Clock3 },
     { id: "historico", label: "Histórico", icon: History },
     { id: "relatorio", label: "Relatório", icon: FileText },
   ];
@@ -576,7 +602,7 @@ export function InspectorProductionWorkspace() {
       />
 
       <SystemSurface className="p-2">
-        <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-5">
           {tabs.map((item) => {
             const Icon = item.icon;
             const active = tab === item.id;
@@ -637,6 +663,85 @@ export function InspectorProductionWorkspace() {
             <SystemMetricCard label="Com evidência" value={dashboard.totals.with_evidence} icon={Camera} accent="#10b981" detail={`${dashboard.totals.evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
           </div>
+
+          <SystemSurface className="overflow-hidden">
+            <SystemSectionHeader
+              icon={Clock3}
+              title="Fila de acompanhamentos"
+              description="Visão operacional atual dos registros que ainda exigem continuidade e não possuem acompanhamento ativo vinculado."
+              accent="#d97706"
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFollowUpOffset(0);
+                    setTab("acompanhamentos");
+                  }}
+                >
+                  <History className="mr-2 h-4 w-4" /> Abrir fila completa
+                </Button>
+              }
+            />
+            <div className="border-b px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+              A fila considera todo o histórico, independentemente do período selecionado no dashboard. Um registro sai da fila quando recebe um acompanhamento ativo ou é cancelado.
+            </div>
+            {followUpPreview.isLoading ? (
+              <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Carregando fila operacional...</p>
+            ) : followUpPreview.isError ? (
+              <div className="p-6 text-center" role="alert">
+                <p className="text-sm font-bold text-amber-600">Não foi possível carregar a fila de acompanhamentos.</p>
+                <Button variant="outline" size="sm" className="mt-3" onClick={() => void followUpPreview.refetch()}>
+                  <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
+                </Button>
+              </div>
+            ) : followUpPreview.data?.total === 0 ? (
+              <div className="p-8 text-center">
+                <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-500" />
+                <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Nenhum acompanhamento aguardando continuidade.</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>No estado atual do histórico, não há registro ativo pendente sem acompanhamento vinculado.</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3 border-b px-5 py-3" style={{ borderColor: "var(--border-subtle)" }}>
+                  <div>
+                    <p className="text-2xl font-black tabular-nums text-amber-600">{followUpPreview.data?.total ?? 0}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[.11em]" style={{ color: "var(--text-4)" }}>aguardando continuidade</p>
+                  </div>
+                  <p className="max-w-md text-right text-[10px] leading-5" style={{ color: "var(--text-4)" }}>
+                    Ordenação pelo registro mais antigo, sem aplicar classificação de gravidade ou prioridade.
+                  </p>
+                </div>
+                <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                  {(followUpPreview.data?.items ?? []).map((entry) => (
+                    <div key={entry.id} className="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_170px_auto] lg:items-center">
+                      <button type="button" onClick={() => setDetailsId(entry.id)} className="min-w-0 text-left">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p>
+                          <ResultStatusBadge status={entry.result_status} />
+                        </div>
+                        <p className="mt-1 truncate text-xs" style={{ color: "var(--text-4)" }}>
+                          {entry.executor_name} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}
+                        </p>
+                      </button>
+                      <div>
+                        <p className="text-xs font-black text-amber-600">{waitingDaysLabel(entry.waiting_days)}</p>
+                        <p className="mt-1 text-[10px]" style={{ color: "var(--text-4)" }}>{displayDateTime(entry.executed_at)}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!canStartFollowUp(entry)}
+                        onClick={() => startFollowUp(entry)}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" /> Acompanhar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </SystemSurface>
 
           <SystemSurface className="p-4 lg:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -976,6 +1081,120 @@ export function InspectorProductionWorkspace() {
             </div>
           </SystemSurface>
         </>
+      )}
+
+      {tab === "acompanhamentos" && (
+        <SystemSurface className="overflow-hidden">
+          <SystemSectionHeader
+            icon={Clock3}
+            title="Fila de Acompanhamentos"
+            description="Registros ativos que exigem continuidade e ainda não possuem acompanhamento ativo vinculado."
+            accent="#d97706"
+            action={
+              <Button variant="outline" size="sm" onClick={() => void followUpQueue.refetch()}>
+                <RefreshCw className="mr-2 h-4 w-4" /> Atualizar fila
+              </Button>
+            }
+          />
+          <div className="border-b px-5 py-3 text-xs leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+            Esta fila é operacional e considera todo o histórico, não apenas o período selecionado acima. A ordem é cronológica, do registro mais antigo para o mais recente. Tempo decorrido não representa atraso sem que exista um prazo formal definido.
+          </div>
+
+          {followUpQueue.isLoading ? (
+            <div className="py-16 text-center text-sm" style={{ color: "var(--text-4)" }}>Carregando acompanhamentos...</div>
+          ) : followUpQueue.isError ? (
+            <div className="p-10 text-center" role="alert">
+              <Clock3 className="mx-auto h-10 w-10 text-amber-500" />
+              <p className="mt-3 font-black text-amber-600">Não foi possível carregar a fila operacional.</p>
+              <Button variant="outline" className="mt-4" onClick={() => void followUpQueue.refetch()}>
+                <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
+              </Button>
+            </div>
+          ) : followUpQueue.data?.total === 0 ? (
+            <div className="p-12 text-center">
+              <CheckCircle2 className="mx-auto h-11 w-11 text-emerald-500" />
+              <p className="mt-4 text-base font-black" style={{ color: "var(--text-1)" }}>Fila sem registros pendentes</p>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-6" style={{ color: "var(--text-4)" }}>
+                Não há registro ativo com resultado “Concluído com pendência” ou “Requer acompanhamento” sem continuidade ativa vinculada.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "var(--border-subtle)" }}>
+                <div>
+                  <p className="text-3xl font-black tabular-nums text-amber-600">{followUpQueue.data?.total ?? 0}</p>
+                  <p className="mt-1 text-[10px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>registros aguardando continuidade</p>
+                </div>
+                <p className="max-w-lg text-xs leading-5" style={{ color: "var(--text-4)" }}>
+                  A fila mostra as etapas ativas que ainda precisam de continuidade e não possuem acompanhamento ativo. Quando uma etapa recebe continuidade ativa, ela deixa de aparecer na fila.
+                </p>
+              </div>
+
+              <div className="space-y-3 p-4 lg:p-5">
+                {(followUpQueue.data?.items ?? []).map((entry) => (
+                  <div key={entry.id} className="rounded-2xl p-4" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{entry.title}</p>
+                          <ResultStatusBadge status={entry.result_status} />
+                        </div>
+                        <p className="mt-2 text-xs leading-5" style={{ color: "var(--text-3)" }}>
+                          {entry.executor_name} · Mat. {entry.executor_matricula} · {entry.category}{entry.location ? ` · ${entry.location}` : ""}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px]" style={{ color: "var(--text-4)" }}>
+                          <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" /> {displayDateTime(entry.executed_at)}</span>
+                          <span className="inline-flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> {entry.attachment_count} evidência(s)</span>
+                          <span className="font-black text-amber-600">{waitingDaysLabel(entry.waiting_days)}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row xl:shrink-0">
+                        <Button variant="outline" onClick={() => setDetailsId(entry.id)}>
+                          <Eye className="mr-2 h-4 w-4" /> Abrir registro
+                        </Button>
+                        <Button
+                          className="bg-[#C8102E] font-bold text-white hover:bg-[#A00D24]"
+                          disabled={!canStartFollowUp(entry)}
+                          onClick={() => startFollowUp(entry)}
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" /> Registrar acompanhamento
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-3 border-t px-5 py-4" style={{ borderColor: "var(--border-subtle)" }}>
+                <p className="text-xs" style={{ color: "var(--text-4)" }}>
+                  Exibindo {followUpOffset + 1}–{Math.min(followUpOffset + (followUpQueue.data?.items.length ?? 0), followUpQueue.data?.total ?? 0)} de {followUpQueue.data?.total ?? 0}.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={followUpOffset === 0}
+                    onClick={() => setFollowUpOffset(Math.max(0, followUpOffset - PAGE_SIZE))}
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={followUpQueue.data?.next_offset === null}
+                    onClick={() => {
+                      if (followUpQueue.data?.next_offset !== null && followUpQueue.data?.next_offset !== undefined) {
+                        setFollowUpOffset(followUpQueue.data.next_offset);
+                      }
+                    }}
+                  >
+                    Próxima
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </SystemSurface>
       )}
 
       {tab === "registrar" && (
