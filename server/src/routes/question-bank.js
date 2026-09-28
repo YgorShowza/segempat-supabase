@@ -6,7 +6,7 @@ import { asBool, asyncHandler, badRequest, conflict, notFound, parseJson, requir
 
 export const questionBankRouter = Router();
 
-const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"];
+const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"];
 const DIFFICULTIES = ["Básico", "Intermediário", "Avançado"];
 const ADMIN_DIFFICULTY_TO_CANONICAL = {
   "Fácil": "Básico",
