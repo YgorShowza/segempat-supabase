@@ -6,6 +6,8 @@ export type AccessPermission =
   | "team.view"
   | "team.manage"
   | "risk.view"
+  | "inspector_production.view"
+  | "inspector_production.record"
   | "schedule.manage"
   | "occurrences.manage"
   | "practical.manage"
@@ -30,6 +32,7 @@ const ROUTE_PERMISSIONS: Record<string, AccessPermission | AccessPermission[]> =
   "/acessos": ["access.identity.manage", "access.password_reset", "access.permissions.manage"],
   "/analytics": "analytics.view",
   "/risco": "risk.view",
+  "/producao-inspetoria": ["inspector_production.view", "inspector_production.record"],
   "/individual": "analytics.view",
   "/radar-analises": "analytics.view",
   "/relatorios": "reports.view",
@@ -59,6 +62,7 @@ const ADMIN_HOME_CANDIDATES = [
   "/admin",
   "/atencao",
   "/equipe",
+  "/producao-inspetoria",
   "/analytics",
   "/cronograma",
   "/provas-criar",
