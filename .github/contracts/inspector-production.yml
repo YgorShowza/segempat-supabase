@@ -36,7 +36,11 @@ jobs:
           test -f "$MIG_FOLLOW_UP"
 
           grep -F 'Produção da Inspetoria' "$UI" >/dev/null
-          grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
+          grep -F 'Distribuição de execuções por inspetor' "$UI" >/dev/null
+          grep -F 'ordem institucional configurada da equipe' "$UI" >/dev/null
+          grep -F 'não constitui classificação, premiação ou avaliação profissional' "$UI" >/dev/null
+          ! grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
+          ! grep -F '{row.rank}º' "$UI" >/dev/null
           grep -F 'Sem evidência' "$UI" >/dev/null
           grep -F 'Cobertura de evidências' "$UI" >/dev/null
           grep -F 'Comparativo com o período anterior' "$UI" >/dev/null
