@@ -221,12 +221,6 @@ export function GlobalSearch() {
 
   const openResult = (path: SearchPath) => {
     setOpen(false);
-    if (path === "/atencao") {
-      // A rota file-based entra na árvore tipada quando o plugin TanStack roda no build.
-      // @ts-expect-error /atencao ainda não existe no routeTree versionado antes da geração do build
-      navigate({ to: path });
-      return;
-    }
     navigate({ to: path });
   };
 
