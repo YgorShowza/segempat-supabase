@@ -54,6 +54,7 @@ import {
   getInspectorProductionSummary,
   inspectorProductionAttachmentUrl,
   listInspectorProductionEntries,
+  listInspectorProductionFollowUpQueue,
   listInspectorProductionSuggestions,
   type InspectorProductionEntry,
   type InspectorProductionResultStatus,
@@ -63,7 +64,7 @@ import {
 import { addOperationalDays, operationalDate, operationalYear } from "@/lib/operational-time";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
-type WorkspaceTab = "dashboard" | "registrar" | "historico" | "relatorio";
+type WorkspaceTab = "dashboard" | "registrar" | "acompanhamentos" | "historico" | "relatorio";
 
 interface PendingEvidence {
   id: string;
@@ -103,6 +104,12 @@ function displayDate(value?: string | null) {
 function periodLabel(from: string, to: string) {
   const date = (value: string) => new Date(`${value}T12:00:00Z`).toLocaleDateString("pt-BR", { timeZone: "UTC" });
   return `${date(from)} a ${date(to)}`;
+}
+
+function waitingDaysLabel(days: number) {
+  if (days <= 0) return "registrado hoje";
+  if (days === 1) return "1 dia desde o registro";
+  return `${days} dias desde o registro`;
 }
 
 function dateSpan(from: string, to: string) {
@@ -288,6 +295,20 @@ export function InspectorProductionWorkspace() {
     staleTime: 15_000,
   });
 
+  const followUpPreview = useQuery({
+    queryKey: ["inspector-production-follow-up-queue", "preview"],
+    queryFn: () => listInspectorProductionFollowUpQueue({ limit: 5, offset: 0 }),
+    enabled: tab === "dashboard",
+    staleTime: 10_000,
+  });
+  const [followUpOffset, setFollowUpOffset] = useState(0);
+  const followUpQueue = useQuery({
+    queryKey: ["inspector-production-follow-up-queue", "full", followUpOffset],
+    queryFn: () => listInspectorProductionFollowUpQueue({ limit: PAGE_SIZE, offset: followUpOffset }),
+    enabled: tab === "acompanhamentos",
+    staleTime: 10_000,
+  });
+
   const [historySearchDraft, setHistorySearchDraft] = useState("");
   const [historySearch, setHistorySearch] = useState("");
   const [historyEmployee, setHistoryEmployee] = useState("");
@@ -364,6 +385,7 @@ export function InspectorProductionWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["inspector-production-history"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-suggestions"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-entry"] }),
+        queryClient.invalidateQueries({ queryKey: ["inspector-production-follow-up-queue"] }),
       ]);
       const wasFollowUp = Boolean(created.parent_entry_id);
       setTitle("");
@@ -411,6 +433,7 @@ export function InspectorProductionWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["inspector-production-summary"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-history"] }),
         queryClient.invalidateQueries({ queryKey: ["inspector-production-entry"] }),
+        queryClient.invalidateQueries({ queryKey: ["inspector-production-follow-up-queue"] }),
       ]);
       toast.success("Registro cancelado e preservado no histórico");
       setCancelTarget(null);
@@ -439,6 +462,8 @@ export function InspectorProductionWorkspace() {
     await Promise.all([
       membership.refetch(),
       summary.refetch(),
+      tab === "dashboard" ? followUpPreview.refetch() : Promise.resolve(),
+      tab === "acompanhamentos" ? followUpQueue.refetch() : Promise.resolve(),
       tab === "historico" ? historyQuery.refetch() : Promise.resolve(),
     ]);
     toast.success("Dados atualizados");
@@ -448,6 +473,7 @@ export function InspectorProductionWorkspace() {
   const tabs: Array<{ id: WorkspaceTab; label: string; icon: typeof BarChart3 }> = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "registrar", label: "Registrar", icon: Plus },
+    { id: "acompanhamentos", label: "Acompanhamentos", icon: Clock3 },
     { id: "historico", label: "Histórico", icon: History },
     { id: "relatorio", label: "Relatório", icon: FileText },
   ];
@@ -576,7 +602,7 @@ export function InspectorProductionWorkspace() {
       />
 
       <SystemSurface className="p-2">
-        <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-5">
           {tabs.map((item) => {
             const Icon = item.icon;
             const active = tab === item.id;
