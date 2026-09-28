@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface } from "@/components/system/SystemUI";
 import "@/operational-desktop.css";
 
 export const Route = createFileRoute("/_authenticated/provas")({
@@ -71,21 +72,6 @@ function normalizeSearch(value: string) {
     .trim();
 }
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     <span
@@ -94,36 +80,6 @@ function Chip({ children }: { children: React.ReactNode }) {
     >
       {children}
     </span>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  sub,
-}: {
-  label: string;
-  value: number;
-  icon: typeof FileText;
-  accent: string;
-  sub: string;
-}) {
-  return (
-    <Card className="relative min-w-0 overflow-hidden p-4">
-      <div className="absolute left-0 top-0 h-[3px] w-full" style={{ background: accent }} />
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="mt-2 text-3xl font-black" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="mt-1 truncate text-[11px] font-semibold" style={{ color: accent }} title={sub}>{sub}</p>
-        </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}>
-          <Icon className="h-4 w-4" style={{ color: accent }} />
-        </div>
-      </div>
-    </Card>
   );
 }
 
@@ -229,16 +185,12 @@ function ProvasPage() {
   });
 
   if (userLoading || examsQuery.isLoading || (!isAdmin && attemptsQuery.isLoading)) {
-    return (
-      <div className="flex justify-center py-24" role="status" aria-label="Carregando provas">
-        <div className="h-9 w-9 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#C8102E" }} />
-      </div>
-    );
+    return <SystemDataWorkspaceSkeleton metricCount={isAdmin ? 4 : 0} rowCount={7} />;
   }
 
   if (examsQuery.isError || (!isAdmin && attemptsQuery.isError)) {
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center">
+      <SystemSurface className="mx-auto max-w-xl p-8 text-center">
         <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
         <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>Não foi possível carregar as provas.</p>
         <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Nenhum dado foi alterado. Verifique a conexão e tente novamente.</p>
@@ -252,7 +204,7 @@ function ProvasPage() {
         >
           <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
         </Button>
-      </Card>
+      </SystemSurface>
     );
   }
 
@@ -306,14 +258,14 @@ function ProvasPage() {
 
       {isAdmin && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Metric label="Total" value={all.length} icon={Layers3} accent="#3b82f6" sub="provas cadastradas" />
-          <Metric label="Publicadas" value={published} icon={FileCheck2} accent="#10b981" sub="disponíveis aos operadores" />
-          <Metric label="Rascunhos" value={drafts} icon={FileClock} accent="#f59e0b" sub="aguardando publicação" />
-          <Metric label="Setores" value={sectors} icon={Crosshair} accent="#e11d48" sub="alvos configurados" />
+          <SystemMetricCard label="Total" value={all.length} icon={Layers3} accent="#C8102E" detail="provas cadastradas" />
+          <SystemMetricCard label="Publicadas" value={published} icon={FileCheck2} accent="#10b981" detail="disponíveis aos operadores" />
+          <SystemMetricCard label="Rascunhos" value={drafts} icon={FileClock} accent="#f59e0b" detail="aguardando publicação" />
+          <SystemMetricCard label="Setores" value={sectors} icon={Crosshair} accent="#64748b" detail="alvos configurados" />
         </div>
       )}
 
-      <Card className="p-4">
+      <SystemSurface className="p-4">
         <div className={`grid gap-3 ${isAdmin ? "md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_180px_190px_auto]" : "sm:grid-cols-[1fr_auto]"}`}>
           <div className="relative md:col-span-2 xl:col-span-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} />
@@ -356,10 +308,10 @@ function ProvasPage() {
         <p className="mt-3 text-[11px]" style={{ color: "var(--text-4)" }} aria-live="polite">
           {filteredExams.length} prova{filteredExams.length === 1 ? "" : "s"} exibida{filteredExams.length === 1 ? "" : "s"}
         </p>
-      </Card>
+      </SystemSurface>
 
       {filteredExams.length === 0 ? (
-        <Card className="p-10 text-center">
+        <SystemSurface className="p-10 text-center">
           <CheckCircle2 className="mx-auto h-10 w-10 opacity-30" style={{ color: "var(--text-4)" }} />
           <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>
             {baseExams.length === 0
@@ -376,14 +328,14 @@ function ProvasPage() {
               <FilterX className="mr-2 h-4 w-4" /> Limpar filtros
             </Button>
           )}
-        </Card>
+        </SystemSurface>
       ) : (
         <div className="space-y-3">
           {filteredExams.map((exam: Exam) => {
             const accent = exam.status === "Publicada" ? "#10b981" : "#f59e0b";
             const questionCount = exam.question_count ?? exam.questions.length;
             return (
-              <Card key={exam.id} className="relative min-w-0 overflow-hidden">
+              <SystemSurface key={exam.id} className="relative min-w-0 overflow-hidden">
                 <div className="absolute bottom-0 left-0 top-0 w-[3px]" style={{ background: accent }} />
                 <div className="p-4 pl-5 md:p-5 md:pl-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -438,7 +390,7 @@ function ProvasPage() {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </SystemSurface>
             );
           })}
         </div>
