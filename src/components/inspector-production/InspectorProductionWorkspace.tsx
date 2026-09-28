@@ -792,7 +792,7 @@ export function InspectorProductionWorkspace() {
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" disabled={historyOffset === 0} onClick={() => setHistoryOffset(Math.max(0, historyOffset - PAGE_SIZE))}>Anterior</Button>
-                  <Button variant="outline" size="sm" disabled={historyQuery.data?.next_offset === null} onClick={() => historyQuery.data?.next_offset !== null && setHistoryOffset(historyQuery.data.next_offset)}>Próxima</Button>
+                  <Button variant="outline" size="sm" disabled={historyQuery.data?.next_offset == null} onClick={() => { const nextOffset = historyQuery.data?.next_offset; if (nextOffset != null) setHistoryOffset(nextOffset); }}>Próxima</Button>
                 </div>
               </div>
             </>
