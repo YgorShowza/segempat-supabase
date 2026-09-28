@@ -69,6 +69,15 @@ jobs:
           grep -F 'executive_summary' "$API" >/dev/null
           grep -F 'follow_ups' "$API" >/dev/null
           grep -F 'Texto determinístico gerado pelo servidor' "$API" >/dev/null
+          grep -F '"/follow-up-queue"' "$API" >/dev/null
+          grep -F "child.parent_entry_id = p.id" "$API" >/dev/null
+          grep -F "child.status = 'Registrada'" "$API" >/dev/null
+          grep -F "scope: \"all_history\"" "$API" >/dev/null
+          grep -F 'Fila de acompanhamentos' "$UI" >/dev/null
+          grep -F 'Fila de Acompanhamentos' "$UI" >/dev/null
+          grep -F 'todo o histórico' "$UI" >/dev/null
+          grep -F 'Tempo decorrido não representa atraso' "$UI" >/dev/null
+          grep -F 'listInspectorProductionFollowUpQueue' "$UI" >/dev/null
           grep -F 'Distribuição por categoria e inspetor' "$UI" >/dev/null
           grep -F 'category_concentration' "$API" >/dev/null
           grep -F 'dominant_share' "$API" >/dev/null
