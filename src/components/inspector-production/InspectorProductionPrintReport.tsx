@@ -97,32 +97,32 @@ export function InspectorProductionPrintReport({
 
       .segempat-print-header {
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 43mm 1fr auto;
         align-items: center;
-        gap: 10mm;
-        padding-bottom: 5mm;
+        gap: 8mm;
+        padding: 2mm 0 5mm;
         border-bottom: 1.5px solid #c8102e;
       }
 
-      .segempat-print-brand {
+      .segempat-print-logo-wrap {
         display: flex;
         align-items: center;
-        justify-content: center;
-        width: 30mm;
-        height: 13mm;
-        border-radius: 2.5mm;
-        background: #c8102e;
-        color: #ffffff;
-        font-size: 17pt;
-        font-weight: 900;
-        letter-spacing: 0.08em;
+        justify-content: flex-start;
+        height: 23mm;
+      }
+
+      .segempat-print-logo {
+        display: block;
+        width: 42mm;
+        height: auto;
+        object-fit: contain;
       }
 
       .segempat-print-kicker {
-        margin: 0 0 1.2mm;
+        margin: 0 0 1.1mm;
         color: #6b7280;
-        font-size: 7.4pt;
-        font-weight: 700;
+        font-size: 7pt;
+        font-weight: 800;
         letter-spacing: 0.12em;
         text-transform: uppercase;
       }
@@ -131,24 +131,36 @@ export function InspectorProductionPrintReport({
         margin: 0;
         color: #111827;
         font-size: 11pt;
-        font-weight: 800;
+        font-weight: 850;
+      }
+
+      .segempat-print-institution {
+        margin: 1mm 0 0;
+        color: #6b7280;
+        font-size: 7.1pt;
+        font-weight: 700;
       }
 
       .segempat-print-doc-type {
+        padding: 2.6mm 3.2mm;
+        border: 1px solid #d6dae1;
+        border-radius: 2.2mm;
+        background: #fbfcfe;
         text-align: right;
         color: #374151;
-        font-size: 7.5pt;
-        font-weight: 800;
-        letter-spacing: 0.1em;
+        font-size: 7.1pt;
+        font-weight: 900;
+        line-height: 1.35;
+        letter-spacing: 0.09em;
         text-transform: uppercase;
       }
 
       .segempat-print-title {
-        margin: 7mm 0 1.5mm;
+        margin: 6mm 0 1.4mm;
         color: #111827;
         font-size: 20pt;
         font-weight: 900;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
       }
 
       .segempat-print-subtitle {
@@ -173,7 +185,18 @@ export function InspectorProductionPrintReport({
       }
 
       .segempat-print-meta-card {
-        padding: 3.2mm;
+        position: relative;
+        overflow: hidden;
+        padding: 3.2mm 3.4mm;
+        background: #fbfcfe;
+      }
+
+      .segempat-print-meta-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0.8mm;
+        background: #c8102e;
       }
 
       .segempat-print-label {
@@ -220,9 +243,11 @@ export function InspectorProductionPrintReport({
       }
 
       .segempat-print-summary-item {
-        padding: 2.5mm 3mm;
-        border-left: 2px solid #2563eb;
-        background: #f8fafc;
+        padding: 2.5mm 3.2mm;
+        border: 1px solid #e3e6eb;
+        border-left: 1.1mm solid #c8102e;
+        border-radius: 1.5mm;
+        background: #fbfcfe;
         color: #374151;
         font-size: 8.2pt;
         line-height: 1.45;
@@ -235,7 +260,18 @@ export function InspectorProductionPrintReport({
       }
 
       .segempat-print-metric {
-        padding: 3mm;
+        position: relative;
+        overflow: hidden;
+        padding: 3.2mm;
+        background: #ffffff;
+      }
+
+      .segempat-print-metric::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 0.7mm;
+        background: #c8102e;
       }
 
       .segempat-print-metric-value {
@@ -288,7 +324,8 @@ export function InspectorProductionPrintReport({
       .segempat-print-outcome {
         border: 1px solid #d1d5db;
         border-radius: 2.5mm;
-        padding: 3mm;
+        padding: 3.2mm;
+        background: #fbfcfe;
       }
 
       .segempat-print-outcome strong {
@@ -331,12 +368,30 @@ export function InspectorProductionPrintReport({
       .segempat-print-note {
         margin-top: 3mm;
         padding: 3mm;
-        border: 1px solid #dbe3ee;
+        border: 1px solid #dde1e7;
         border-radius: 2.5mm;
-        background: #f8fafc;
+        background: #fbfcfe;
         color: #4b5563;
         font-size: 7.2pt;
         line-height: 1.45;
+      }
+
+      .segempat-print-empty {
+        padding: 7mm 5mm;
+        border: 1px dashed #cfd5de;
+        border-radius: 2.5mm;
+        background: #fbfcfe;
+        color: #6b7280;
+        font-size: 8pt;
+        line-height: 1.45;
+        text-align: center;
+      }
+
+      .segempat-print-empty strong {
+        display: block;
+        margin-bottom: 1mm;
+        color: #374151;
+        font-size: 8.5pt;
       }
 
       .segempat-print-footer {
@@ -365,12 +420,15 @@ export function InspectorProductionPrintReport({
   const PrintHeader = ({ page }: { page: number }) => (
     <>
       <div className="segempat-print-header">
-        <div className="segempat-print-brand">EMPAT</div>
+        <div className="segempat-print-logo-wrap">
+          <img className="segempat-print-logo" src="/empat-logo-report.jpg" alt="EMPAT - Empresa Alagoana de Terminais" />
+        </div>
         <div>
           <p className="segempat-print-kicker">SEGEMPAT · Produção da Inspetoria</p>
           <p className="segempat-print-unit">Unidade de Segurança Portuária</p>
+          <p className="segempat-print-institution">Empresa Alagoana de Terminais</p>
         </div>
-        <div className="segempat-print-doc-type">Relatório gerencial<br />executivo</div>
+        <div className="segempat-print-doc-type">Relatório gerencial<br />executivo<br /><span style={{ color: "#9ca3af", fontSize: "6pt", letterSpacing: ".04em" }}>uso gerencial</span></div>
       </div>
       {page === 1 && (
         <>
@@ -532,50 +590,64 @@ export function InspectorProductionPrintReport({
 
           <div className="segempat-print-section">
             <h2 className="segempat-print-section-title">Distribuição por categoria</h2>
-            <table className="segempat-print-table">
-              <thead>
-                <tr>
-                  <th>Categoria</th>
-                  <th style={{ width: "18%" }} className="num">Execuções</th>
-                  <th style={{ width: "18%" }} className="num">Participação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboard.categories.map((row) => (
-                  <tr key={row.category}>
-                    <td>{row.category}</td>
-                    <td className="num">{row.total}</td>
-                    <td className="num">{row.share}%</td>
+            {dashboard.categories.length > 0 ? (
+              <table className="segempat-print-table">
+                <thead>
+                  <tr>
+                    <th>Categoria</th>
+                    <th style={{ width: "18%" }} className="num">Execuções</th>
+                    <th style={{ width: "18%" }} className="num">Participação</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {dashboard.categories.map((row) => (
+                    <tr key={row.category}>
+                      <td>{row.category}</td>
+                      <td className="num">{row.total}</td>
+                      <td className="num">{row.share}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="segempat-print-empty">
+                <strong>Sem distribuição por categoria no período</strong>
+                Não há execuções ativas registradas para compor esta leitura.
+              </div>
+            )}
           </div>
 
           <div className="segempat-print-section">
             <h2 className="segempat-print-section-title">Distribuição por categoria e inspetor</h2>
-            <table className="segempat-print-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "30%" }}>Categoria</th>
-                  <th style={{ width: "12%" }} className="num">Total</th>
-                  <th style={{ width: "28%" }}>Maior participação registrada</th>
-                  <th style={{ width: "14%" }} className="num">Participação</th>
-                  <th style={{ width: "16%" }}>Leitura</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboard.category_concentration.map((row) => (
-                  <tr key={row.category}>
-                    <td>{row.category}</td>
-                    <td className="num">{row.total}</td>
-                    <td>{row.dominant_name || "—"}</td>
-                    <td className="num">{row.dominant_share}%</td>
-                    <td>{categoryConcentrationLabel(row.concentration)}</td>
+            {dashboard.category_concentration.length > 0 ? (
+              <table className="segempat-print-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: "30%" }}>Categoria</th>
+                    <th style={{ width: "12%" }} className="num">Total</th>
+                    <th style={{ width: "28%" }}>Maior participação registrada</th>
+                    <th style={{ width: "14%" }} className="num">Participação</th>
+                    <th style={{ width: "16%" }}>Leitura</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {dashboard.category_concentration.map((row) => (
+                    <tr key={row.category}>
+                      <td>{row.category}</td>
+                      <td className="num">{row.total}</td>
+                      <td>{row.dominant_name || "—"}</td>
+                      <td className="num">{row.dominant_share}%</td>
+                      <td>{categoryConcentrationLabel(row.concentration)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="segempat-print-empty">
+                <strong>Sem base para distribuição por categoria e inspetor</strong>
+                A leitura será apresentada automaticamente quando houver execuções ativas categorizadas no período.
+              </div>
+            )}
           </div>
 
           <div className="segempat-print-section segempat-print-grid-2">
