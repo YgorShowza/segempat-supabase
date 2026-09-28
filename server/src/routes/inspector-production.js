@@ -115,6 +115,10 @@ function joinPtBr(items) {
   return `${items.slice(0, -1).join(", ")} e ${items.at(-1)}`;
 }
 
+function countText(count, singular, plural) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function buildExecutiveSummary({
   from,
   to,
@@ -139,19 +143,19 @@ function buildExecutiveSummary({
   if (total === 0) {
     statements.push(`No período de ${period}, não há execuções ativas registradas na Produção da Inspetoria.`);
     if (members > 0) {
-      statements.push(`A equipe configurada possui ${members} inspetor(es); nenhum possui execução ativa registrada no período selecionado.`);
+      statements.push(`A equipe configurada possui ${countText(members, "inspetor", "inspetores")}; nenhum possui execução ativa registrada no período selecionado.`);
     }
     if (previousTotal === 0) {
       statements.push("O período anterior equivalente também não possui execuções ativas registradas.");
     } else {
-      statements.push(`O período anterior equivalente possuía ${previousTotal} execução(ões) ativa(s) registrada(s); a diferença absoluta no período atual é de -${previousTotal}.`);
+      statements.push(`O período anterior equivalente possuía ${countText(previousTotal, "execução ativa registrada", "execuções ativas registradas")}; a diferença absoluta no período atual é de -${previousTotal}.`);
     }
     if (canceled > 0) {
-      statements.push(`${canceled} registro(s) cancelado(s) permanece(m) preservado(s) no histórico do período.`);
+      statements.push(`${countText(canceled, "registro cancelado permanece preservado", "registros cancelados permanecem preservados")} no histórico do período.`);
     }
     statements.push("Não houve acompanhamento vinculado registrado no período.");
   } else {
-    statements.push(`No período de ${period}, foram registradas ${total} execução(ões) ativa(s) por ${participating} de ${members} inspetor(es) configurado(s).`);
+    statements.push(`No período de ${period}, foram registradas ${countText(total, "execução ativa", "execuções ativas")} por ${participating} de ${countText(members, "inspetor configurado", "inspetores configurados")}.`);
 
     if (ranking.length > 0) {
       const distribution = ranking
@@ -168,8 +172,8 @@ function buildExecutiveSummary({
       const categoryShare = categories.find((row) => row.total === maxCategoryTotal)?.share ?? 0;
       statements.push(
         leadingCategories.length === 1
-          ? `Foram registradas ${categories.length} categoria(s). A maior participação por categoria foi ${leadingCategories[0]}, com ${maxCategoryTotal} execução(ões) (${categoryShare}% do volume ativo).`
-          : `Foram registradas ${categories.length} categoria(s). O maior volume foi compartilhado por ${joinPtBr(leadingCategories)}, com ${maxCategoryTotal} execução(ões) em cada categoria.`,
+          ? `Foram registradas ${countText(categories.length, "categoria", "categorias")}. A maior participação por categoria foi ${leadingCategories[0]}, com ${countText(maxCategoryTotal, "execução", "execuções")} (${categoryShare}% do volume ativo).`
+          : `Foram registradas ${countText(categories.length, "categoria", "categorias")}. O maior volume foi compartilhado por ${joinPtBr(leadingCategories)}, com ${countText(maxCategoryTotal, "execução", "execuções")} em cada categoria.`,
       );
     }
 
@@ -178,7 +182,7 @@ function buildExecutiveSummary({
     );
 
     statements.push(
-      `Evidências: ${withEvidence} execução(ões) com evidência (${evidenceRate}%) e ${withoutEvidence} sem evidência. A ausência de evidência é informativa e não caracteriza irregularidade automaticamente.`,
+      `Evidências: ${countText(withEvidence, "execução com evidência", "execuções com evidência")} (${evidenceRate}%) e ${countText(withoutEvidence, "execução sem evidência", "execuções sem evidência")}. A ausência de evidência é informativa e não caracteriza irregularidade automaticamente.`,
     );
 
     if (previousTotal === 0) {
@@ -188,7 +192,7 @@ function buildExecutiveSummary({
     } else {
       const sign = totalVariation.absolute > 0 ? "+" : "";
       statements.push(
-        `Comparação com o período anterior equivalente: ${previousTotal} execução(ões) antes e ${total} agora, diferença absoluta de ${sign}${totalVariation.absolute} e variação de ${totalVariation.percentage}%.`,
+        `Comparação com o período anterior equivalente: ${countText(previousTotal, "execução", "execuções")} antes e ${total} agora, diferença absoluta de ${sign}${totalVariation.absolute} e variação de ${totalVariation.percentage}%.`,
       );
     }
 
@@ -207,12 +211,12 @@ function buildExecutiveSummary({
 
     statements.push(
       followUps.total > 0
-        ? `Foram registrados ${followUps.total} acompanhamento(s) no período, vinculados a ${followUps.source_records} registro(s) de origem.`
+        ? `Foram registrados ${countText(followUps.total, "acompanhamento", "acompanhamentos")} no período, vinculados a ${countText(followUps.source_records, "registro de origem", "registros de origem")}.`
         : "Não houve acompanhamento vinculado registrado no período.",
     );
 
     if (canceled > 0) {
-      statements.push(`Além das execuções ativas, ${canceled} registro(s) cancelado(s) permanece(m) preservado(s) para rastreabilidade.`);
+      statements.push(`Além das execuções ativas, ${countText(canceled, "registro cancelado permanece preservado", "registros cancelados permanecem preservados")} para rastreabilidade.`);
     }
   }
 
