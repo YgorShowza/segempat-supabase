@@ -65,6 +65,8 @@ export interface InspectorProductionRankingRow {
   display_order: number;
   total: number;
   with_evidence: number;
+  without_evidence: number;
+  evidence_rate: number;
   last_execution_at: string | null;
   rank: number;
   share: number;
@@ -79,7 +81,9 @@ export interface InspectorProductionSummary {
     participating_inspectors: number;
     average_per_inspector: number;
     with_evidence: number;
+    without_evidence: number;
     evidence_rate: number;
+    without_evidence_rate: number;
     canceled: number;
   };
   ranking: InspectorProductionRankingRow[];
@@ -120,6 +124,7 @@ export function listInspectorProductionEntries(input: {
   employee_id?: string;
   category?: string;
   status?: InspectorProductionStatus | "";
+  evidence?: "with" | "without" | "";
   search?: string;
   limit?: number;
   offset?: number;
@@ -133,6 +138,7 @@ export function listInspectorProductionEntries(input: {
   if (input.employee_id) params.set("employee_id", input.employee_id);
   if (input.category) params.set("category", input.category);
   if (input.status) params.set("status", input.status);
+  if (input.evidence) params.set("evidence", input.evidence);
   if (input.search?.trim()) params.set("search", input.search.trim());
   return apiRequest<InspectorProductionEntryPage>(`/api/inspector-production/entries?${params.toString()}`);
 }
