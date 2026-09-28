@@ -111,6 +111,28 @@ export interface InspectorProductionSuggestion {
   last_used: string;
 }
 
+export interface InspectorProductionInspectorDetails {
+  member: InspectorProductionMember;
+  period: { from: string; to: string };
+  previous_period: { from: string; to: string; inclusive_days: number };
+  metrics: {
+    executions: number;
+    previous_executions: number;
+    absolute_change: number;
+    percentage_change: number | null;
+    comparison_baseline_available: boolean;
+    participation_share: number;
+    with_evidence: number;
+    without_evidence: number;
+    evidence_rate: number;
+    canceled: number;
+    last_execution_at: string | null;
+  };
+  categories: Array<{ category: string; total: number; share: number }>;
+  timeline: Array<{ day: string; total: number }>;
+  recent: InspectorProductionEntry[];
+}
+
 export interface InspectorProductionEntryPage {
   items: InspectorProductionEntry[];
   total: number;
@@ -128,6 +150,16 @@ export function getInspectorProductionMembership(): Promise<InspectorProductionM
 
 export function getInspectorProductionSummary(from: string, to: string): Promise<InspectorProductionSummary> {
   return apiRequest<InspectorProductionSummary>(`/api/inspector-production/summary?${periodQuery(from, to)}`);
+}
+
+export function getInspectorProductionInspectorDetails(
+  employeeId: string,
+  from: string,
+  to: string,
+): Promise<InspectorProductionInspectorDetails> {
+  return apiRequest<InspectorProductionInspectorDetails>(
+    `/api/inspector-production/inspectors/${encodeURIComponent(employeeId)}?${periodQuery(from, to)}`,
+  );
 }
 
 export function listInspectorProductionEntries(input: {
