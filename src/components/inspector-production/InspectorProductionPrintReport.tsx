@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { InspectorProductionSummary } from "@/lib/inspector-production";
 
 function displayDateTime(value?: string | null) {
@@ -42,6 +44,9 @@ export function InspectorProductionPrintReport({
   inspectorRows: InspectorProductionSummary["ranking"];
   issuedAt: string;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const comparison = comparisonLabel(
     dashboard.comparison.current_total,
     dashboard.comparison.previous_total,
@@ -61,19 +66,13 @@ export function InspectorProductionPrintReport({
         background: #ffffff !important;
       }
 
-      body * {
-        visibility: hidden !important;
-      }
-
-      .inspector-production-print-report,
-      .inspector-production-print-report * {
-        visibility: visible !important;
+      body > *:not(.inspector-production-print-report):not(style):not(script) {
+        display: none !important;
       }
 
       .inspector-production-print-report {
         display: block !important;
-        position: absolute !important;
-        inset: 0 auto auto 0 !important;
+        position: static !important;
         width: 210mm !important;
         background: #ffffff !important;
         color: #111827 !important;
@@ -406,7 +405,9 @@ export function InspectorProductionPrintReport({
     </div>
   );
 
-  return (
+  if (!mounted || typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       <style>{printStyles}</style>
       <div id="inspector-production-print-report" className="inspector-production-print-report" aria-hidden="true">
@@ -592,6 +593,7 @@ export function InspectorProductionPrintReport({
           <PrintFooter page={3} />
         </section>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
