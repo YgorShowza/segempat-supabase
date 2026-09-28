@@ -146,8 +146,12 @@ function ProcessStep({ number, title, text }: { number: string; title: string; t
 
 function Metric({ label, value, state }: { label: string; value: number | string; state: WorkflowState }) {
   const meta = STATE_META[state];
-  const Icon = state === "valid" ? CheckCircle2 : state === "revoked" ? XCircle : Clock3;
+  const Icon = state === "valid" ? Award : state === "revoked" ? XCircle : Clock3;
   return <SystemMetricCard label={label} value={value} icon={Icon} accent={meta.color} detail={meta.label} />;
+}
+
+function Restricted() {
+  return <div className="mx-auto max-w-xl rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><ShieldCheck className="mx-auto h-10 w-10" style={{ color: "var(--accent)" }} /><h1 className="mt-3 text-lg font-black" style={{ color: "var(--text-1)" }}>Acesso restrito</h1><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Seu nível de acesso não possui permissão para gerenciar certificados e assinaturas.</p></div>;
 }
 
 function Loading() {
