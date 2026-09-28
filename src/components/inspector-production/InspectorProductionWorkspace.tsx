@@ -18,14 +18,12 @@ import {
   History,
   ImagePlus,
   MapPin,
-  Medal,
   Minus,
   Plus,
   Printer,
   RefreshCw,
   Search,
   ShieldCheck,
-  Trophy,
   UserRound,
   Users,
   X,
@@ -215,13 +213,6 @@ async function prepareEvidenceFiles(files: FileList | null, available: number) {
     });
   }
   return accepted;
-}
-
-function rankAccent(rank: number) {
-  if (rank === 1) return "#C8A000";
-  if (rank === 2) return "#64748b";
-  if (rank === 3) return "#b45309";
-  return "#C8102E";
 }
 
 function comparisonMeta(current: number, previous: number, percentage: number | null) {
@@ -495,6 +486,9 @@ export function InspectorProductionWorkspace() {
   const balance = balanceState(dashboard);
   const timeline = aggregateTimeline(dashboard);
   const maxTimeline = Math.max(1, ...timeline.map((point) => point.total));
+  const inspectorRows = [...dashboard.ranking].sort(
+    (a, b) => a.display_order - b.display_order || a.name.localeCompare(b.name, "pt-BR"),
+  );
 
   const currentMember = membership.data?.current_member ?? null;
   const canCancel = (entry: InspectorProductionEntry) => Boolean(
@@ -846,35 +840,47 @@ export function InspectorProductionWorkspace() {
 
           <div className="grid gap-4 xl:grid-cols-12">
             <SystemSurface className="overflow-hidden xl:col-span-7">
-              <SystemSectionHeader icon={Trophy} title="Ranking de Execuções Registradas" description="Ordenação objetiva pela quantidade de atribuições ativas registradas no período." accent="#C8A000" />
+              <SystemSectionHeader
+                icon={Users}
+                title="Distribuição de execuções por inspetor"
+                description="Leitura quantitativa dos registros ativos, apresentada na ordem institucional configurada da equipe."
+                accent="#2563eb"
+              />
               <div className="space-y-3 p-4 lg:p-5">
-                {dashboard.ranking.length === 0 ? (
+                {inspectorRows.length === 0 ? (
                   <p className="py-10 text-center text-sm" style={{ color: "var(--text-4)" }}>Nenhum inspetor configurado.</p>
-                ) : dashboard.ranking.map((row) => {
-                  const accent = rankAccent(row.rank);
-                  const max = Math.max(1, dashboard.ranking[0]?.total ?? 1);
-                  return (
-                    <button key={row.employee_id} type="button" onClick={() => setSelectedInspectorId(row.employee_id)} className="w-full rounded-2xl p-4 text-left transition-transform hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black" style={{ background: `${accent}12`, border: `1px solid ${accent}30`, color: accent }}>{row.rank}º</div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}</p>
-                            {row.is_leader && <span className="rounded-full px-2 py-0.5 text-[9px] font-black" style={{ background: "rgba(200,160,0,.10)", color: "#C8A000" }}>LÍDER</span>}
-                          </div>
-                          <p className="mt-0.5 text-[11px]" style={{ color: "var(--text-4)" }}>Mat. {row.matricula} · {row.share}% da produção registrada</p>
-                          <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}>
-                            <div className="h-full rounded-full transition-[width]" style={{ width: `${(row.total / max) * 100}%`, background: accent }} />
-                          </div>
+                ) : inspectorRows.map((row) => (
+                  <button
+                    key={row.employee_id}
+                    type="button"
+                    onClick={() => setSelectedInspectorId(row.employee_id)}
+                    className="w-full rounded-2xl p-4 text-left transition-colors hover:bg-black/[.02] dark:hover:bg-white/[.025]"
+                    style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl" style={{ background: "rgba(37,99,235,.08)", border: "1px solid rgba(37,99,235,.16)", color: "#2563eb" }}>
+                        <UserRound className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}</p>
+                          {row.is_leader && <span className="rounded-full px-2 py-0.5 text-[9px] font-black" style={{ background: "rgba(37,99,235,.08)", color: "#2563eb" }}>LÍDER</span>}
                         </div>
-                        <div className="shrink-0 text-right">
-                          <p className="text-2xl font-black" style={{ color: "var(--text-1)" }}>{row.total}</p>
-                          <p className="text-[10px] font-semibold" style={{ color: "var(--text-4)" }}>{row.with_evidence} com · {row.without_evidence} sem evidência</p>
+                        <p className="mt-0.5 text-[11px]" style={{ color: "var(--text-4)" }}>Mat. {row.matricula} · {row.share}% do volume ativo registrado</p>
+                        <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: "var(--bg-surface-3)" }}>
+                          <div className="h-full rounded-full bg-[#2563eb] transition-[width]" style={{ width: `${row.share}%` }} />
                         </div>
                       </div>
-                    </button>
-                  );
-                })}
+                      <div className="shrink-0 text-right">
+                        <p className="text-2xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.total}</p>
+                        <p className="text-[10px] font-semibold" style={{ color: "var(--text-4)" }}>{row.with_evidence} com · {row.without_evidence} sem evidência</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+                A ordem segue a configuração institucional da equipe e não constitui classificação, premiação ou avaliação profissional. Os percentuais representam somente a participação no volume de registros ativos do período.
               </div>
             </SystemSurface>
 
@@ -1433,7 +1439,7 @@ export function InspectorProductionWorkspace() {
         <div className="space-y-4">
           <SystemSurface className="p-5 lg:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Relatório gerencial</p><h2 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Produção da Inspetoria · {periodLabel(from, to)}</h2><p className="mt-2 max-w-3xl text-sm leading-6" style={{ color: "var(--text-4)" }}>Resumo baseado exclusivamente nos registros preservados no SEGEMPAT no período selecionado. O ranking representa volume de execuções registradas, não avaliação qualitativa do desempenho profissional.</p></div>
+              <div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Relatório gerencial</p><h2 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Produção da Inspetoria · {periodLabel(from, to)}</h2><p className="mt-2 max-w-3xl text-sm leading-6" style={{ color: "var(--text-4)" }}>Resumo baseado exclusivamente nos registros preservados no SEGEMPAT no período selecionado. A distribuição por inspetor representa somente volume de execuções registradas e não constitui classificação ou avaliação qualitativa do desempenho profissional.</p></div>
               <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button><Button className="bg-[#C8102E] text-white hover:bg-[#A00D24]" onClick={() => void downloadReportCsv()}><Download className="mr-2 h-4 w-4" /> Exportar CSV</Button></div>
             </div>
           </SystemSurface>
@@ -1471,7 +1477,7 @@ export function InspectorProductionWorkspace() {
           </SystemSurface>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <SystemMetricCard label="Execuções válidas" value={dashboard.totals.executions} icon={CheckCircle2} accent="#10b981" detail="cancelamentos excluídos do ranking" />
+            <SystemMetricCard label="Execuções válidas" value={dashboard.totals.executions} icon={CheckCircle2} accent="#10b981" detail="cancelamentos excluídos do volume ativo" />
             <SystemMetricCard label="Registros cancelados" value={dashboard.totals.canceled} icon={XCircle} accent="#64748b" detail="preservados para rastreabilidade" />
             <SystemMetricCard label="Com evidência" value={dashboard.totals.with_evidence} icon={FileImage} accent="#2563eb" detail={`${dashboard.totals.evidence_rate}% das execuções ativas`} />
             <SystemMetricCard label="Sem evidência" value={dashboard.totals.without_evidence} icon={CameraOff} accent="#64748b" detail={`${dashboard.totals.without_evidence_rate}% das execuções ativas`} />
@@ -1528,10 +1534,32 @@ export function InspectorProductionWorkspace() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <SystemSurface className="overflow-hidden">
-              <SystemSectionHeader icon={Medal} title="Participação por inspetor" description="Ordem definida pelo número de execuções ativas registradas." accent="#C8A000" />
+              <SystemSectionHeader
+                icon={Users}
+                title="Participação por inspetor"
+                description="Distribuição quantitativa apresentada na ordem institucional configurada da equipe."
+                accent="#2563eb"
+              />
               <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-                {dashboard.ranking.map((row) => <div key={row.employee_id} className="flex items-center gap-4 p-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black" style={{ background: `${rankAccent(row.rank)}12`, color: rankAccent(row.rank) }}>{row.rank}º</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}{row.is_leader ? " · Líder" : ""}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{row.total} execuções · {row.with_evidence} com · {row.without_evidence} sem evidência</p></div><div className="text-right"><p className="text-xl font-black" style={{ color: "var(--text-1)" }}>{row.share}%</p><p className="text-[9px]" style={{ color: "var(--text-4)" }}>participação</p></div></div>)}
-                {dashboard.ranking.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Equipe não configurada.</p>}
+                {inspectorRows.map((row) => (
+                  <div key={row.employee_id} className="flex items-center gap-4 p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(37,99,235,.08)", color: "#2563eb" }}>
+                      <UserRound className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{row.name}{row.is_leader ? " · Líder" : ""}</p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{row.total} execuções · {row.with_evidence} com · {row.without_evidence} sem evidência</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-black tabular-nums" style={{ color: "var(--text-1)" }}>{row.share}%</p>
+                      <p className="text-[9px]" style={{ color: "var(--text-4)" }}>do volume ativo</p>
+                    </div>
+                  </div>
+                ))}
+                {inspectorRows.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--text-4)" }}>Equipe não configurada.</p>}
+              </div>
+              <div className="border-t px-5 py-3 text-[10px] leading-5" style={{ borderColor: "var(--border-subtle)", color: "var(--text-4)" }}>
+                Ordem institucional da equipe. Os valores são descritivos e não representam colocação, premiação ou mérito profissional.
               </div>
             </SystemSurface>
             <SystemSurface className="overflow-hidden">
