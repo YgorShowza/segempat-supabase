@@ -37,6 +37,16 @@ jobs:
 
           grep -F 'Produção da Inspetoria' "$UI" >/dev/null
           grep -F 'Distribuição de execuções por inspetor' "$UI" >/dev/null
+          grep -F 'Leitura da distribuição dos registros' "$UI" >/dev/null
+          grep -F 'Distribuição mais homogênea' "$UI" >/dev/null
+          grep -F 'Diferença moderada de participação' "$UI" >/dev/null
+          grep -F 'Maior concentração de registros' "$UI" >/dev/null
+          grep -F 'Registros distribuídos em parte da equipe' "$UI" >/dev/null
+          grep -F 'Essas faixas não são metas nem classificações de desempenho.' "$UI" >/dev/null
+          grep -F 'ausência de registro não equivale automaticamente a ausência de atividade' "$UI" >/dev/null
+          ! grep -F 'Participação incompleta' "$UI" >/dev/null
+          ! grep -F 'Distribuição equilibrada' "$UI" >/dev/null
+          ! grep -F 'Distribuição em atenção' "$UI" >/dev/null
           grep -F 'ordem institucional configurada da equipe' "$UI" >/dev/null
           grep -F 'não constitui classificação, premiação ou avaliação profissional' "$UI" >/dev/null
           ! grep -F 'Ranking de Execuções Registradas' "$UI" >/dev/null
