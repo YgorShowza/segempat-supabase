@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { listActiveQuestionBank, type OperationalQuestionBankItem } from "@/lib/question-bank";
 import { getCurrentEmployeeByAuth } from "@/lib/insights";
 import { submitTrainingActivity } from "@/lib/training-activities";
+import { SystemPanelSkeleton } from "@/components/system/SystemUI";
 
 function shuffled<T>(items: T[]) {
   const copy = [...items];
@@ -93,7 +94,7 @@ export function QuickTestWorkspace() {
   if (result) {
     return (
       <div className="mx-auto max-w-lg space-y-5 py-6 text-center">
-        <div className="text-6xl">{result.passed ? "🔥" : "🎯"}</div>
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: result.passed ? "rgba(16,185,129,.09)" : "rgba(245,158,11,.09)", border: result.passed ? "1px solid rgba(16,185,129,.20)" : "1px solid rgba(245,158,11,.22)", color: result.passed ? "#10b981" : "#f59e0b" }}><Flame className="h-7 w-7" /></div>
         <section className="rounded-2xl p-7" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
           <h1 className="text-2xl font-black" style={{ color: "var(--text-1)" }}>Teste Rápido concluído</h1>
           <p className="mt-4 text-5xl font-black" style={{ color: result.passed ? "#10b981" : "#f59e0b" }}>{result.score.toFixed(1)}</p>
@@ -110,7 +111,7 @@ export function QuickTestWorkspace() {
   if (!questions.length) {
     return (
       <div className="mx-auto max-w-lg space-y-5 py-6 text-center">
-        <div className="text-6xl">🔥</div>
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(245,158,11,.09)", border: "1px solid rgba(245,158,11,.22)", color: "#f59e0b" }}><Zap className="h-7 w-7" /></div>
         <div>
           <h1 className="text-2xl font-black" style={{ color: "var(--text-1)" }}>Teste Rápido</h1>
           <p className="mt-2 text-sm" style={{ color: "var(--text-4)" }}>5 questões aleatórias do Banco de Questões · setor {employee.data.sector}</p>
@@ -133,7 +134,7 @@ export function QuickTestWorkspace() {
   return (
     <div className="mx-auto max-w-xl space-y-5 pb-10">
       <div className="flex items-center justify-between gap-3">
-        <div><p className="text-[10px] font-black uppercase tracking-[.18em]" style={{ color: "#f59e0b" }}>🔥 Teste Rápido</p><h1 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Questão {current + 1} de {questions.length}</h1></div>
+        <div><div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[.16em]" style={{ color: "#d97706" }}><Zap className="h-3.5 w-3.5" /> Teste Rápido</div><h1 className="mt-1 text-xl font-black" style={{ color: "var(--text-1)" }}>Questão {current + 1} de {questions.length}</h1></div>
         <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-3)" }}>{Math.round(((current + 1) / questions.length) * 100)}%</span>
       </div>
 
@@ -162,4 +163,4 @@ export function QuickTestWorkspace() {
   );
 }
 
-function Loading() { return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: "var(--border)", borderTopColor: "#f59e0b" }} /></div>; }
+function Loading() { return <SystemPanelSkeleton rows={5} label="Carregando Teste Rápido" />; }
