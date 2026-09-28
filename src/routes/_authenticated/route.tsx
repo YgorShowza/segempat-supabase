@@ -8,6 +8,7 @@ export const ADMIN_ONLY_PATHS = new Set([
   "/admin",
   "/atencao",
   "/equipe",
+  "/producao-inspetoria",
   "/acessos",
   "/analytics",
   "/risco",
@@ -55,6 +56,7 @@ export const OPERATOR_DESKTOP_PATHS = new Set([
 export const INSPECTOR_DESKTOP_PATHS = new Set([
   "/atencao",
   "/risco",
+  "/producao-inspetoria",
   "/ia-base",
   "/provas-criar",
   "/modulos-treinamento",
