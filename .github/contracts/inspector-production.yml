@@ -59,6 +59,7 @@ jobs:
           grep -F 'FOLLOW_UP_SOURCE_RESULTS' "$API" >/dev/null
           grep -F 'follow_up_chain' "$API" >/dev/null
           grep -F 'follow_up_record: Boolean(parentEntryId)' "$API" >/dev/null
+          grep -F 'INSPECTOR_PRODUCTION_FOLLOW_UP_CREATE' "$API" >/dev/null
           grep -F 'Registrar acompanhamento' "$UI" >/dev/null
           grep -F 'Cadeia de acompanhamento' "$UI" >/dev/null
           grep -F 'O registro original não será alterado.' "$UI" >/dev/null
