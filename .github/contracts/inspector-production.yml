@@ -24,7 +24,7 @@ jobs:
           ROUTE=src/routes/_authenticated/producao-inspetoria.tsx
           UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
           PRINT=src/components/inspector-production/InspectorProductionPrintReport.tsx
-          LOGO=public/empat-logo-report.jpg
+          LOGO=public/empat-logo-report.webp
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
           MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
@@ -95,7 +95,9 @@ jobs:
           grep -F 'body > *:not(.inspector-production-print-report):not(style):not(script)' "$PRINT" >/dev/null
           grep -F 'createPortal' "$PRINT" >/dev/null
           grep -F 'document.body' "$PRINT" >/dev/null
-          grep -F 'src="/empat-logo-report.jpg"' "$PRINT" >/dev/null
+          grep -F 'src="/empat-logo-report.webp"' "$PRINT" >/dev/null
+          grep -F 'logo.naturalWidth === 0' "$UI" >/dev/null
+          grep -F 'window.setTimeout(finish, 2500)' "$UI" >/dev/null
           grep -F 'EMPAT - Empresa Alagoana de Terminais' "$PRINT" >/dev/null
           grep -F 'Sem distribuição por categoria no período' "$PRINT" >/dev/null
           grep -F 'Sem base para distribuição por categoria e inspetor' "$PRINT" >/dev/null

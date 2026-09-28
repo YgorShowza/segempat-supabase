@@ -421,7 +421,7 @@ export function InspectorProductionPrintReport({
     <>
       <div className="segempat-print-header">
         <div className="segempat-print-logo-wrap">
-          <img className="segempat-print-logo" src="/empat-logo-report.jpg" alt="EMPAT - Empresa Alagoana de Terminais" />
+          <img className="segempat-print-logo" src="/empat-logo-report.webp" alt="EMPAT - Empresa Alagoana de Terminais" loading="eager" decoding="sync" />
         </div>
         <div>
           <p className="segempat-print-kicker">SEGEMPAT · Produção da Inspetoria</p>
