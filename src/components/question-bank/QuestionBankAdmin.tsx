@@ -47,7 +47,7 @@ import {
 } from "@/lib/question-bank";
 
 const PAGE_SIZE = 20;
-const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações"] as const;
+const TARGET_SECTORS = ["Todos", "CFTV", "Vigilância", "Portaria", "Ronda", "Administrativo", "Operações", "Unidade de Segurança Portuária"] as const;
 const DIFFICULTIES = ["Fácil", "Médio", "Difícil"] as const;
 
 const EMPTY: QuestionBankInput = {
