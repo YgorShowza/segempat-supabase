@@ -39,6 +39,11 @@ jobs:
           requireText(profile, 'retryAll', 'perfil oferece nova tentativa sem mostrar zeros falsos');
           requireText(profile, 'aria-busy="true"', 'carregamento acessível do perfil');
           requireText(profile, 'segempat-profile-history-grid', 'históricos responsivos preservados');
+          requireText(profile, 'SystemSurface', 'perfil usa superfícies compartilhadas do design system');
+          if (profile.includes('boxShadow: "var(--shadow-card)"')) {
+            console.error('[profile-final-experience] perfil voltou a definir sombra de card principal inline');
+            process.exitCode = 1;
+          }
           requireText(profile, 'Dados de identificação protegidos', 'origem do cadastro comunicada ao usuário');
 
           requireText(shell, 'to="/meu-perfil"', 'shell oferece acesso direto ao Meu Perfil');
