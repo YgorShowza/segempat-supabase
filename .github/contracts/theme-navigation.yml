@@ -40,17 +40,24 @@ jobs:
           grep -F 'PanelLeftOpen' "$LAYOUT" >/dev/null
           grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
           grep -F 'background: "var(--header-bg)"' "$LAYOUT" >/dev/null
-          grep -F 'color: isActive ? "#fff" : "var(--text-2)"' "$LAYOUT" >/dev/null
-          grep -F 'color: isActive ? "#fff" : "var(--text-3)"' "$LAYOUT" >/dev/null
-          grep -F 'Tema da interface' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-link-icon' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-link-label' "$LAYOUT" >/dev/null
+          grep -F 'segempat-theme-option' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-theme-label' "$LAYOUT" >/dev/null
           grep -F 'window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY' "$LAYOUT" >/dev/null
 
-          grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/final-experience.css >/dev/null
-          grep -F -- '--segempat-sidebar-width: 5.25rem;' src/final-experience.css >/dev/null
-          grep -F 'rgba(16,18,23,.925) !important' src/final-experience.css >/dev/null
-          grep -F 'backdrop-filter: blur(22px) saturate(1.08)' src/final-experience.css >/dev/null
-          grep -F '.segempat-sidebar-link--collapsed' src/final-experience.css >/dev/null
-          grep -F '.segempat-sidebar-collapsed-footer' src/final-experience.css >/dev/null
+          grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/styles.css >/dev/null
+          grep -F -- '--segempat-sidebar-collapsed-width: 5.25rem;' src/styles.css >/dev/null
+          grep -F 'backdrop-filter: blur(22px) saturate(1.06)' src/styles.css >/dev/null
+          grep -F '.segempat-sidebar-link--collapsed' src/styles.css >/dev/null
+          grep -F '.segempat-sidebar-collapsed-footer' src/styles.css >/dev/null
+          grep -F '.segempat-sidebar-wordmark span:last-child' src/styles.css >/dev/null
+          grep -F 'color: #e11d3b;' src/styles.css >/dev/null
+
+          if grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/final-experience.css >/dev/null; then
+            echo 'ERRO: final-experience voltou a assumir responsabilidade visual da sidebar desktop.' >&2
+            exit 1
+          fi
 
           grep -F '.segempat-sidebar-sheet[role="dialog"]' src/theme-contrast-fixes.css >/dev/null
           grep -F 'background: var(--header-bg) !important' src/theme-contrast-fixes.css >/dev/null
