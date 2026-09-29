@@ -38,6 +38,11 @@ jobs:
           if grep -F '{metrics.pending} pendentes' src/components/dashboard/AdminDashboardV2.tsx >/dev/null; then
             echo "Indicador de pendências voltou a duplicar o card de métricas no hero"; exit 1
           fi
+          grep -F 'const [showMorePriorities, setShowMorePriorities] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'const visiblePriorities = priority.slice(0, showMorePriorities ? 7 : 3);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'aria-expanded={showMorePriorities}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F '{visiblePriorities.map' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'priorityCount > 3' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'const [showGovernance, setShowGovernance] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'aria-expanded={showGovernance}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'aria-controls="segempat-master-governance"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
