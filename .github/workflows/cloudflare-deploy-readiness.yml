@@ -72,6 +72,12 @@ jobs:
           grep -F 'CLOUDFLARE_ACCOUNT_ID' "$deploy_file" >/dev/null
           grep -F 'VITE_SEGEMPAT_API_URL' "$deploy_file" >/dev/null
           grep -F 'VITE_SEGEMPAT_REQUIRE_API' "$deploy_file" >/dev/null
+          grep -F "VITE_SEGEMPAT_API_URL: 'https://segempat-supabase.ygoxxx.workers.dev'" "$deploy_file" >/dev/null
+          test -f 'src/routes/api/$.ts'
+          test -f 'src/routes/health.ts'
+          grep -F 'https://segempat-api-supabase.onrender.com' 'src/routes/api/$.ts' >/dev/null
+          grep -F 'proxyApiRequest' 'src/routes/api/$.ts' >/dev/null
+          grep -F 'createFileRoute("/health"' 'src/routes/health.ts' >/dev/null
           grep -F 'wrangler deploy --dry-run' "$deploy_file" >/dev/null
           echo 'Guardas do deploy manual de produção validadas.'
 

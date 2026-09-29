@@ -26,7 +26,9 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       # Public deployment identifiers/URLs. No backend secret is exposed here.
       CLOUDFLARE_ACCOUNT_ID: '2e32d007ae7b8b4f488f4f9a301325d5'
-      VITE_SEGEMPAT_API_URL: 'https://segempat-api-supabase.onrender.com'
+      # Browser API calls stay on the Worker origin so the HttpOnly session cookie
+      # remains first-party on Safari/iOS. The Worker proxies /api/* to Render.
+      VITE_SEGEMPAT_API_URL: 'https://segempat-supabase.ygoxxx.workers.dev'
       VITE_SEGEMPAT_REQUIRE_API: 'true'
 
     steps:
