@@ -29,7 +29,7 @@ import { listTrainingModules, type TrainingModule } from "@/lib/training-modules
 import { getMyTrainingSchedule } from "@/lib/training-schedules";
 import { getCurrentEmployeeByAuth } from "@/lib/insights";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { SystemMetricCard, SystemPanelSkeleton } from "@/components/system/SystemUI";
+import { SystemMetricCard, SystemPanelSkeleton, SystemSurface } from "@/components/system/SystemUI";
 
 function formatCycleDate(value: string | null) {
   if (!value) return "—";
@@ -106,7 +106,7 @@ export function TrainingLibrary() {
           )}
         </div>
 
-        <section className="overflow-hidden rounded-[1.5rem]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
+        <SystemSurface className="overflow-hidden rounded-[1.5rem]">
           <div className="p-5 md:p-7" style={{ background: "linear-gradient(135deg,#171118,#2b0b13 50%,#111216)" }}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: "linear-gradient(135deg,#C8A000,#FFD700)", color: "#111" }}>
@@ -134,7 +134,7 @@ export function TrainingLibrary() {
             <p className="mb-3 text-[10px] font-black uppercase tracking-[.16em]" style={{ color: "var(--text-4)" }}>Conteúdo do módulo</p>
             <div className="whitespace-pre-wrap break-words text-sm leading-7" style={{ color: "var(--text-2)" }}>{selected.content || selected.description}</div>
           </article>
-        </section>
+        </SystemSurface>
 
         {(previousModule || nextModule) && (
           <nav className="grid gap-2 sm:grid-cols-2" aria-label="Navegação entre módulos">
@@ -208,7 +208,7 @@ export function TrainingLibrary() {
       )}
 
       {!user?.isAdmin && (
-        <section className="rounded-2xl p-4 md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
+        <SystemSurface className="p-4 md:p-5">
           <div><p className="text-[10px] font-black uppercase tracking-[.16em]" style={{ color: "var(--accent)" }}>Prática & desenvolvimento</p><h2 className="mt-1 text-lg font-black" style={{ color: "var(--text-1)" }}>Escolha como treinar agora</h2><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Ferramentas independentes, reunidas em uma única porta de entrada.</p></div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <AcademyTool path="/teste-rapido" icon={Zap} title="Teste Rápido" description="Revisão curta e objetiva para fixação de conteúdo." accent="#f59e0b" />
@@ -218,22 +218,22 @@ export function TrainingLibrary() {
             <AcademyTool path="/progresso" icon={TrendingUp} title="Meu Progresso" description="Acompanhe desempenho, evolução e pontos de atenção." accent="#10b981" />
             <AcademyTool path="/certificados" icon={FileBadge} title="Certificados" description="Consulte aprovações e documentos disponíveis." accent="#C8102E" />
           </div>
-        </section>
+        </SystemSurface>
       )}
 
       {!user?.isAdmin && (
         scheduleQuery.isLoading ? (
-          <section role="status" aria-live="polite" className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><p className="text-sm" style={{ color: "var(--text-4)" }}>Carregando seu ciclo de capacitação...</p></section>
+          <SystemSurface role="status" aria-live="polite" className="p-4"><p className="text-sm" style={{ color: "var(--text-4)" }}>Carregando seu ciclo de capacitação...</p></SystemSurface>
         ) : scheduleQuery.isError ? (
-          <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <SystemSurface className="p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><AlertTriangle className="h-5 w-5 shrink-0 text-amber-500" /><div className="min-w-0 flex-1"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Ciclo de capacitação indisponível</p><p className="mt-0.5 text-xs" style={{ color: "var(--text-4)" }}>Os módulos continuam disponíveis, mas não foi possível consultar seu vencimento.</p></div><Button size="sm" variant="outline" onClick={() => scheduleQuery.refetch()}><RefreshCw className="mr-2 h-3.5 w-3.5" /> Tentar novamente</Button></div>
-          </section>
+          </SystemSurface>
         ) : schedule ? (
-          <section className="rounded-2xl p-4 md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
+          <SystemSurface className="p-4 md:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${cycleColor}14`, color: cycleColor }}><CalendarClock className="h-5 w-5" /></div><div><p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Meu ciclo de capacitação</p><div className="mt-1 flex flex-wrap items-center gap-2"><p className="font-black" style={{ color: "var(--text-1)" }}>Ciclo de {schedule.cycle_days} dias</p><span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ color: cycleColor, background: `${cycleColor}12`, border: `1px solid ${cycleColor}28` }}>{schedule.status}</span></div></div></div><div className="grid grid-cols-3 gap-3 text-xs sm:text-right"><div><p style={{ color: "var(--text-4)" }}>Último</p><p className="mt-1 font-bold" style={{ color: "var(--text-2)" }}>{formatCycleDate(schedule.last_training_date)}</p></div><div><p style={{ color: "var(--text-4)" }}>Atenção</p><p className="mt-1 font-bold" style={{ color: "var(--text-2)" }}>{formatCycleDate(schedule.window_start)}</p></div><div><p style={{ color: "var(--text-4)" }}>Vence</p><p className="mt-1 font-black" style={{ color: cycleColor }}>{formatCycleDate(schedule.window_end)}</p></div></div></div>
-          </section>
+          </SystemSurface>
         ) : (
-          <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5" style={{ color: "var(--text-4)" }} /><div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Ciclo ainda não configurado</p><p className="mt-0.5 text-xs" style={{ color: "var(--text-4)" }}>A Inspetoria ainda não cadastrou um ciclo de capacitação para sua matrícula.</p></div></div></section>
+          <SystemSurface className="p-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5" style={{ color: "var(--text-4)" }} /><div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Ciclo ainda não configurado</p><p className="mt-0.5 text-xs" style={{ color: "var(--text-4)" }}>A Inspetoria ainda não cadastrou um ciclo de capacitação para sua matrícula.</p></div></div></SystemSurface>
         )
       )}
 
@@ -246,19 +246,19 @@ export function TrainingLibrary() {
         {loading ? (
           <SystemPanelSkeleton rows={7} label="Carregando biblioteca de treinamentos" />
         ) : loadError ? (
-          <section className="rounded-2xl p-10 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <SystemSurface className="p-10 text-center">
             <AlertTriangle className="mx-auto h-9 w-9 text-amber-500" />
             <p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar os treinamentos.</p>
             <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Tente novamente. Se o problema persistir, informe a Inspetoria.</p>
             <Button variant="outline" className="mt-4" onClick={() => { modulesQuery.refetch(); if (!user?.isAdmin) employeeQuery.refetch(); }}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
-          </section>
+          </SystemSurface>
         ) : modules.length === 0 ? (
-          <section className="rounded-2xl p-10 text-center md:p-12" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <SystemSurface className="p-10 text-center md:p-12">
             <GraduationCap className="mx-auto h-10 w-10 opacity-25" />
             <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>{availableModules.length === 0 ? "Nenhum treinamento ativo disponível." : "Nenhum treinamento corresponde à sua busca."}</p>
             <p className="mx-auto mt-1 max-w-xl text-sm" style={{ color: "var(--text-4)" }}>{availableModules.length === 0 ? (user?.isAdmin ? "Ative ou cadastre módulos na gestão de treinamentos para disponibilizá-los na Academia." : "Quando a Inspetoria disponibilizar conteúdo compatível com sua função, ele aparecerá aqui.") : "Limpe a busca ou use termos diferentes para localizar o conteúdo."}</p>
             {availableModules.length > 0 && <Button variant="outline" className="mt-4" onClick={() => setSearch("")}><X className="mr-2 h-4 w-4" /> Limpar busca</Button>}
-          </section>
+          </SystemSurface>
         ) : (
           <div className="grid gap-3 lg:grid-cols-2">
             {modules.map((module) => (
@@ -266,8 +266,7 @@ export function TrainingLibrary() {
                 key={module.id}
                 type="button"
                 onClick={() => setSelected(module)}
-                className="w-full rounded-2xl p-4 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:p-5"
-                style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}
+                className="segempat-academy-module-card w-full rounded-2xl p-4 text-left outline-none transition-[border-color,box-shadow,transform] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:p-5"
                 aria-label={`Abrir módulo ${module.title}`}
               >
                 <div className="flex items-center gap-4">
@@ -289,9 +288,9 @@ function AcademyMetric({ label, value, icon: Icon, accent, sub }: { label: strin
 }
 
 function AcademyTool({ path, icon: Icon, title, description, accent }: { path: string; icon: typeof Zap; title: string; description: string; accent: string }) {
-  return <Link to={path} aria-label={`${title}: ${description}`} className="group rounded-2xl p-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent)]" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}12`, color: accent }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>{description}</p></div><ChevronRight className="mt-1 h-4 w-4 shrink-0" style={{ color: "var(--text-4)" }} /></div></Link>;
+  return <Link to={path} aria-label={`${title}: ${description}`} className="segempat-academy-tool group rounded-2xl p-4 outline-none transition-[border-color,background-color,transform] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accent}12`, color: accent }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>{description}</p></div><ChevronRight className="mt-1 h-4 w-4 shrink-0" style={{ color: "var(--text-4)" }} /></div></Link>;
 }
 
 function AdminTrainingLink({ to, icon: Icon, title, description }: { to: "/modulos-treinamento" | "/ciclos-treinamento"; icon: typeof BookOpen; title: string; description: string }) {
-  return <Link to={to} className="rounded-2xl p-4 outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>{description}</p></div><ChevronRight className="mt-1 h-4 w-4 shrink-0" style={{ color: "var(--text-4)" }} /></div></Link>;
+  return <Link to={to} className="segempat-academy-admin-link rounded-2xl p-4 outline-none transition-[border-color,box-shadow,transform] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:p-5"><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>{description}</p></div><ChevronRight className="mt-1 h-4 w-4 shrink-0" style={{ color: "var(--text-4)" }} /></div></Link>;
 }
