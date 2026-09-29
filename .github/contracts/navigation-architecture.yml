@@ -22,14 +22,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          FILE=src/components/AppLayout.tsx
+          FILE=src/components/AppLayoutV2.tsx
           grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null
           grep -F 'section: "Equipe & Desempenho"' "$FILE" >/dev/null
           grep -F 'section: "Operação"' "$FILE" >/dev/null
           grep -F 'section: "Capacitação"' "$FILE" >/dev/null
           grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null
           grep -F 'section: "Governança"' "$FILE" >/dev/null
-          for route in /admin /atencao /analytics /equipe /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
+          for route in /admin /atencao /analytics /equipe /producao-inspetoria /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
             grep -F "path: \"$route\"" "$FILE" >/dev/null || { echo "Rota ausente do menu do Inspetor: $route"; exit 1; }
           done
           grep -F 'label: "Central de Relatórios"' "$FILE" >/dev/null
@@ -43,6 +43,8 @@ jobs:
             fi
           done
           grep -F 'function AdminNavItems' "$FILE" >/dev/null
+          grep -F 'const [openSection, setOpenSection]' "$FILE" >/dev/null
+          grep -F 'current === section.section ? null : section.section' "$FILE" >/dev/null
           grep -F 'aria-expanded={isOpen}' "$FILE" >/dev/null
           grep -F '<GlobalSearch />' "$FILE" >/dev/null
           echo "Arquitetura de navegação consolidada validada."
