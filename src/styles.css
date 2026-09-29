@@ -575,8 +575,184 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
       var(--bg-base) !important;
   }
 
-  /* Sidebar visuals are centralized in final-experience.css.
-     Keep this desktop layer structural only to avoid theme-specific conflicts. */
+  .segempat-app-sidebar {
+    --sidebar-ink: rgba(255,255,255,.90);
+    --sidebar-muted: rgba(255,255,255,.48);
+    --sidebar-faint: rgba(255,255,255,.30);
+    background:
+      radial-gradient(circle at 16% 4%, rgba(200,16,46,.15), transparent 16rem),
+      linear-gradient(180deg,#13151b 0%,#17151b 50%,#101217 100%) !important;
+  }
+
+  .segempat-sidebar-brand {
+    min-height: 88px;
+    padding: 1rem 1.05rem !important;
+  }
+
+  .segempat-sidebar-logo-shell {
+    flex: 0 0 auto;
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 8px 28px rgba(0,0,0,.20);
+  }
+
+  .segempat-sidebar-identity {
+    padding: 1rem 1.05rem !important;
+    border-bottom-color: rgba(255,255,255,.07) !important;
+  }
+
+  .segempat-sidebar-identity p:first-of-type {
+    color: var(--sidebar-ink) !important;
+  }
+
+  .segempat-sidebar-identity p:nth-of-type(2) {
+    color: var(--sidebar-muted) !important;
+  }
+
+  .segempat-sidebar-identity > a:hover {
+    background: rgba(255,255,255,.05) !important;
+  }
+
+  .segempat-sidebar-identity > a > svg {
+    color: var(--sidebar-faint) !important;
+  }
+
+  .segempat-sidebar-identity > div:last-child {
+    color: #ff8ea0 !important;
+    background: rgba(200,16,46,.12) !important;
+    border-color: rgba(255,103,128,.20) !important;
+  }
+
+  .segempat-app-sidebar nav[aria-label="Módulos do SEGEMPAT"] {
+    padding: .75rem .7rem 1rem !important;
+  }
+
+  .segempat-sidebar-section-card {
+    border-radius: .9rem !important;
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] {
+    background: rgba(255,255,255,.035) !important;
+    border-color: rgba(255,255,255,.055) !important;
+  }
+
+  .segempat-sidebar-section {
+    min-height: 42px;
+    padding: .55rem .7rem !important;
+  }
+
+  .segempat-sidebar-section:hover {
+    background: rgba(255,255,255,.045) !important;
+  }
+
+  .segempat-sidebar-section-icon {
+    background: rgba(255,255,255,.055) !important;
+    border: 1px solid rgba(255,255,255,.055);
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon {
+    background: rgba(200,16,46,.16) !important;
+    border-color: rgba(255,103,128,.16);
+  }
+
+  .segempat-sidebar-section-icon svg {
+    color: rgba(255,255,255,.55) !important;
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg {
+    color: #ff7189 !important;
+  }
+
+  .segempat-sidebar-section-title {
+    color: rgba(255,255,255,.66) !important;
+    letter-spacing: .115em !important;
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title {
+    color: rgba(255,255,255,.92) !important;
+  }
+
+  .segempat-sidebar-section-count {
+    display: none;
+  }
+
+  .segempat-sidebar-section > svg:last-child {
+    color: rgba(255,255,255,.28) !important;
+  }
+
+  .segempat-sidebar-link {
+    min-height: 40px;
+    margin-left: .15rem;
+    padding: .55rem .72rem !important;
+    border-radius: .72rem !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .segempat-sidebar-link[data-active="false"] {
+    background: transparent !important;
+  }
+
+  .segempat-sidebar-link[data-active="false"]:hover {
+    background: rgba(255,255,255,.05) !important;
+  }
+
+  .segempat-sidebar-link[data-active="true"] {
+    background: linear-gradient(90deg,rgba(200,16,46,.96),rgba(173,13,38,.92)) !important;
+    border-color: rgba(255,122,143,.24) !important;
+    box-shadow: 0 8px 22px rgba(111,4,27,.24) !important;
+  }
+
+  .segempat-sidebar-link-icon {
+    color: rgba(255,255,255,.47) !important;
+  }
+
+  .segempat-sidebar-link-label {
+    color: rgba(255,255,255,.70) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
+  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label {
+    color: #fff !important;
+  }
+
+  .segempat-sidebar-footer {
+    border-top-color: rgba(255,255,255,.07) !important;
+    background: rgba(0,0,0,.10);
+    padding: .8rem .8rem 1rem !important;
+  }
+
+  .segempat-sidebar-footer .segempat-theme-toggle {
+    background: rgba(255,255,255,.045) !important;
+    border-color: rgba(255,255,255,.07) !important;
+  }
+
+  .segempat-sidebar-footer .segempat-theme-toggle button[data-active="false"] {
+    color: rgba(255,255,255,.45) !important;
+  }
+
+  .segempat-sidebar-footer .segempat-theme-toggle button[data-active="true"] {
+    box-shadow: 0 6px 18px rgba(111,4,27,.28) !important;
+  }
+
+  .segempat-sidebar-footer > div > div:first-child span,
+  .segempat-sidebar-footer > div > div:first-child svg {
+    color: rgba(255,255,255,.38) !important;
+  }
+
+  .segempat-sidebar-footer > button {
+    color: #ff8ca0 !important;
+    background: rgba(200,16,46,.10) !important;
+    border-color: rgba(255,103,128,.15) !important;
+  }
+
+  .segempat-sidebar-footer > button span,
+  .segempat-sidebar-footer > button svg {
+    color: #ff8ca0 !important;
+  }
 
   .segempat-app-header {
     background: color-mix(in srgb, var(--header-bg) 94%, transparent) !important;
