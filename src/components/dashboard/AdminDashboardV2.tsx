@@ -136,8 +136,8 @@ export function AdminDashboardV2() {
         />
         <div className="pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.28),transparent 68%)" }} />
 
-        <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-          <div className="min-w-0">
+        <div className="segempat-admin-hero-content relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+          <div className="segempat-admin-hero-copy min-w-0">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               <p className="text-[11px] font-black uppercase tracking-[.16em]" style={{ color: "rgba(255,255,255,.52)" }}>
@@ -152,7 +152,7 @@ export function AdminDashboardV2() {
             </p>
             <p className="mt-2 text-[11px] capitalize" style={{ color: "rgba(255,255,255,.40)" }}>Atualizado em {updatedAt}</p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="segempat-admin-hero-badges mt-5 flex flex-wrap gap-2">
               {isMaster && (
                 <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black" style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.22)", color: "#fcd34d" }}>
                   <Crown className="h-3.5 w-3.5" /> Administrador Master
@@ -177,7 +177,7 @@ export function AdminDashboardV2() {
             </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-[auto_auto_44px] xl:justify-end">
+          <div className="segempat-admin-hero-actions grid gap-2 sm:grid-cols-[auto_auto_44px] xl:justify-end">
             <Link
               to={"/atencao" as never}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black text-white"
@@ -208,7 +208,7 @@ export function AdminDashboardV2() {
       </section>
 
       {isMaster && (
-        <SystemSurface className="overflow-hidden">
+        <SystemSurface className="segempat-admin-governance overflow-hidden">
           <SystemSectionHeader
             icon={Crown}
             title="Central de Governança Master"
@@ -272,7 +272,7 @@ export function AdminDashboardV2() {
       </div>
 
       <div className="segempat-admin-primary-grid grid gap-4 xl:grid-cols-12">
-        <SystemSurface className="overflow-hidden xl:col-span-7">
+        <SystemSurface className="segempat-admin-sector-card overflow-hidden xl:col-span-7">
           <SystemSectionHeader
             icon={BarChart3}
             title="Execução por setor"
@@ -290,7 +290,7 @@ export function AdminDashboardV2() {
               {sectorOverview.map((sector, index) => {
                 const color = SECTOR_COLORS[index % SECTOR_COLORS.length];
                 return (
-                  <div key={sector.sector} className="rounded-xl p-3.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div key={sector.sector} className="segempat-admin-sector-row rounded-xl p-3.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{sector.sector}</p>
@@ -317,7 +317,7 @@ export function AdminDashboardV2() {
           )}
         </SystemSurface>
 
-        <SystemSurface className="overflow-hidden xl:col-span-5">
+        <SystemSurface className="segempat-admin-priority-card overflow-hidden xl:col-span-5">
           <SystemSectionHeader
             icon={AlertTriangle}
             title="Prioridades operacionais"
@@ -334,7 +334,7 @@ export function AdminDashboardV2() {
           <div className="max-h-[470px] space-y-2 overflow-y-auto p-3 lg:p-4">
             {priority.slice(0, 7).map((item) => (
               <Link key={item.employee.id} to="/individual">
-                <div className="rounded-xl p-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                <div className="segempat-admin-priority-row rounded-xl p-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{item.employee.full_name}</p>
@@ -385,7 +385,7 @@ export function AdminDashboardV2() {
         </SystemSurface>
       </div>
 
-      <SystemSurface className="p-3.5 lg:p-4">
+      <SystemSurface className="segempat-admin-quick p-3.5 lg:p-4">
         <div className="mb-3 flex items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--accent-soft)" }}>
@@ -403,7 +403,7 @@ export function AdminDashboardV2() {
           {quick.map(({ to, label, icon: Icon, accent }) => (
             <Link key={to} to={to as never} className="min-w-0">
               <div
-                className="group relative flex h-full min-h-[92px] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl p-3 text-center transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                className="segempat-admin-quick-tile group relative flex h-full min-h-[92px] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl p-3 text-center transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-sm"
                 style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}
               >
                 <div className="absolute -right-7 -top-7 h-16 w-16 rounded-full opacity-[.08]" style={{ background: accent }} />
@@ -417,7 +417,7 @@ export function AdminDashboardV2() {
         </div>
       </SystemSurface>
 
-      <SystemSurface className="overflow-hidden">
+      <SystemSurface className="segempat-admin-performance overflow-hidden">
         <SystemSectionHeader
           icon={Trophy}
           title="Destaques de desempenho"
@@ -436,7 +436,7 @@ export function AdminDashboardV2() {
             {leaders.map((item, index) => (
               <Link key={item.employee.id} to="/individual" className="min-w-0">
                 <div
-                  className="h-full rounded-xl p-4 text-left transition-[transform,border-color] duration-150 hover:-translate-y-0.5"
+                  className="segempat-admin-performance-tile h-full rounded-xl p-4 text-left transition-[transform,border-color] duration-150 hover:-translate-y-0.5"
                   style={{
                     background: index === 0 ? "rgba(200,16,46,.07)" : "var(--bg-surface-2)",
                     border: index === 0 ? "1px solid rgba(200,16,46,.28)" : "1px solid var(--border-subtle)",
