@@ -48,5 +48,12 @@ jobs:
             echo "Busca Global voltou a exibir o rótulo redundante de acesso rápido"; exit 1
           fi
           grep -F 'Uma fonte de dados está indisponível' "$FILE" >/dev/null
+          grep -F 'segempat-global-search-trigger' "$FILE" >/dev/null
+          grep -F 'segempat-global-search-result' "$FILE" >/dev/null
+          grep -F 'segempat-global-search-warning' "$FILE" >/dev/null
+          grep -F 'CROSS-APP SHELL CONSISTENCY' src/styles.css >/dev/null
+          if grep -F 'style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-4)" }}' "$FILE" >/dev/null; then
+            echo "Busca Global voltou a definir a aparência principal inline"; exit 1
+          fi
           grep -F '<GlobalSearch />' "$LAYOUT" >/dev/null
           echo "Busca Global SEGEMPAT validada com permissões granulares e Meu Perfil."
