@@ -41,6 +41,12 @@ jobs:
             grep -F "path: \"$route\"" "$FILE" >/dev/null || { echo "Rota administrativa ausente da Busca Global: $route"; exit 1; }
           done
           grep -F 'path: "/provas", icon: Target, audience: "all"' "$FILE" >/dev/null
+          grep -F '.slice(0, term ? 8 : 3)' "$FILE" >/dev/null
+          grep -F '>Principal</p>' "$FILE" >/dev/null
+          grep -F 'const showGroupLabel = term || group !== "Navegação";' "$FILE" >/dev/null
+          if grep -F '>Acesso rápido</p>' "$FILE" >/dev/null; then
+            echo "Busca Global voltou a exibir o rótulo redundante de acesso rápido"; exit 1
+          fi
           grep -F 'Uma fonte de dados está indisponível' "$FILE" >/dev/null
           grep -F '<GlobalSearch />' "$LAYOUT" >/dev/null
           echo "Busca Global SEGEMPAT validada com permissões granulares e Meu Perfil."
