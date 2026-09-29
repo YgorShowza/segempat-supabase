@@ -24,6 +24,11 @@ jobs:
           set -euo pipefail
           test -f src/training-management-desktop.css
           grep -F 'segempat-training-question-bank' src/routes/_authenticated/banco-questoes.tsx >/dev/null
+          grep -F 'SystemPageHero' src/components/question-bank/QuestionBankAdmin.tsx >/dev/null
+          grep -F 'segempat-question-card' src/components/question-bank/QuestionBankAdmin.tsx >/dev/null
+          grep -F 'SystemPageHero' src/components/practical/PracticalWorkspace.tsx >/dev/null
+          grep -F 'segempat-practical-overdue' src/components/practical/PracticalWorkspace.tsx >/dev/null
+          grep -F 'Assessment and practical evaluation convergence' src/styles.css >/dev/null
           grep -F 'segempat-training-cycles' src/routes/_authenticated/ciclos-treinamento.tsx >/dev/null
           grep -F 'segempat-training-knowledge' src/routes/_authenticated/conteudos.tsx >/dev/null
           grep -F 'SystemPageHero' src/components/knowledge/KnowledgeWorkspace.tsx >/dev/null
