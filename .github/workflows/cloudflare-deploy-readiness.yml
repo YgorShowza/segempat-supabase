@@ -77,7 +77,7 @@ jobs:
           test -f 'src/routes/health.ts'
           grep -F 'https://segempat-api-supabase.onrender.com' 'src/routes/api/$.ts' >/dev/null
           grep -F 'proxyApiRequest' 'src/routes/api/$.ts' >/dev/null
-          grep -F 'createFileRoute("/health")' 'src/routes/health.ts' >/dev/null
+          grep -F 'createFileRoute("/health"' 'src/routes/health.ts' >/dev/null
           grep -F 'wrangler deploy --dry-run' "$deploy_file" >/dev/null
           echo 'Guardas do deploy manual de produção validadas.'
 
