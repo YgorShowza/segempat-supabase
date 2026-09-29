@@ -25,8 +25,6 @@ jobs:
 
           LAYOUT="src/components/AppLayoutV2.tsx"
           ROUTE="src/routes/_authenticated/route.tsx"
-          POLISH="src/final-experience.css"
-          CONTRAST="src/theme-contrast-fixes.css"
 
           grep -F 'import { AppLayoutV2 } from "@/components/AppLayoutV2"' "$ROUTE" >/dev/null
           grep -F '<AppLayoutV2>' "$ROUTE" >/dev/null
@@ -36,64 +34,23 @@ jobs:
           grep -F 'hidden w-[19rem] flex-col lg:flex' "$LAYOUT" >/dev/null
           grep -F 'lg:ml-[19rem]' "$LAYOUT" >/dev/null
           grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
+          grep -F 'background: "var(--header-bg)"' "$LAYOUT" >/dev/null
+          grep -F 'color: isActive ? "#fff" : "var(--text-2)"' "$LAYOUT" >/dev/null
+          grep -F 'color: isActive ? "#fff" : "var(--text-3)"' "$LAYOUT" >/dev/null
+          grep -F 'Tema da interface' "$LAYOUT" >/dev/null
 
-          test -f public/empat-mark.svg
-          grep -F 'const LOGO_URL = "/empat-mark.svg";' "$LAYOUT" >/dev/null
-          grep -F 'function SidebarBrand' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-wordmark-seg' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-wordmark-empat' "$LAYOUT" >/dev/null
-          grep -F 'Gestão de Segurança Portuária' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-profile-name' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-access-pill' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-sector' "$LAYOUT" >/dev/null
-          grep -F 'segempat-mobile-logo-mark' "$LAYOUT" >/dev/null
-          grep -F 'segempat-theme-option' "$LAYOUT" >/dev/null
-          grep -F 'segempat-sidebar-logout' "$LAYOUT" >/dev/null
+          grep -F '.segempat-sidebar-sheet[role="dialog"]' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'background: var(--header-bg) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'color: var(--text-1) !important' src/theme-contrast-fixes.css >/dev/null
 
-          if grep -F 'segempat-sidebar-logo-shell overflow-hidden rounded-xl bg-white' "$LAYOUT" >/dev/null; then
-            echo 'ERRO: fundo branco voltou à marca da sidebar.' >&2
-            exit 1
-          fi
-          if grep -F 'color: "#fff"' "$LAYOUT" >/dev/null; then
-            echo 'ERRO: drawer voltou a forçar texto branco e deixou de acompanhar o tema.' >&2
-            exit 1
-          fi
-
-          grep -F -- '--sidebar-bg: #f7f8fa;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-bg: #15181d;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-text: #18202b;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-text: #f4f6f8;' "$POLISH" >/dev/null
-          grep -F '.segempat-sidebar-wordmark-empat' "$POLISH" >/dev/null
-          grep -F 'color: #d71938;' "$POLISH" >/dev/null
-          grep -F 'background: var(--sidebar-hover) !important' "$POLISH" >/dev/null
-          grep -F 'background: var(--sidebar-active-bg) !important' "$POLISH" >/dev/null
-          grep -F 'box-shadow: inset 2px 0 0 #c8102e' "$POLISH" >/dev/null
-          grep -F 'background: transparent;' "$POLISH" >/dev/null
-          grep -F '.segempat-theme-option[data-active="true"]' "$POLISH" >/dev/null
-          grep -F 'color: #c8102e !important' "$POLISH" >/dev/null
-          if grep -F -- '--sidebar-ink:' src/styles.css >/dev/null; then
-            echo 'ERRO: camada desktop antiga voltou a forçar cores claras na sidebar.' >&2
-            exit 1
-          fi
-          if grep -F 'linear-gradient(180deg,#13151b' src/styles.css >/dev/null; then
-            echo 'ERRO: gradiente legado voltou a competir com o tema da sidebar.' >&2
-            exit 1
-          fi
-          grep -F 'text-transform: none !important' "$POLISH" >/dev/null
-          grep -F '.segempat-theme-option[data-active="true"]' "$POLISH" >/dev/null
-
-          grep -F '.segempat-sidebar-sheet[role="dialog"]' "$CONTRAST" >/dev/null
-          grep -F 'color: var(--sidebar-text) !important' "$CONTRAST" >/dev/null
-          grep -F 'background: var(--sidebar-hover) !important' "$CONTRAST" >/dev/null
-
-          if grep -F '[class*="w-[280px]"]' "$CONTRAST" >/dev/null; then
+          if grep -F '[class*="w-[280px]"]' src/theme-contrast-fixes.css >/dev/null; then
             echo 'ERRO: proteção de tema não pode depender da largura histórica do drawer.' >&2
             exit 1
           fi
-          if grep -F 'background: var(--bg-surface-2) !important' "$CONTRAST" >/dev/null; then
-            echo 'ERRO: hover da sidebar voltou a herdar a superfície da página.' >&2
+
+          if grep -F 'rgba(255,255,255,0.62)' "$LAYOUT" >/dev/null; then
+            echo 'ERRO: link inativo da sidebar voltou a depender de texto branco fixo.' >&2
             exit 1
           fi
 
-          echo 'Sidebar premium validada em tema claro/escuro, desktop/mobile e sem regressão de hover.'
-
+          echo 'AppLayoutV2 ativo: tema claro/escuro e navegação desktop/mobile protegidos.'

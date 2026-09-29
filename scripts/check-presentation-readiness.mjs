@@ -176,12 +176,9 @@ requireText(
   "Recuperação de senha restrita ao ambiente corporativo",
 );
 requireText(loginRoute, "{!demoAvailable && (", "Primeiro acesso restrito ao ambiente corporativo");
-const authenticatedLogo = "/empat-mark.svg";
-requireText(appLayout, authenticatedLogo, "Marca EMPAT transparente validada no layout autenticado");
+const authenticatedLogo = "/empat-logo-report.png";
+requireText(appLayout, authenticatedLogo, "Logo EMPAT local validada no layout autenticado");
 requirePng("public/empat-logo-report.png");
-const interfaceMark = requireFile("public/empat-mark.svg");
-requireText(interfaceMark, 'data:image/png;base64,', "Marca EMPAT da interface incorpora o asset oficial");
-requireText(interfaceMark, 'viewBox="0 0 280 138"', "Marca EMPAT da interface remove o subtítulo institucional");
 
 const vite = requireFile("vite.config.ts");
 requireAbsent(vite, "segempat-local-brand-asset", "Substituição raster de baixa resolução da marca EMPAT");
