@@ -46,7 +46,7 @@ const SECTIONS = [
     status: "Implementado no código",
     tone: "ok",
     items: [
-      "A aplicação mantém trilha de auditoria persistida em audit_logs no MySQL.",
+      "A aplicação mantém trilha de auditoria persistida em audit_logs no PostgreSQL.",
       "A tela de Auditoria é restrita ao ambiente administrativo.",
       "Alterações operacionais relevantes registram usuário, ação, entidade e contexto no backend.",
     ],
