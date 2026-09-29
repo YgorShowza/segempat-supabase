@@ -11,7 +11,6 @@ import {
   BellRing,
   BookOpen,
   BookOpenCheck,
-  BrainCircuit,
   CalendarClock,
   CalendarDays,
   ChevronDown,
@@ -53,10 +52,12 @@ type MenuItem = { path: string; label: string; icon: LucideIcon };
 type MenuSection = { section: string; icon: LucideIcon; items: MenuItem[] };
 
 const adminSections: MenuSection[] = [
-  { section: "Comando Operacional", icon: Activity, items: [
+  { section: "Operação", icon: Activity, items: [
     { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { path: "/atencao", label: "Central de Atenção", icon: BellRing },
-    { path: "/analytics", label: "Analytics", icon: BarChart3 },
+    { path: "/cronograma", label: "Cronograma", icon: CalendarDays },
+    { path: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle },
+    { path: "/avaliacao-pratica", label: "Avaliação Prática", icon: ClipboardCheck },
   ] },
   { section: "Equipe & Desempenho", icon: Users, items: [
     { path: "/equipe", label: "Equipe", icon: Users },
@@ -64,12 +65,7 @@ const adminSections: MenuSection[] = [
     { path: "/risco", label: "Zona de Risco", icon: Target },
     { path: "/individual", label: "Análise Individual", icon: FileBarChart },
   ] },
-  { section: "Operação", icon: ClipboardCheck, items: [
-    { path: "/cronograma", label: "Cronograma", icon: CalendarDays },
-    { path: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle },
-    { path: "/avaliacao-pratica", label: "Avaliação Prática", icon: ClipboardCheck },
-  ] },
-  { section: "Capacitação", icon: GraduationCap, items: [
+  { section: "Capacitação & Avaliação", icon: GraduationCap, items: [
     { path: "/provas-criar", label: "Criar Prova", icon: PlusCircle },
     { path: "/provas", label: "Provas", icon: FileText },
     { path: "/banco-questoes", label: "Banco de Questões", icon: BookOpenCheck },
@@ -79,11 +75,12 @@ const adminSections: MenuSection[] = [
     { path: "/assinaturas-provas", label: "Certificados e Assinaturas", icon: ClipboardCheck },
     { path: "/validar-certificados", label: "Validar Certificados", icon: Award },
   ] },
-  { section: "Relatórios & Inteligência", icon: BrainCircuit, items: [
+  { section: "Análise & Relatórios", icon: BarChart3, items: [
+    { path: "/analytics", label: "Analytics", icon: BarChart3 },
     { path: "/relatorios", label: "Central de Relatórios", icon: FileSpreadsheet },
     { path: "/ia-base", label: "IA Base", icon: BookOpenCheck },
   ] },
-  { section: "Governança", icon: ShieldCheck, items: [
+  { section: "Administração & Governança", icon: ShieldCheck, items: [
     { path: "/acessos", label: "Acessos", icon: ClipboardList },
     { path: "/auditoria", label: "Auditoria", icon: History },
     { path: "/documento-seguranca", label: "Documento de Segurança", icon: FileText },
@@ -149,7 +146,7 @@ function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<
         .filter((section) => section.items.length > 0)
     : [];
   const activeSection = visibleSections.find((section) => section.items.some((item) => routeMatches(pathname, item.path)))?.section;
-  const defaultSection = activeSection ?? (visibleSections.some((section) => section.section === "Comando Operacional") ? "Comando Operacional" : visibleSections[0]?.section ?? null);
+  const defaultSection = activeSection ?? (visibleSections.some((section) => section.section === "Operação") ? "Operação" : visibleSections[0]?.section ?? null);
   const [openSection, setOpenSection] = useState<string | null>(defaultSection);
   useEffect(() => { if (activeSection) setOpenSection(activeSection); }, [activeSection]);
 
