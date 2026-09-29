@@ -35,7 +35,7 @@ jobs:
           grep -F 'path: "/admin", label: "Dashboard"' "$FILE" >/dev/null
           grep -F 'path: "/atencao", label: "Central de Atenção"' "$FILE" >/dev/null
           grep -F 'path: "/producao-inspetoria", label: "Produção da Inspetoria"' "$FILE" >/dev/null
-          ADMIN_MENU=$(sed -n '/const adminPriorityMenu: MenuItem\[\] = \[/,/const operatorMenu: MenuItem\[\] = \[/p' "$FILE" | sed '$d')
+          ADMIN_MENU=$(sed -n '/const adminPriorityMenu: MenuItem\[\] = \[/,/const operatorPriorityMenu: MenuItem\[\] = \[/p' "$FILE" | sed '$d')
           for route in /admin /atencao /analytics /equipe /producao-inspetoria /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
             COUNT=$(printf '%s\n' "$ADMIN_MENU" | grep -F -c "path: \"$route\"" || true)
             [ "$COUNT" -eq 1 ] || { echo "Rota deve aparecer exatamente uma vez no menu do Inspetor: $route (encontrado: $COUNT)"; exit 1; }
@@ -45,6 +45,18 @@ jobs:
             echo "Relatório Mensal voltou a ocupar entrada separada no menu"; exit 1
           fi
           grep -F 'path: "/treinamentos", label: "Academia SEGEMPAT"' "$FILE" >/dev/null
+          grep -F 'const operatorPriorityMenu: MenuItem[] = [' "$FILE" >/dev/null
+          grep -F 'const operatorSections: MenuSection[] = [' "$FILE" >/dev/null
+          grep -F 'section: "Capacitação"' "$FILE" >/dev/null
+          grep -F 'section: "Desempenho"' "$FILE" >/dev/null
+          grep -F 'section: "Conta"' "$FILE" >/dev/null
+          OPERATOR_MENU=$(sed -n '/const operatorPriorityMenu: MenuItem\[\] = \[/,/const operatorMenu: MenuItem\[\] = \[/p' "$FILE" | sed '$d')
+          for route in /painel /pendencias /minhas-ocorrencias /treinamentos /provas /conteudos /pratico /progresso /certificados /meu-perfil; do
+            COUNT=$(printf '%s\n' "$OPERATOR_MENU" | grep -F -c "path: \"$route\"" || true)
+            [ "$COUNT" -eq 1 ] || { echo "Rota deve aparecer exatamente uma vez no menu do Operador: $route (encontrado: $COUNT)"; exit 1; }
+          done
+          grep -F 'function OperatorNavItems' "$FILE" >/dev/null
+          grep -F 'const operatorQuickMenu = operatorMenu.filter' "$FILE" >/dev/null
           for redundant in /teste-rapido /simulador /stress-test /desafio-diario; do
             if grep -F "path: \"$redundant\"" "$FILE" >/dev/null; then
               echo "Ferramenta de prática voltou ao menu principal do Operador: $redundant"; exit 1
