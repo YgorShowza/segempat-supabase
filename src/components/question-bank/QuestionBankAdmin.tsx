@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { hasPermission } from "@/lib/access-control";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface } from "@/components/system/SystemUI";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemPageHero, SystemSurface } from "@/components/system/SystemUI";
 import {
   createQuestionBankItem,
   deleteQuestionBankItem,
@@ -188,14 +188,11 @@ export function QuestionBankAdmin() {
 
   if (!user?.isAdmin) {
     return (
-      <div
-        className="mx-auto max-w-3xl rounded-2xl p-10 text-center"
-        style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}
-      >
+      <SystemSurface className="mx-auto max-w-3xl p-10 text-center">
         <p className="font-bold" style={{ color: "var(--text-1)" }}>
           Você não tem permissão para gerenciar o Banco de Questões.
         </p>
-      </div>
+      </SystemSurface>
     );
   }
 
@@ -245,10 +242,7 @@ export function QuestionBankAdmin() {
 
   if (query.isError) {
     return (
-      <section
-        className="mx-auto max-w-2xl rounded-2xl px-5 py-10 text-center"
-        style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}
-      >
+      <SystemSurface className="mx-auto max-w-2xl px-5 py-10 text-center">
         <AlertTriangle className="mx-auto h-9 w-9 text-amber-500" />
         <h1 className="mt-3 text-lg font-black" style={{ color: "var(--text-1)" }}>
           Não foi possível carregar o Banco de Questões
@@ -259,50 +253,24 @@ export function QuestionBankAdmin() {
         <Button className="mt-5" variant="outline" onClick={() => void query.refetch()}>
           <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
         </Button>
-      </section>
+      </SystemSurface>
     );
   }
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 pb-10">
-      <section
-        className="relative overflow-hidden rounded-[1.75rem] p-5 md:p-6"
-        style={{
-          background: "linear-gradient(135deg,#171117 0%,#310912 55%,#160f14 100%)",
-          border: "1px solid rgba(200,16,46,.28)",
-          boxShadow: "0 12px 38px rgba(80,0,18,.16)",
-        }}
-      >
-        <div
-          className="absolute -right-20 -top-24 h-72 w-72 rounded-full"
-          style={{ background: "radial-gradient(circle,rgba(200,16,46,.25),transparent 68%)" }}
-        />
-        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.22em]" style={{ color: "rgba(255,255,255,.44)" }}>
-              <BookOpenCheck className="h-4 w-4" /> Conteúdo avaliativo
-            </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">Banco de Questões</h1>
-            <p className="mt-1 max-w-2xl text-sm" style={{ color: "rgba(255,255,255,.58)" }}>
-              Cadastre, revise e mantenha questões reutilizáveis com gabarito protegido para a gestão avaliativa.
-            </p>
-          </div>
-          <div className="grid w-full gap-2 sm:flex md:w-auto">
-            {canManageExams && (
-              <Link
-                to="/provas"
-                className="inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-bold text-white"
-                style={{ border: "1px solid rgba(255,255,255,.20)", background: "rgba(255,255,255,.07)" }}
-              >
-                Ir para provas
-              </Link>
-            )}
-            <Button onClick={openNew} className="w-full bg-[#e0142f] font-bold text-white shadow-lg shadow-red-950/20 hover:bg-[#C8102E] sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Nova questão
-            </Button>
-          </div>
-        </div>
-      </section>
+      <SystemPageHero
+        icon={BookOpenCheck}
+        eyebrow="Conteúdo avaliativo"
+        title="Banco de Questões"
+        description="Cadastre, revise e mantenha questões reutilizáveis com gabarito protegido para a gestão avaliativa."
+        actions={
+          <>
+            {canManageExams && <Link to="/provas" className="segempat-hero-button-secondary inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-bold">Ir para provas</Link>}
+            <Button onClick={openNew} className="segempat-hero-button-primary w-full font-bold sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Nova questão</Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <SystemMetricCard label="Total" value={rows.length} icon={Layers3} accent="#C8102E" detail="questões cadastradas" />
@@ -365,13 +333,8 @@ export function QuestionBankAdmin() {
           return (
             <article
               key={item.id}
-              className="relative min-w-0 overflow-hidden rounded-2xl p-4 pl-5"
-              style={{
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border)",
-                boxShadow: "var(--shadow-card, var(--shadow-md))",
-                opacity: item.active ? 1 : 0.82,
-              }}
+              className="segempat-question-card relative min-w-0 overflow-hidden rounded-2xl p-4 pl-5"
+              data-inactive={item.active ? "false" : "true"}
             >
               <div className="absolute bottom-0 left-0 top-0 w-[3px]" style={{ background: item.active ? difficultyColor : "#64748b" }} />
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
