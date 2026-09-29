@@ -23,14 +23,17 @@ jobs:
         run: |
           set -euo pipefail
           FILE=src/components/AppLayoutV2.tsx
-          grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null
-          grep -F 'section: "Equipe & Desempenho"' "$FILE" >/dev/null
           grep -F 'section: "Operação"' "$FILE" >/dev/null
-          grep -F 'section: "Capacitação"' "$FILE" >/dev/null
-          grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null
-          grep -F 'section: "Governança"' "$FILE" >/dev/null
+          grep -F 'section: "Equipe & Desempenho"' "$FILE" >/dev/null
+          grep -F 'section: "Capacitação & Avaliação"' "$FILE" >/dev/null
+          grep -F 'section: "Análise & Relatórios"' "$FILE" >/dev/null
+          grep -F 'section: "Administração & Governança"' "$FILE" >/dev/null
+          if grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null || grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null; then
+            echo "Agrupamento legado voltou à navegação"; exit 1
+          fi
           for route in /admin /atencao /analytics /equipe /producao-inspetoria /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
-            grep -F "path: \"$route\"" "$FILE" >/dev/null || { echo "Rota ausente do menu do Inspetor: $route"; exit 1; }
+            COUNT=$(grep -F -c "path: \"$route\"" "$FILE")
+            [ "$COUNT" -eq 1 ] || { echo "Rota deve aparecer exatamente uma vez no menu do Inspetor: $route (encontrado: $COUNT)"; exit 1; }
           done
           grep -F 'label: "Central de Relatórios"' "$FILE" >/dev/null
           if grep -F 'path: "/relatorio-mensal"' "$FILE" >/dev/null; then
