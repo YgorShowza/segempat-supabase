@@ -47,7 +47,7 @@ import { logoutSession } from "@/lib/backend/auth-gateway";
 import { canAccessAdminPath } from "@/lib/access-control";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a1117d573bbf85981b1abee/8271ac857_IMG_9226.png";
+const LOGO_URL = "/empat-logo-report.png";
 
 type MenuItem = { path: string; label: string; icon: LucideIcon };
 type MenuSection = { section: string; icon: LucideIcon; items: MenuItem[] };
@@ -212,17 +212,17 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
     }
   };
 
-  return <div className="min-h-screen overflow-x-clip" style={{ background: "var(--bg-base)" }}>
-    <aside aria-label="Navegação principal" className="fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex" style={{ background: "var(--header-bg)", borderRight: "1px solid var(--border)", boxShadow: "8px 0 24px rgba(15,23,42,.035)" }}>
-      <div className="px-4 pb-4 pt-5" style={{ borderBottom: "1px solid var(--border)" }}><div className="flex items-center justify-center"><div className="overflow-hidden rounded-xl bg-white p-1.5" style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><img src={LOGO_URL} alt="EMPAT" className="h-12 w-auto object-contain" /></div></div></div>
+  return <div className="segempat-app-shell min-h-screen overflow-x-clip" style={{ background: "var(--bg-base)" }}>
+    <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex" style={{ background: "var(--header-bg)", borderRight: "1px solid var(--border)", boxShadow: "8px 0 24px rgba(15,23,42,.035)" }}>
+      <div className="segempat-sidebar-brand px-4 pb-4 pt-5" style={{ borderBottom: "1px solid var(--border)" }}><div className="flex items-center justify-center"><div className="overflow-hidden rounded-xl bg-white p-1.5" style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><img src={LOGO_URL} alt="EMPAT" className="h-12 w-auto object-contain" /></div></div></div>
       <SidebarIdentity user={user} isAdmin={isAdmin} />
       <nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav>
       <SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} />
     </aside>
 
-    <div className="flex min-h-screen min-w-0 flex-col lg:ml-[19rem]">
-      <header className="sticky top-0 z-30 px-4 py-3 md:px-6 xl:px-8" style={{ background: "var(--header-bg)", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)" }}>
-        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[minmax(170px,1fr)_minmax(200px,520px)_auto] lg:justify-between xl:grid-cols-[minmax(210px,1fr)_minmax(280px,680px)_auto] xl:gap-6">
+    <div className="segempat-app-stage flex min-h-screen min-w-0 flex-col lg:ml-[19rem]">
+      <header className="segempat-app-header sticky top-0 z-30 px-4 py-3 md:px-6 xl:px-8" style={{ background: "var(--header-bg)", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)" }}>
+        <div className="segempat-app-header-frame mx-auto grid w-full max-w-[1680px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[minmax(170px,1fr)_minmax(200px,520px)_auto] lg:justify-between xl:grid-cols-[minmax(210px,1fr)_minmax(280px,680px)_auto] xl:gap-6">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild><button className="shrink-0 rounded-lg p-2 lg:hidden" style={{ color: "var(--text-2)", border: "1px solid var(--border)", background: "var(--bg-surface)" }} aria-label="Abrir menu"><Menu className="h-5 w-5" /></button></SheetTrigger>
@@ -243,7 +243,7 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-24 lg:p-7 lg:pb-8 xl:p-8 2xl:px-10"><div className="mx-auto w-full max-w-[1680px]">{children}</div></main>
+      <main className="segempat-app-main min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-24 lg:p-7 lg:pb-8 xl:p-8 2xl:px-10"><div className="segempat-app-content mx-auto w-full max-w-[1680px]">{children}</div></main>
 
       {!isAdmin && <nav aria-label="Navegação rápida" className="fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 lg:hidden" style={{ background: "var(--header-bg)", borderTop: "1px solid var(--border)", backdropFilter: "blur(12px)", paddingBottom: "max(.375rem, env(safe-area-inset-bottom))" }}><div className="mx-auto flex w-full max-w-xl items-center justify-around gap-1">{operatorMenu.slice(0, 5).map((item) => <MobileNavLink key={item.path} item={item} />)}</div></nav>}
     </div>
