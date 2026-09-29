@@ -153,9 +153,6 @@ export function AdminDashboardV2() {
                   <Crown className="h-3.5 w-3.5" /> Administrador Master
                 </span>
               )}
-              <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-white" style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)" }}>
-                <Users className="h-3.5 w-3.5" /> {metrics.activeEmployees} ativos
-              </span>
               <span
                 className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold"
                 style={{
@@ -165,9 +162,6 @@ export function AdminDashboardV2() {
                 }}
               >
                 <AlertTriangle className="h-3.5 w-3.5" /> {priorityCount} em acompanhamento
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold" style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.20)", color: "#fcd34d" }}>
-                <CalendarDays className="h-3.5 w-3.5" /> {metrics.pending} pendentes
               </span>
             </div>
           </div>
