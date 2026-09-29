@@ -118,9 +118,9 @@ export function AdminDashboardV2() {
     .slice(0, 4);
 
   return (
-    <div className="mx-auto w-full max-w-[1536px] space-y-5 pb-10">
+    <div className="segempat-admin-dashboard mx-auto w-full max-w-[1536px] space-y-5 pb-10">
       <section
-        className="relative overflow-hidden rounded-[1.75rem] px-5 py-6 sm:px-6 md:px-7 lg:px-8 lg:py-7"
+        className="segempat-admin-hero relative overflow-hidden rounded-[1.75rem] px-5 py-6 sm:px-6 md:px-7 lg:px-8 lg:py-7"
         style={{
           background: "linear-gradient(135deg,#171117 0%,#310912 54%,#160f14 100%)",
           border: "1px solid rgba(200,16,46,.28)",
@@ -240,7 +240,7 @@ export function AdminDashboardV2() {
         </SystemSurface>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="segempat-admin-metrics grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <SystemMetricCard
           label="Equipe ativa"
           value={metrics.activeEmployees}
@@ -271,7 +271,7 @@ export function AdminDashboardV2() {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-12">
+      <div className="segempat-admin-primary-grid grid gap-4 xl:grid-cols-12">
         <SystemSurface className="overflow-hidden xl:col-span-7">
           <SystemSectionHeader
             icon={BarChart3}
