@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { InspectorProductionSummary } from "@/lib/inspector-production";
+import { EMPAT_PRINT_LOGO_DATA_URL } from "./empatPrintLogo";
 
 function displayDateTime(value?: string | null) {
   if (!value) return "—";
@@ -421,7 +422,7 @@ export function InspectorProductionPrintReport({
     <>
       <div className="segempat-print-header">
         <div className="segempat-print-logo-wrap">
-          <img className="segempat-print-logo" src="/empat-logo-report.webp" alt="EMPAT - Empresa Alagoana de Terminais" loading="eager" decoding="sync" />
+          <img className="segempat-print-logo" src={EMPAT_PRINT_LOGO_DATA_URL} alt="EMPAT - Empresa Alagoana de Terminais" loading="eager" decoding="sync" />
         </div>
         <div>
           <p className="segempat-print-kicker">SEGEMPAT · Produção da Inspetoria</p>
