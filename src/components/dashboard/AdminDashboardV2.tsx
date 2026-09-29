@@ -132,31 +132,27 @@ export function AdminDashboardV2() {
           <div className="segempat-admin-hero-copy min-w-0">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <p className="text-[11px] font-black uppercase tracking-[.16em]" style={{ color: "rgba(255,255,255,.52)" }}>
+              <p className="segempat-admin-hero-eyebrow text-[11px] font-bold uppercase tracking-[.14em]">
                 {isMaster ? "Comando Master" : "Visão operacional"} · {year}
               </p>
             </div>
             <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-[2rem] xl:text-[2.2rem]">{greeting}, {first}</h1>
-            <p className="mt-2 max-w-3xl text-xs leading-5 sm:text-sm" style={{ color: "rgba(255,255,255,.58)" }}>
+            <p className="segempat-admin-hero-description mt-2 max-w-3xl text-xs leading-5 sm:text-sm">
               {isMaster
                 ? "Operação e governança reunidas em uma visão executiva, com acesso integral às áreas administrativas do SEGEMPAT."
                 : "Acompanhe equipe, execução, desempenho e prioridades da operação em uma única visão."}
             </p>
-            <p className="mt-2 text-[11px] capitalize" style={{ color: "rgba(255,255,255,.40)" }}>Atualizado em {updatedAt}</p>
+            <p className="segempat-admin-hero-updated mt-2 text-[11px] capitalize">Atualizado em {updatedAt}</p>
 
             <div className="segempat-admin-hero-badges mt-5 flex flex-wrap gap-2">
               {isMaster && (
-                <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black" style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.22)", color: "#fcd34d" }}>
+                <span className="segempat-admin-badge segempat-admin-badge--master inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold">
                   <Crown className="h-3.5 w-3.5" /> Administrador Master
                 </span>
               )}
               <span
-                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold"
-                style={{
-                  background: priorityCount ? "rgba(225,29,72,.12)" : "rgba(16,185,129,.10)",
-                  border: priorityCount ? "1px solid rgba(251,113,133,.20)" : "1px solid rgba(134,239,172,.18)",
-                  color: priorityCount ? "#ff8aa0" : "#86efac",
-                }}
+                className="segempat-admin-badge inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
+                data-state={priorityCount ? "attention" : "ok"}
               >
                 <AlertTriangle className="h-3.5 w-3.5" /> {priorityCount} em acompanhamento
               </span>
@@ -166,15 +162,13 @@ export function AdminDashboardV2() {
           <div className="segempat-admin-hero-actions grid gap-2 sm:grid-cols-[auto_auto_44px] xl:justify-end">
             <Link
               to={"/atencao" as never}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black text-white"
-              style={{ background: "rgba(200,16,46,.28)", border: "1px solid rgba(255,104,128,.30)" }}
+              className="segempat-admin-hero-action segempat-admin-hero-action--primary inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold"
             >
               <BellRing className="h-4 w-4" /> Central de Atenção
             </Link>
             <Link
               to="/tv"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white"
-              style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.13)" }}
+              className="segempat-admin-hero-action segempat-admin-hero-action--secondary inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold"
             >
               <Maximize2 className="h-4 w-4" /> Painel TV
             </Link>
@@ -182,8 +176,7 @@ export function AdminDashboardV2() {
               type="button"
               onClick={() => refetch()}
               disabled={isFetching}
-              className="flex h-11 items-center justify-center rounded-xl text-white transition-opacity disabled:opacity-50"
-              style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.13)" }}
+              className="segempat-admin-hero-action segempat-admin-hero-action--icon flex h-11 items-center justify-center rounded-xl transition-opacity disabled:opacity-50"
               aria-label="Atualizar dashboard"
               title="Atualizar dashboard"
             >
@@ -206,8 +199,7 @@ export function AdminDashboardV2() {
                 onClick={() => setShowGovernance((current) => !current)}
                 aria-expanded={showGovernance}
                 aria-controls="segempat-master-governance"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[.08em] transition-colors"
-                style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.18)", color: "#d97706" }}
+                className="segempat-admin-governance-toggle inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[.06em] transition-colors"
                 title={`${permissionCount} permissões efetivas`}
               >
                 {showGovernance ? "Ocultar" : "Abrir"}
@@ -216,17 +208,17 @@ export function AdminDashboardV2() {
             }
           />
           <div id="segempat-master-governance" className={`${showGovernance ? "grid" : "hidden"} gap-3 p-4 md:grid-cols-3 lg:p-5`}>
-            <Link to="/acessos" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+            <Link to="/acessos" className="segempat-admin-governance-card group rounded-xl p-4 transition-[transform,border-color,box-shadow] duration-150">
               <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)" }}><KeyRound className="h-4 w-4" style={{ color: "var(--accent)" }} /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
               <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Acessos e privilégios</p>
               <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Contas, primeiro acesso, recuperação e permissões administrativas.</p>
             </Link>
-            <Link to="/auditoria" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+            <Link to="/auditoria" className="segempat-admin-governance-card group rounded-xl p-4 transition-[transform,border-color,box-shadow] duration-150">
               <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(37,99,235,.10)" }}><History className="h-4 w-4 text-blue-600" /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
               <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Auditoria</p>
               <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Rastreabilidade de acessos, mudanças sensíveis e eventos administrativos.</p>
             </Link>
-            <Link to="/documento-seguranca" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
+            <Link to="/documento-seguranca" className="segempat-admin-governance-card group rounded-xl p-4 transition-[transform,border-color,box-shadow] duration-150">
               <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(16,185,129,.10)" }}><Shield className="h-4 w-4 text-emerald-600" /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
               <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Documento de Segurança</p>
               <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-4)" }}>Controles implementados, arquitetura e pontos de homologação.</p>
@@ -275,7 +267,7 @@ export function AdminDashboardV2() {
           />
 
           {sectorOverview.length === 0 ? (
-            <div className="py-16 text-center">
+            <div className="segempat-empty-state py-10 text-center">
               <BarChart3 className="mx-auto h-9 w-9" style={{ color: "var(--text-4)" }} />
               <p className="mt-2 text-sm font-bold" style={{ color: "var(--text-2)" }}>Sem dados por setor</p>
               <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Os indicadores aparecem quando houver lançamentos no Cronograma.</p>
@@ -285,7 +277,7 @@ export function AdminDashboardV2() {
               {sectorOverview.map((sector, index) => {
                 const color = SECTOR_COLORS[index % SECTOR_COLORS.length];
                 return (
-                  <div key={sector.sector} className="segempat-admin-sector-row rounded-xl p-3.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                  <div key={sector.sector} className="segempat-admin-sector-row rounded-xl p-3.5">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{sector.sector}</p>
@@ -329,7 +321,7 @@ export function AdminDashboardV2() {
           <div className="max-h-[470px] space-y-2 overflow-y-auto p-3 lg:p-4">
             {visiblePriorities.map((item) => (
               <Link key={item.employee.id} to="/individual">
-                <div className="segempat-admin-priority-row rounded-xl p-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
+                <div className="segempat-admin-priority-row rounded-xl p-3.5 transition-[transform,border-color,box-shadow] duration-150">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{item.employee.full_name}</p>
@@ -346,15 +338,15 @@ export function AdminDashboardV2() {
                     </span>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg px-2 py-2" style={{ background: "var(--bg-surface)" }}>
+                    <div className="segempat-admin-priority-stat rounded-lg px-2 py-2">
                       <p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{item.pending}</p>
                       <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: "var(--text-4)" }}>Pendentes</p>
                     </div>
-                    <div className="rounded-lg px-2 py-2" style={{ background: "var(--bg-surface)" }}>
+                    <div className="segempat-admin-priority-stat rounded-lg px-2 py-2">
                       <p className="text-sm font-black text-amber-500">{item.overdue}</p>
                       <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: "var(--text-4)" }}>Atrasadas</p>
                     </div>
-                    <div className="rounded-lg px-2 py-2" style={{ background: "var(--bg-surface)" }}>
+                    <div className="segempat-admin-priority-stat rounded-lg px-2 py-2">
                       <p className="text-sm font-black text-red-500">{item.failed}</p>
                       <p className="text-[9px] font-bold uppercase tracking-wide" style={{ color: "var(--text-4)" }}>Reprovações</p>
                     </div>
@@ -364,7 +356,7 @@ export function AdminDashboardV2() {
             ))}
 
             {priorityCount === 0 && (
-              <div className="py-14 text-center">
+              <div className="segempat-empty-state py-10 text-center">
                 <Shield className="mx-auto h-9 w-9 text-emerald-500" />
                 <p className="mt-2 text-sm font-bold text-emerald-500">Sem alertas relevantes</p>
                 <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Nenhum profissional exige ação neste momento.</p>
@@ -372,7 +364,7 @@ export function AdminDashboardV2() {
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-3 border-t px-4 py-3 lg:px-5" style={{ borderColor: "var(--border)" }}>
+          <div className="segempat-admin-card-footer flex items-center justify-between gap-3 border-t px-4 py-3 lg:px-5">
             <Link to="/risco" className="inline-flex items-center gap-1 text-xs font-black" style={{ color: "var(--accent)" }}>
               Abrir Zona de Risco <ChevronRight className="h-3 w-3" />
             </Link>
@@ -395,20 +387,19 @@ export function AdminDashboardV2() {
       <SystemSurface className="segempat-admin-quick p-3.5 lg:p-4">
         <div className="mb-3 flex items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--accent-soft)" }}>
-              <Target className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+            <span className="segempat-admin-quick-heading-icon flex h-8 w-8 items-center justify-center rounded-lg">
+              <Target className="h-3.5 w-3.5" />
             </span>
             <div>
-              <h2 className="text-xs font-black uppercase tracking-[.08em]" style={{ color: "var(--text-2)" }}>Acesso rápido</h2>
-              <p className="hidden text-[10px] sm:block" style={{ color: "var(--text-4)" }}>Atalhos para as rotinas mais usadas pela Inspetoria.</p>
+              <h2 className="segempat-admin-quick-title text-xs font-bold uppercase tracking-[.06em]">Acesso rápido</h2>
+              <p className="segempat-admin-quick-description hidden text-[10px] sm:block">Atalhos para as rotinas mais usadas pela Inspetoria.</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setShowAllQuick((current) => !current)}
             aria-expanded={showAllQuick}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[.08em] transition-colors"
-            style={{ color: "var(--accent)", background: "var(--accent-soft)", border: "1px solid rgba(200,16,46,.16)" }}
+            className="segempat-admin-quick-toggle inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[.06em] transition-colors"
           >
             {showAllQuick ? "Mostrar menos" : "Ver todos"}
             <ChevronRight className={`h-3.5 w-3.5 transition-transform ${showAllQuick ? "-rotate-90" : "rotate-90"}`} />
@@ -419,8 +410,7 @@ export function AdminDashboardV2() {
           {visibleQuick.map(({ to, label, icon: Icon, accent }) => (
             <Link key={to} to={to as never} className="min-w-0">
               <div
-                className="segempat-admin-quick-tile group relative flex h-full min-h-[92px] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl p-3 text-center transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-sm"
-                style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}
+                className="segempat-admin-quick-tile group relative flex h-full min-h-[92px] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl p-3 text-center transition-[border-color,transform,box-shadow] duration-150"
               >
                 <div className="absolute -right-7 -top-7 h-16 w-16 rounded-full opacity-[.08]" style={{ background: accent }} />
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${accent}12`, border: `1px solid ${accent}20` }}>
@@ -443,7 +433,7 @@ export function AdminDashboardV2() {
         />
 
         {performanceOverview.length === 0 ? (
-          <div className="p-10 text-center">
+          <div className="segempat-empty-state p-8 text-center">
             <BarChart3 className="mx-auto h-8 w-8" style={{ color: "var(--text-4)" }} />
             <p className="mt-2 text-sm font-bold" style={{ color: "var(--text-2)" }}>Sem dados de desempenho disponíveis</p>
           </div>
@@ -452,11 +442,7 @@ export function AdminDashboardV2() {
             {performanceOverview.map((item) => (
               <Link key={item.employee.id} to="/individual" className="min-w-0">
                 <div
-                  className="segempat-admin-performance-tile h-full rounded-xl p-4 text-left transition-[transform,border-color] duration-150 hover:-translate-y-0.5"
-                  style={{
-                    background: "var(--bg-surface-2)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
+                  className="segempat-admin-performance-tile h-full rounded-xl p-4 text-left transition-[transform,border-color,box-shadow] duration-150"
                 >
                   <div className="flex items-start justify-end">
                     <ChevronRight className="h-4 w-4" style={{ color: "var(--text-4)" }} />
