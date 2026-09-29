@@ -46,8 +46,8 @@ const adminOnly = new Set(extractSet(shell, "ADMIN_ONLY_PATHS"));
 const operatorDesktop = new Set(extractSet(shell, "OPERATOR_DESKTOP_PATHS"));
 const inspectorDesktop = new Set(extractSet(shell, "INSPECTOR_DESKTOP_PATHS"));
 
-const adminMenuBlock = section(layout, "const adminPriorityMenu", "const operatorMenu");
-const operatorMenuBlock = section(layout, "const operatorMenu", "function routeMatches");
+const adminMenuBlock = section(layout, "const adminPriorityMenu", "const operatorPriorityMenu");
+const operatorMenuBlock = section(layout, "const operatorPriorityMenu", "function routeMatches");
 
 const adminMenuRoutes = [
   "/admin",
@@ -78,6 +78,7 @@ const adminMenuRoutes = [
 const operatorMenuRoutes = [
   "/painel",
   "/pendencias",
+  "/provas",
   "/progresso",
   "/certificados",
   "/treinamentos",
