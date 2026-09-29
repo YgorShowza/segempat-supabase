@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SystemSurface } from "@/components/system/SystemUI";
 import { formatDate, type CronogramaEntry } from "@/lib/cronograma";
 import type { Exam, ExamAttempt } from "@/lib/exams";
 import { getIndividualAttemptEvidence } from "@/lib/individual-analysis";
@@ -64,19 +65,7 @@ const LEVEL_META: Record<PerformanceLevel, { label: string; color: string }> = {
 };
 
 function Card({ children, className = "", role }: { children: React.ReactNode; className?: string; role?: React.AriaRole }) {
-  return (
-    <section
-      className={`rounded-[1.35rem] ${className}`}
-      role={role}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-      }}
-    >
-      {children}
-    </section>
-  );
+  return <SystemSurface className={`rounded-[1.35rem] ${className}`} role={role}>{children}</SystemSurface>;
 }
 
 function normalizeText(value: string | null | undefined) {

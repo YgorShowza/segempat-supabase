@@ -26,6 +26,11 @@ jobs:
           grep -F 'segempat-operational-cronograma' src/components/cronograma/CronogramaPorted.tsx >/dev/null
           grep -F 'segempat-operational-occurrences' src/routes/_authenticated/ocorrencias.tsx >/dev/null
           grep -F 'segempat-operational-provas' src/routes/_authenticated/provas.tsx >/dev/null
+          grep -F 'SystemPageHero' src/components/cronograma/CronogramaWorkspace.tsx >/dev/null
+          grep -F 'SystemMetricCard' src/components/cronograma/CronogramaWorkspace.tsx >/dev/null
+          grep -F 'SystemPageHero' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'SystemMetricCard' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
+          grep -F 'segempat-occurrence-hero-trust' src/components/occurrences/OccurrencesWorkspace.tsx >/dev/null
           grep -F 'max-width: 1536px' src/operational-desktop.css >/dev/null
           grep -F 'grid-template-columns: repeat(2, minmax(0, 1fr))' src/operational-desktop.css >/dev/null
           grep -F '@media (min-width: 1536px)' src/operational-desktop.css >/dev/null
