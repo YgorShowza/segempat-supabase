@@ -1557,3 +1557,178 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     min-height: 120px;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   CROSS-APP SHELL CONSISTENCY
+   Header search, hero actions and high-use operational workspaces.
+   ═══════════════════════════════════════════════════════ */
+.segempat-hero-button-primary {
+  border: 1px solid rgba(255,103,128,.24) !important;
+  color: #fff !important;
+  background: rgba(200,16,46,.24) !important;
+  box-shadow: none !important;
+}
+
+.segempat-hero-button-primary:hover {
+  border-color: rgba(255,112,136,.32) !important;
+  background: rgba(200,16,46,.32) !important;
+}
+
+.segempat-hero-button-secondary {
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: rgba(255,255,255,.90) !important;
+  background: rgba(255,255,255,.055) !important;
+  box-shadow: none !important;
+}
+
+.segempat-hero-button-secondary:hover {
+  border-color: rgba(255,255,255,.18) !important;
+  color: #fff !important;
+  background: rgba(255,255,255,.085) !important;
+}
+
+.segempat-hero-readonly {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: .45rem;
+  padding: 0 .78rem;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: .7rem;
+  color: rgba(255,255,255,.62);
+  background: rgba(255,255,255,.045);
+  font-size: .7rem;
+  font-weight: 650;
+}
+
+.segempat-cronograma-month-switcher {
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.055);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.segempat-cronograma-month-switcher button {
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.segempat-cronograma-month-switcher button:hover {
+  color: #fff;
+  background: rgba(255,255,255,.055);
+}
+
+.segempat-global-search-trigger {
+  color: var(--text-4);
+  background: color-mix(in srgb, var(--bg-surface-2) 84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+.segempat-global-search-trigger:hover {
+  color: var(--text-2);
+  border-color: color-mix(in srgb, var(--accent) 14%, var(--border));
+  background: var(--bg-surface);
+}
+
+[data-theme="dark"] .segempat-global-search-trigger {
+  background: rgba(255,255,255,.025);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.015);
+}
+
+[data-theme="dark"] .segempat-global-search-trigger:hover {
+  background: rgba(255,255,255,.045);
+}
+
+.segempat-global-search-shortcut {
+  color: var(--text-4);
+  background: var(--bg-surface-3);
+  border: 1px solid var(--border-subtle);
+}
+
+.segempat-global-search-mobile {
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.segempat-global-search-header {
+  border-color: var(--border);
+}
+
+.segempat-global-search-hint,
+.segempat-global-search-input-icon,
+.segempat-global-search-clear,
+.segempat-global-search-group,
+.segempat-global-search-enter,
+.segempat-global-search-result-subtitle {
+  color: var(--text-4);
+}
+
+.segempat-global-search-warning {
+  color: #c98205;
+  border: 1px solid rgba(245,158,11,.16);
+  background: rgba(245,158,11,.07);
+}
+
+[data-theme="dark"] .segempat-global-search-warning {
+  color: #f3bd55;
+}
+
+.segempat-global-search-result {
+  border: 1px solid transparent;
+}
+
+.segempat-global-search-result:hover {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface-2);
+}
+
+.segempat-global-search-result-icon {
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.segempat-global-search-result-title {
+  color: var(--text-1);
+}
+
+.segempat-global-search-empty {
+  color: var(--text-1);
+}
+
+.segempat-global-search-empty p:last-child {
+  color: var(--text-4);
+}
+
+.segempat-team-filters,
+.segempat-team-table {
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 1024px) {
+  .segempat-cronograma-metrics .segempat-metric-card {
+    min-height: 104px !important;
+  }
+
+  .segempat-team-filters {
+    padding-top: .95rem !important;
+    padding-bottom: .95rem !important;
+  }
+
+  .segempat-team-table table thead {
+    backdrop-filter: blur(8px);
+  }
+}
+
+@media (max-width: 767px) {
+  .segempat-hero-readonly,
+  .segempat-hero-button-primary,
+  .segempat-hero-button-secondary {
+    min-height: 40px;
+  }
+
+  .segempat-cronograma-month-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
