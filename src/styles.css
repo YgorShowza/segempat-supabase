@@ -1755,3 +1755,21 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     min-height: 104px !important;
   }
 }
+
+
+/* Reports and training management surfaces */
+.segempat-training-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.segempat-training-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 14%, var(--border));
+}
+
+@media (min-width: 1024px) {
+  .segempat-training-card {
+    border-radius: .95rem;
+  }
+}
