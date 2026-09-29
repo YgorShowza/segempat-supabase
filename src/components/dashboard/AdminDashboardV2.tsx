@@ -93,7 +93,7 @@ export function AdminDashboardV2() {
     { to: "/relatorios", label: "Relatórios", icon: FileSpreadsheet, accent: "#C8102E" },
   ];
 
-  const leaders = data.employees
+  const performanceOverview = data.employees
     .filter((employee) => employee.status === "Ativo" && employee.access_profile !== "Inspetor")
     .map((employee) => {
       const attempts = data.attempts.filter((attempt) => attempt.matricula === employee.matricula);
@@ -107,14 +107,7 @@ export function AdminDashboardV2() {
       const executionRate = cron.length ? Math.round((realized / cron.length) * 100) : 0;
       return { employee, attempts: attempts.length, averageScore, approvalRate, executionRate };
     })
-    .sort(
-      (a, b) =>
-        Number(b.attempts > 0) - Number(a.attempts > 0) ||
-        b.approvalRate - a.approvalRate ||
-        b.averageScore - a.averageScore ||
-        b.executionRate - a.executionRate ||
-        a.employee.full_name.localeCompare(b.employee.full_name, "pt-BR"),
-    )
+    .sort((a, b) => a.employee.full_name.localeCompare(b.employee.full_name, "pt-BR"))
     .slice(0, 4);
 
   return (
@@ -419,39 +412,30 @@ export function AdminDashboardV2() {
 
       <SystemSurface className="segempat-admin-performance overflow-hidden">
         <SystemSectionHeader
-          icon={Trophy}
-          title="Destaques de desempenho"
-          description="Leitura combinada de aprovação, média e execução para identificar os melhores resultados do período."
-          accent="#f59e0b"
-          action={<span className="hidden text-[11px] font-semibold sm:block" style={{ color: "var(--text-4)" }}>Top {leaders.length}</span>}
+          icon={BarChart3}
+          title="Visão de desempenho por colaborador"
+          description="Leitura descritiva de aprovação, média e execução, sem classificação ou ranking entre profissionais."
+          accent="#2563eb"
+          action={<span className="hidden text-[11px] font-semibold sm:block" style={{ color: "var(--text-4)" }}>{performanceOverview.length} exibidos</span>}
         />
 
-        {leaders.length === 0 ? (
+        {performanceOverview.length === 0 ? (
           <div className="p-10 text-center">
-            <Trophy className="mx-auto h-8 w-8" style={{ color: "var(--text-4)" }} />
-            <p className="mt-2 text-sm font-bold" style={{ color: "var(--text-2)" }}>Sem ranking disponível</p>
+            <BarChart3 className="mx-auto h-8 w-8" style={{ color: "var(--text-4)" }} />
+            <p className="mt-2 text-sm font-bold" style={{ color: "var(--text-2)" }}>Sem dados de desempenho disponíveis</p>
           </div>
         ) : (
           <div className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-4 lg:p-4">
-            {leaders.map((item, index) => (
+            {performanceOverview.map((item) => (
               <Link key={item.employee.id} to="/individual" className="min-w-0">
                 <div
                   className="segempat-admin-performance-tile h-full rounded-xl p-4 text-left transition-[transform,border-color] duration-150 hover:-translate-y-0.5"
                   style={{
-                    background: index === 0 ? "rgba(200,16,46,.07)" : "var(--bg-surface-2)",
-                    border: index === 0 ? "1px solid rgba(200,16,46,.28)" : "1px solid var(--border-subtle)",
+                    background: "var(--bg-surface-2)",
+                    border: "1px solid var(--border-subtle)",
                   }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div
-                      className="flex h-9 min-w-9 items-center justify-center rounded-xl px-2 text-sm font-black"
-                      style={{
-                        background: index === 0 ? "var(--accent-soft)" : "var(--bg-surface)",
-                        color: index === 0 ? "var(--accent)" : "var(--text-3)",
-                      }}
-                    >
-                      {index + 1}º
-                    </div>
+                  <div className="flex items-start justify-end">
                     <ChevronRight className="h-4 w-4" style={{ color: "var(--text-4)" }} />
                   </div>
                   <p className="mt-3 truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{item.employee.full_name}</p>
