@@ -35,6 +35,7 @@ export function AdminDashboardV2() {
   const { data: user } = useCurrentUser();
   const [showAllQuick, setShowAllQuick] = useState(false);
   const [showGovernance, setShowGovernance] = useState(false);
+  const [showMorePriorities, setShowMorePriorities] = useState(false);
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-snapshot", year],
     queryFn: () => getOperationalSnapshot(year),
@@ -68,6 +69,7 @@ export function AdminDashboardV2() {
   const risk = employeeRisk(data);
   const priority = risk.filter((item) => item.score > 0);
   const priorityCount = priority.length;
+  const visiblePriorities = priority.slice(0, showMorePriorities ? 7 : 3);
   const highRiskCount = priority.filter((item) => item.level === "Alto").length;
   const first = user?.nome?.split(" ")[0] || "Inspetor";
   const isMaster = Boolean(user?.isMaster || user?.accessLevel === "master");
@@ -331,7 +333,7 @@ export function AdminDashboardV2() {
           />
 
           <div className="max-h-[470px] space-y-2 overflow-y-auto p-3 lg:p-4">
-            {priority.slice(0, 7).map((item) => (
+            {visiblePriorities.map((item) => (
               <Link key={item.employee.id} to="/individual">
                 <div className="segempat-admin-priority-row rounded-xl p-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}>
                   <div className="flex items-start justify-between gap-3">
@@ -376,10 +378,22 @@ export function AdminDashboardV2() {
             )}
           </div>
 
-          <div className="border-t px-4 py-3 lg:px-5" style={{ borderColor: "var(--border)" }}>
+          <div className="flex items-center justify-between gap-3 border-t px-4 py-3 lg:px-5" style={{ borderColor: "var(--border)" }}>
             <Link to="/risco" className="inline-flex items-center gap-1 text-xs font-black" style={{ color: "var(--accent)" }}>
               Abrir Zona de Risco <ChevronRight className="h-3 w-3" />
             </Link>
+            {priorityCount > 3 && (
+              <button
+                type="button"
+                onClick={() => setShowMorePriorities((current) => !current)}
+                aria-expanded={showMorePriorities}
+                className="inline-flex shrink-0 items-center gap-1 text-xs font-black"
+                style={{ color: "var(--text-3)" }}
+              >
+                {showMorePriorities ? "Mostrar menos" : "Ver mais"}
+                <ChevronRight className={`h-3 w-3 transition-transform ${showMorePriorities ? "-rotate-90" : "rotate-90"}`} />
+              </button>
+            )}
           </div>
         </SystemSurface>
       </div>
