@@ -36,7 +36,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { hasPermission } from "@/lib/access-control";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { SystemPanelSkeleton, SystemSurface as Surface } from "@/components/system/SystemUI";
+import { SystemMetricCard, SystemPageHero, SystemPanelSkeleton, SystemSurface as Surface } from "@/components/system/SystemUI";
 import { listEmployees, type Employee } from "@/lib/employees";
 import { getCurrentEmployeeByAuth } from "@/lib/insights";
 import {
@@ -597,48 +597,43 @@ export function OccurrencesWorkspace({ operatorTitle = false }: { operatorTitle?
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 pb-10">
-      <div
-        className="overflow-hidden rounded-[1.65rem]"
-        style={{ background: "linear-gradient(135deg,#171118,#2b0b13 52%,#111216)", border: "1px solid rgba(200,16,46,.26)" }}
-      >
-        <div className="flex flex-col gap-5 p-5 md:flex-row md:items-end md:justify-between md:p-7">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase tracking-[.2em] text-white/45">
-              <ShieldAlert className="h-4 w-4" /> Central operacional de ocorrências
-              {managementMode && <span className="rounded-full border border-white/10 px-2 py-1 text-[9px] tracking-[.12em] text-white/55">Gestão da Inspetoria</span>}
-            </div>
-            <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{operatorTitle ? "Minhas Ocorrências" : "Ocorrências"}</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
-              Registre o fato, contexto, pessoas, providências, evidências e evolução do atendimento em um histórico operacional único.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-bold text-white/55">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[.06] px-2.5 py-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Histórico auditável</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[.06] px-2.5 py-1.5"><Camera className="h-3.5 w-3.5" /> Evidências preservadas</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[.06] px-2.5 py-1.5"><Activity className="h-3.5 w-3.5" /> Linha do tempo do tratamento</span>
+      <SystemPageHero
+        icon={ShieldAlert}
+        eyebrow={managementMode ? "Central operacional · Gestão da Inspetoria" : "Central operacional de ocorrências"}
+        title={operatorTitle ? "Minhas Ocorrências" : "Ocorrências"}
+        description={
+          <div className="space-y-3">
+            <p>Registre o fato, contexto, pessoas, providências, evidências e evolução do atendimento em um histórico operacional único.</p>
+            <div className="segempat-occurrence-hero-trust flex flex-wrap gap-2 text-[10px] font-semibold">
+              <span><ShieldCheck className="h-3.5 w-3.5" /> Histórico auditável</span>
+              <span><Camera className="h-3.5 w-3.5" /> Evidências preservadas</span>
+              <span><Activity className="h-3.5 w-3.5" /> Linha do tempo do tratamento</span>
             </div>
           </div>
-          <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+        }
+        actions={
+          <>
             <Button
               variant="outline"
               onClick={() => occurrences.refetch()}
               disabled={occurrences.isFetching}
-              className="border-white/15 bg-white/[.04] text-white hover:bg-white/10 hover:text-white"
+              className="segempat-hero-button-secondary"
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${occurrences.isFetching ? "animate-spin" : ""}`} /> Atualizar
             </Button>
             <Button
               onClick={openNew}
               disabled={!managementMode && (currentEmployee.isLoading || operatorIdentityUnavailable)}
-              className="bg-[#C8102E] text-white hover:bg-[#A00D24]"
+              className="segempat-hero-button-primary"
             >
               <Plus className="mr-2 h-4 w-4" /> Nova ocorrência
             </Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-5 py-3 text-[10px] font-semibold text-white/40 md:px-7">
-          <span>{occurrences.isFetching ? "Atualizando registros..." : `Última atualização: ${displayUpdatedAt(occurrences.dataUpdatedAt)}`}</span>
-          <span>{managementMode ? "Ações de gestão exigem permissão occurrences.manage" : "Você visualiza apenas os registros permitidos para sua conta"}</span>
-        </div>
+          </>
+        }
+      />
+      <div className="segempat-occurrence-hero-meta flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] font-semibold">
+        <span>{occurrences.isFetching ? "Atualizando registros..." : `Última atualização: ${displayUpdatedAt(occurrences.dataUpdatedAt)}`}</span>
+        <span>{managementMode ? "Ações de gestão exigem permissão occurrences.manage" : "Você visualiza apenas os registros permitidos para sua conta"}</span>
       </div>
 
       {operatorIdentityUnavailable && (
@@ -655,18 +650,16 @@ export function OccurrencesWorkspace({ operatorTitle = false }: { operatorTitle?
         </Surface>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {summaryCards.map(({ label, value, icon: Icon, color, hint }) => (
-          <Surface key={label} className="p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[.08em]" style={{ color: "var(--text-4)" }}>{label}</p>
-                <p className="mt-2 text-2xl font-black" style={{ color: "var(--text-1)" }}>{occurrences.isLoading ? "—" : value}</p>
-              </div>
-              <Icon className="h-4 w-4" style={{ color }} />
-            </div>
-            <p className="mt-2 text-[10px]" style={{ color: "var(--text-4)" }}>{hint}</p>
-          </Surface>
+      <div className="segempat-occurrence-metrics grid grid-cols-2 gap-3 md:grid-cols-5">
+        {summaryCards.map(({ label, value, icon, color, hint }) => (
+          <SystemMetricCard
+            key={label}
+            label={label}
+            value={occurrences.isLoading ? "—" : value}
+            icon={icon}
+            accent={color}
+            detail={hint}
+          />
         ))}
       </div>
 
