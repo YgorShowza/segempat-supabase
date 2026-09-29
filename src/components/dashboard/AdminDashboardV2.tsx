@@ -120,19 +120,13 @@ export function AdminDashboardV2() {
       <section
         className="segempat-admin-hero relative overflow-hidden rounded-[1.75rem] px-5 py-6 sm:px-6 md:px-7 lg:px-8 lg:py-7"
         style={{
-          background: "linear-gradient(135deg,#171117 0%,#310912 54%,#160f14 100%)",
-          border: "1px solid rgba(200,16,46,.28)",
-          boxShadow: "0 12px 38px rgba(80,0,18,.18)",
+          background: "var(--segempat-hero-bg)",
+          border: "1px solid var(--segempat-hero-border)",
+          boxShadow: "var(--segempat-hero-shadow)",
         }}
       >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.28),transparent 68%)" }} />
+        <div className="segempat-admin-hero-grid pointer-events-none absolute inset-0" />
+        <div className="segempat-admin-hero-glow pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full" />
 
         <div className="segempat-admin-hero-content relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
           <div className="segempat-admin-hero-copy min-w-0">
