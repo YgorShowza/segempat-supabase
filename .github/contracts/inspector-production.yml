@@ -24,6 +24,7 @@ jobs:
           ROUTE=src/routes/_authenticated/producao-inspetoria.tsx
           UI=src/components/inspector-production/InspectorProductionWorkspace.tsx
           PRINT=src/components/inspector-production/InspectorProductionPrintReport.tsx
+          LOGO=public/empat-logo-report.png
           API=server/src/routes/inspector-production.js
           MIG=supabase/migrations/20260928010000_inspector_production.sql
           MIG_RESULT=supabase/migrations/20260928020000_inspector_production_result_status.sql
@@ -32,6 +33,9 @@ jobs:
           test -f "$ROUTE"
           test -f "$UI"
           test -f "$PRINT"
+          test -f "$LOGO"
+          test -s "$LOGO"
+          test "$(head -c 8 "$LOGO" | od -An -tx1 | tr -d ' \n')" = '89504e470d0a1a0a'
           test -f "$API"
           test -f "$MIG"
           test -f "$MIG_RESULT"
@@ -92,12 +96,13 @@ jobs:
           grep -F 'body > *:not(.inspector-production-print-report):not(style):not(script)' "$PRINT" >/dev/null
           grep -F 'createPortal' "$PRINT" >/dev/null
           grep -F 'document.body' "$PRINT" >/dev/null
-          grep -F 'EMPAT_PRINT_LOGO_DATA_URL' "$PRINT" >/dev/null
-          grep -F 'data:image/png;base64,' src/components/inspector-production/empatPrintLogo.ts >/dev/null
-          grep -F 'src={EMPAT_PRINT_LOGO_DATA_URL}' "$PRINT" >/dev/null
-          ! grep -F 'src="/empat-logo-report.webp"' "$PRINT" >/dev/null
+          grep -F 'src="/empat-logo-report.png"' "$PRINT" >/dev/null
+          grep -F 'width={280} height={166}' "$PRINT" >/dev/null
+          ! grep -F 'EMPAT_PRINT_LOGO_DATA_URL' "$PRINT" >/dev/null
+          grep -F 'logo.decode' "$UI" >/dev/null
           grep -F 'logo.naturalWidth === 0' "$UI" >/dev/null
-          grep -F 'window.setTimeout(finish, 2500)' "$UI" >/dev/null
+          grep -F 'window.setTimeout(finish, 3000)' "$UI" >/dev/null
+          grep -F 'O relatório não será impresso sem a identidade visual.' "$UI" >/dev/null
           grep -F 'EMPAT - Empresa Alagoana de Terminais' "$PRINT" >/dev/null
           grep -F 'Sem distribuição por categoria no período' "$PRINT" >/dev/null
           grep -F 'Sem base para distribuição por categoria e inspetor' "$PRINT" >/dev/null
