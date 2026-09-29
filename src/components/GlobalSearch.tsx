@@ -229,7 +229,7 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden h-10 min-w-0 items-center gap-2 rounded-xl px-3 text-left transition-colors md:flex xl:w-[330px]"
+        className="segempat-global-search-trigger hidden h-10 min-w-0 items-center gap-2 rounded-xl px-3 text-left transition-colors md:flex xl:w-[330px]"
         style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-4)" }}
         aria-label="Buscar no SEGEMPAT"
       >
