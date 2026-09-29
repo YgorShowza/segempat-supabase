@@ -31,6 +31,10 @@ jobs:
           test -f "$page"
           test -f "$model"
           grep -F 'IndividualAnalysisPolished' "$route" >/dev/null
+          grep -F 'SystemSurface' "$page" >/dev/null
+          if grep -F 'boxShadow: "var(--shadow-card, var(--shadow-md))"' "$page" >/dev/null; then
+            echo "Análise Individual voltou a definir superfície própria fora do design system"; exit 1
+          fi
           grep -F 'Evolução de desempenho' "$page" >/dev/null
           grep -F 'Oportunidades de reforço' "$page" >/dev/null
           grep -F 'Pontos fortes' "$page" >/dev/null
