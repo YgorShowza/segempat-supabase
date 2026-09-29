@@ -126,46 +126,49 @@
 
 /* ─── LIGHT THEME ─────────────────────────────────────── */
 :root, [data-theme="light"] {
-  --bg-base:       #eef0f4;
+  --bg-base:       #f2f4f7;
   --bg-surface:    #ffffff;
-  --bg-surface-2:  #f3f5f8;
-  --bg-surface-3:  #e8eaee;
-  --border:        #d0d4dc;
-  --border-subtle: #f0f1f3;
-  --text-1:        #111827;
-  --text-2:        #374151;
-  --text-3:        #6b7280;
-  --text-4:        #9ca3af;
+  --bg-surface-2:  #f7f8fa;
+  --bg-surface-3:  #edf0f3;
+  --border:        #e2e6eb;
+  --border-subtle: #edf0f3;
+  --text-1:        #172033;
+  --text-2:        #3d4756;
+  --text-3:        #697386;
+  --text-4:        #98a2b3;
   --accent:        #C8102E;
   --accent-hover:  #a50d25;
-  --accent-soft:   rgba(200, 16, 46, 0.08);
-  --accent-soft2:  rgba(200, 16, 46, 0.14);
-  --sidebar-bg:    #1a1d2e;
-  --header-bg:     #ffffff;
+  --accent-soft:   rgba(200, 16, 46, 0.07);
+  --accent-soft2:  rgba(200, 16, 46, 0.12);
+  --sidebar-bg:    rgba(18, 20, 25, 0.93);
+  --header-bg:     rgba(255, 255, 255, 0.88);
+  --shadow-card:   0 1px 2px rgba(16,24,40,.035), 0 8px 26px rgba(16,24,40,.045);
+  --shadow-md:     0 12px 34px rgba(16,24,40,.07);
+  --shadow-lg:     0 22px 56px rgba(16,24,40,.10);
   color-scheme: light;
 }
 
 /* ─── DARK THEME ──────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg-base:       #0f0f12;
-  --bg-surface:    #17171c;
-  --bg-surface-2:  #1e1e24;
-  --bg-surface-3:  #25252c;
-  --border:        rgba(255, 255, 255, 0.07);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --text-1:        #f3f4f6;
-  --text-2:        #d1d5db;
-  --text-3:        #9ca3af;
-  --text-4:        #6b7280;
+  --bg-base:       #0f1115;
+  --bg-surface:    #171a1f;
+  --bg-surface-2:  #1d2127;
+  --bg-surface-3:  #252a32;
+  --border:        rgba(255, 255, 255, 0.075);
+  --border-subtle: rgba(255, 255, 255, 0.045);
+  --text-1:        #f4f6f8;
+  --text-2:        #d7dce3;
+  --text-3:        #a2aab6;
+  --text-4:        #707986;
   --accent:        #C8102E;
   --accent-hover:  #e0142f;
   --accent-soft:   rgba(200, 16, 46, 0.10);
-  --accent-soft2:  rgba(200, 16, 46, 0.18);
-  --sidebar-bg:    #111115;
-  --header-bg:     #111115;
-  --shadow-card:   0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md:     0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-lg:     0 8px 24px rgba(0, 0, 0, 0.4);
+  --accent-soft2:  rgba(200, 16, 46, 0.16);
+  --sidebar-bg:    rgba(14, 16, 20, 0.91);
+  --header-bg:     rgba(17, 20, 25, 0.88);
+  --shadow-card:   0 1px 2px rgba(0,0,0,.28), 0 10px 30px rgba(0,0,0,.18);
+  --shadow-md:     0 14px 36px rgba(0,0,0,.28);
+  --shadow-lg:     0 24px 60px rgba(0,0,0,.34);
   color-scheme: dark;
 }
 
@@ -439,71 +442,556 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
 
 
 /* ═══════════════════════════════════════════════════════
-   DESKTOP FOUNDATION — visual system baseline
-   Unifica proporcao, superfícies, densidade e leitura em telas grandes.
+   UNIFIED DESKTOP EXPERIENCE
+   Uma única autoridade visual para shell, navegação e dashboard.
    ═══════════════════════════════════════════════════════ */
 :root {
-  --segempat-shell-max: 1600px;
-  --segempat-workspace-max: 1536px;
-  --segempat-sidebar-width: 19rem;
-  --segempat-surface-radius: 1.125rem;
-  --segempat-hero-bg: linear-gradient(135deg, #171117 0%, #310912 54%, #160f14 100%);
-  --segempat-hero-border: rgba(200, 16, 46, 0.28);
-  --segempat-hero-shadow: 0 16px 42px rgba(80, 0, 18, 0.14);
+  --segempat-shell-max: 1580px;
+  --segempat-sidebar-width: 18rem;
+  --segempat-sidebar-collapsed-width: 5.25rem;
+  --segempat-surface-radius: 1rem;
+  --segempat-hero-bg:
+    radial-gradient(circle at 86% 12%, rgba(200,16,46,.14), transparent 19rem),
+    linear-gradient(135deg, #191a1f 0%, #21171c 56%, #15171c 100%);
+  --segempat-hero-border: rgba(200,16,46,.18);
+  --segempat-hero-shadow: 0 18px 46px rgba(37, 11, 18, .12);
 }
 
 @media (min-width: 1024px) {
-  :root,
-  [data-theme="light"] {
-    --bg-base: #f4f6f8;
-    --bg-surface: #ffffff;
-    --bg-surface-2: #f8f9fb;
-    --bg-surface-3: #eef1f5;
-    --border: #dde2e8;
-    --border-subtle: #edf0f3;
-    --text-1: #101828;
-    --text-2: #344054;
-    --text-3: #667085;
-    --text-4: #98a2b3;
-    --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.045);
-    --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.075);
-    --shadow-lg: 0 18px 48px rgba(16, 24, 40, 0.10);
-  }
-
-  [data-theme="dark"] {
-    --bg-base: #0d0e12;
-    --bg-surface: #15171c;
-    --bg-surface-2: #1b1e24;
-    --bg-surface-3: #232730;
-    --border: rgba(255, 255, 255, 0.085);
-    --border-subtle: rgba(255, 255, 255, 0.045);
-    --text-1: #f4f6f8;
-    --text-2: #d7dce3;
-    --text-3: #a5adba;
-    --text-4: #727b89;
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28), 0 10px 28px rgba(0, 0, 0, 0.18);
-    --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.30);
-    --shadow-lg: 0 20px 52px rgba(0, 0, 0, 0.38);
-  }
-
   body {
-    letter-spacing: -0.005em;
+    letter-spacing: -0.004em;
+  }
+
+  .segempat-app-shell {
+    background:
+      radial-gradient(circle at 78% -8%, rgba(200,16,46,.035), transparent 28rem),
+      var(--bg-base) !important;
+  }
+
+  .segempat-app-shell[data-sidebar-collapsed="true"] {
+    --segempat-sidebar-width: var(--segempat-sidebar-collapsed-width);
+  }
+
+  .segempat-app-sidebar,
+  .segempat-app-stage {
+    transition: width 210ms cubic-bezier(.2,.8,.2,1), margin-left 210ms cubic-bezier(.2,.8,.2,1);
   }
 
   .segempat-app-sidebar {
-    width: var(--segempat-sidebar-width) !important;
-    box-shadow: 10px 0 32px rgba(15, 23, 42, 0.035) !important;
+    width: var(--segempat-sidebar-width);
+    overflow: visible;
+    background:
+      radial-gradient(circle at 18% 2%, rgba(200,16,46,.09), transparent 15rem),
+      var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,.07);
+    box-shadow: 10px 0 32px rgba(7,10,15,.10);
+    backdrop-filter: blur(22px) saturate(1.06);
+    -webkit-backdrop-filter: blur(22px) saturate(1.06);
   }
 
   .segempat-app-stage {
-    margin-left: var(--segempat-sidebar-width) !important;
+    margin-left: var(--segempat-sidebar-width);
+  }
+
+  .segempat-sidebar-brand {
+    position: relative;
+    display: flex;
+    min-height: 80px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: .85rem .95rem;
+    border-bottom: 1px solid rgba(255,255,255,.065);
+  }
+
+  .segempat-sidebar-brand[data-collapsed="true"] {
+    justify-content: center;
+    padding-inline: .65rem;
+  }
+
+  .segempat-sidebar-brand-inner {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: .72rem;
+  }
+
+  .segempat-sidebar-logo-shell {
+    display: flex;
+    width: 76px;
+    height: 42px;
+    flex: 0 0 76px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .segempat-sidebar-logo-image {
+    width: 76px;
+    max-width: none;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.16));
+  }
+
+  .segempat-sidebar-brand-copy {
+    min-width: 0;
+  }
+
+  .segempat-sidebar-wordmark {
+    display: flex;
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: .98rem;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .02em;
+  }
+
+  .segempat-sidebar-wordmark span:first-child {
+    color: rgba(255,255,255,.94);
+  }
+
+  .segempat-sidebar-wordmark span:last-child {
+    color: #e11d3b;
+  }
+
+  .segempat-sidebar-tagline {
+    margin-top: .35rem;
+    color: rgba(255,255,255,.42);
+    font-size: .55rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+
+  .segempat-sidebar-brand-collapsed {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,107,130,.14);
+    border-radius: 13px;
+    color: #ff8296;
+    background: rgba(200,16,46,.10);
+  }
+
+  .segempat-sidebar-collapse-button {
+    position: absolute;
+    right: -14px;
+    bottom: 9px;
+    z-index: 3;
+    display: flex;
+    width: 29px;
+    height: 29px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 999px;
+    color: rgba(255,255,255,.64);
+    background: rgba(24,27,33,.97);
+    box-shadow: 0 7px 20px rgba(0,0,0,.20);
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  }
+
+  .segempat-sidebar-collapse-button:hover {
+    color: #fff;
+    border-color: rgba(255,108,132,.22);
+    background: rgba(40,31,35,.98);
+    transform: translateX(1px);
+  }
+
+  .segempat-sidebar-identity {
+    padding: .72rem .82rem .78rem;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+
+  .segempat-sidebar-profile {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: .65rem;
+    padding: .25rem .3rem;
+    border-radius: .7rem;
+    text-decoration: none;
+    transition: background-color 150ms ease;
+  }
+
+  .segempat-sidebar-profile:hover {
+    background: rgba(255,255,255,.045);
+  }
+
+  .segempat-sidebar-avatar {
+    display: flex;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 35px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(135deg,#dc1735,#aa0c25);
+    box-shadow: 0 7px 18px rgba(92,5,22,.18);
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .segempat-sidebar-profile-name {
+    display: -webkit-box;
+    overflow: hidden;
+    color: rgba(255,255,255,.92);
+    font-family: var(--font-heading);
+    font-size: .7rem;
+    line-height: 1.28;
+    font-weight: 700;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .segempat-sidebar-profile-matricula {
+    margin-top: .17rem;
+    color: rgba(255,255,255,.38);
+    font-size: .6rem;
+    line-height: 1;
+    font-weight: 600;
+  }
+
+  .segempat-sidebar-profile-chevron {
+    color: rgba(255,255,255,.26);
+  }
+
+  .segempat-sidebar-profile-meta {
+    display: block;
+    margin-top: .48rem;
+    padding: 0 .3rem;
+  }
+
+  .segempat-sidebar-access-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    color: #ff899c;
+    font-size: .56rem;
+    line-height: 1;
+    font-weight: 750;
+  }
+
+  .segempat-sidebar-access-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .segempat-sidebar-sector {
+    display: block;
+    overflow: hidden;
+    margin-top: .32rem;
+    color: rgba(255,255,255,.38);
+    font-size: .55rem;
+    line-height: 1.2;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .segempat-app-sidebar nav[aria-label="Módulos do SEGEMPAT"] {
+    padding: .72rem .68rem 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.13) transparent;
+  }
+
+  .segempat-sidebar-priority-label {
+    color: rgba(255,255,255,.28);
+  }
+
+  .segempat-sidebar-link {
+    min-height: 39px;
+    border: 1px solid transparent;
+    box-shadow: none;
+  }
+
+  .segempat-sidebar-link[data-active="false"] {
+    background: transparent;
+  }
+
+  .segempat-sidebar-link[data-active="false"]:hover {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(255,255,255,.045);
+  }
+
+  .segempat-sidebar-link[data-active="true"] {
+    background: linear-gradient(90deg,rgba(200,16,46,.23),rgba(200,16,46,.08));
+    border-color: rgba(255,101,124,.13);
+    box-shadow: inset 2px 0 0 #df1835;
+  }
+
+  .segempat-sidebar-link-icon {
+    color: rgba(255,255,255,.46);
+    transition: color 150ms ease, transform 150ms ease;
+  }
+
+  .segempat-sidebar-link-label {
+    color: rgba(255,255,255,.72);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
+  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label {
+    color: #fff;
+  }
+
+  .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-icon {
+    color: #ff7088;
+    transform: translateX(1px);
+  }
+
+  .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-label {
+    color: rgba(255,255,255,.94);
+  }
+
+  .segempat-sidebar-section-card {
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: .75rem;
+    background: transparent;
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] {
+    background: rgba(255,255,255,.02);
+  }
+
+  .segempat-sidebar-section {
+    min-height: 41px;
+    padding: .46rem .55rem;
+    border-radius: .68rem;
+  }
+
+  .segempat-sidebar-section:hover,
+  .segempat-sidebar-section[aria-expanded="true"] {
+    background: rgba(255,255,255,.04);
+  }
+
+  .segempat-sidebar-section-icon {
+    display: flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.04);
+    border: 1px solid transparent;
+    border-radius: .58rem;
+  }
+
+  .segempat-sidebar-section-icon svg {
+    color: rgba(255,255,255,.45);
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon {
+    background: rgba(200,16,46,.10);
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg {
+    color: #ff8296;
+  }
+
+  .segempat-sidebar-section-title {
+    color: rgba(255,255,255,.65);
+    font-size: .65rem;
+    line-height: 1.25;
+    font-weight: 680;
+    letter-spacing: .01em;
+    text-transform: none;
+  }
+
+  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title {
+    color: rgba(255,255,255,.90);
+  }
+
+  .segempat-sidebar-section-count {
+    display: none;
+    margin-top: .18rem;
+    color: rgba(255,255,255,.30);
+    font-size: .55rem;
+  }
+
+  .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-count {
+    display: block;
+  }
+
+  .segempat-sidebar-section-chevron {
+    color: rgba(255,255,255,.26);
+  }
+
+  .segempat-sidebar-footer {
+    display: grid;
+    gap: .62rem;
+    padding: .7rem .72rem .82rem;
+    border-top: 1px solid rgba(255,255,255,.06);
+    background: rgba(0,0,0,.07);
+  }
+
+  .segempat-sidebar-theme-label {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .4rem;
+    padding: 0 .2rem;
+    color: rgba(255,255,255,.34);
+  }
+
+  .segempat-sidebar-theme-label span {
+    font-size: .55rem;
+    line-height: 1;
+    font-weight: 750;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  .segempat-theme-toggle {
+    display: grid;
+    padding: .2rem;
+    border: 1px solid rgba(255,255,255,.065);
+    border-radius: .68rem;
+    background: rgba(255,255,255,.035);
+  }
+
+  .segempat-theme-option {
+    min-height: 32px;
+    color: rgba(255,255,255,.42);
+    border: 1px solid transparent;
+    box-shadow: none;
+  }
+
+  .segempat-theme-option:hover {
+    color: rgba(255,255,255,.90);
+    background: rgba(255,255,255,.045);
+  }
+
+  .segempat-theme-option[data-active="true"] {
+    color: #ff8ca0;
+    background: rgba(200,16,46,.11);
+    border-color: rgba(255,103,128,.12);
+  }
+
+  .segempat-sidebar-logout {
+    display: flex;
+    width: 100%;
+    min-height: 37px;
+    align-items: center;
+    gap: .62rem;
+    padding: .5rem .68rem;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: .68rem;
+    color: #ff8195;
+    background: transparent;
+    font-size: .69rem;
+    font-weight: 650;
+  }
+
+  .segempat-sidebar-logout:hover {
+    background: rgba(200,16,46,.07);
+    border-color: rgba(255,99,122,.12);
+  }
+
+  .segempat-sidebar-collapsed-identity {
+    display: flex;
+    justify-content: center;
+    padding: .78rem .6rem;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+
+  .segempat-sidebar-collapsed-identity a {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    text-decoration: none;
+  }
+
+  .segempat-sidebar-collapsed-identity a:hover {
+    background: rgba(255,255,255,.045);
+  }
+
+  .segempat-sidebar-collapsed-identity a > div {
+    display: flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(135deg,#d91734,#a80c25);
+    font-size: .7rem;
+    font-weight: 800;
+  }
+
+  .segempat-sidebar-rail {
+    display: grid;
+    gap: .5rem;
+  }
+
+  .segempat-sidebar-rail-group {
+    display: grid;
+    gap: .25rem;
+    padding-top: .5rem;
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+
+  .segempat-sidebar-rail-group:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .segempat-sidebar-link--collapsed {
+    width: 44px;
+    height: 42px;
+    min-height: 42px;
+    margin: 0 auto;
+    padding: 0;
+    border-radius: 12px;
+  }
+
+  .segempat-sidebar-collapsed-footer {
+    display: flex;
+    justify-content: center;
+    padding: .7rem .6rem .86rem;
+    border-top: 1px solid rgba(255,255,255,.06);
+    background: rgba(0,0,0,.07);
+  }
+
+  .segempat-sidebar-collapsed-footer button {
+    display: flex;
+    width: 42px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,92,116,.12);
+    border-radius: 12px;
+    color: #ff8195;
+    background: rgba(200,16,46,.055);
+  }
+
+  .segempat-app-sidebar[data-collapsed="true"] nav[aria-label="Módulos do SEGEMPAT"] {
+    padding-inline: .5rem;
   }
 
   .segempat-app-header {
-    min-height: 72px;
-    padding-top: 0.875rem !important;
-    padding-bottom: 0.875rem !important;
-    box-shadow: 0 1px 0 rgba(16, 24, 40, 0.025);
+    min-height: 68px;
+    padding-top: .78rem !important;
+    padding-bottom: .78rem !important;
+    background: var(--header-bg) !important;
+    border-bottom-color: color-mix(in srgb, var(--border) 82%, transparent) !important;
+    box-shadow: 0 1px 0 rgba(16,24,40,.02);
+    backdrop-filter: blur(18px) saturate(1.10) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.10);
   }
 
   .segempat-app-header-frame,
@@ -512,27 +1000,8 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 
   .segempat-app-main {
-    padding: 1.75rem 2rem 2.25rem !important;
-  }
-
-  .segempat-sidebar-brand {
-    min-height: 88px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .segempat-sidebar-brand img {
-    image-rendering: auto;
-    transform: translateZ(0);
-  }
-
-  .segempat-sidebar-link {
-    min-height: 42px;
-  }
-
-  .segempat-sidebar-link[data-active="false"] {
-    color: var(--text-2);
+    padding: 1.65rem 1.85rem 2.15rem !important;
+    background: transparent;
   }
 
   .segempat-system-surface {
@@ -540,346 +1009,42 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 
   .segempat-section-header {
-    min-height: 68px;
+    min-height: 60px;
+    padding-top: .82rem !important;
+    padding-bottom: .82rem !important;
+    background: transparent;
   }
 
-  .segempat-metric-card {
-    min-height: 138px !important;
+  .segempat-section-header h2 {
+    font-size: .82rem;
+    font-weight: 700;
   }
 
-  .segempat-page-hero {
-    border-radius: 1.625rem !important;
-  }
-}
-
-@media (min-width: 1536px) {
-  .segempat-app-main {
-    padding-left: 2.5rem !important;
-    padding-right: 2.5rem !important;
-  }
-}
-
-
-/* ═══════════════════════════════════════════════════════
-   DESKTOP LAYER 2 — corporate depth and navigation clarity
-   Reduz ruído visual no menu e dá ao desktop uma identidade própria.
-   ═══════════════════════════════════════════════════════ */
-@media (min-width: 1024px) {
-  html {
-    font-synthesis: none;
-  }
-
-  .segempat-app-shell {
-    background:
-      radial-gradient(circle at 78% -10%, rgba(200,16,46,.045), transparent 26rem),
-      var(--bg-base) !important;
-  }
-
-  .segempat-app-sidebar {
-    --sidebar-ink: rgba(255,255,255,.90);
-    --sidebar-muted: rgba(255,255,255,.48);
-    --sidebar-faint: rgba(255,255,255,.30);
-    background:
-      radial-gradient(circle at 16% 4%, rgba(200,16,46,.15), transparent 16rem),
-      linear-gradient(180deg,#13151b 0%,#17151b 50%,#101217 100%) !important;
-  }
-
-  .segempat-sidebar-brand {
-    min-height: 88px;
-    padding: 1rem 1.05rem !important;
-  }
-
-  .segempat-sidebar-logo-shell {
-    flex: 0 0 auto;
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow: 0 8px 28px rgba(0,0,0,.20);
-  }
-
-  .segempat-sidebar-identity {
-    padding: 1rem 1.05rem !important;
-    border-bottom-color: rgba(255,255,255,.07) !important;
-  }
-
-  .segempat-sidebar-identity p:first-of-type {
-    color: var(--sidebar-ink) !important;
-  }
-
-  .segempat-sidebar-identity p:nth-of-type(2) {
-    color: var(--sidebar-muted) !important;
-  }
-
-  .segempat-sidebar-identity > a:hover {
-    background: rgba(255,255,255,.05) !important;
-  }
-
-  .segempat-sidebar-identity > a > svg {
-    color: var(--sidebar-faint) !important;
-  }
-
-  .segempat-sidebar-identity > div:last-child {
-    color: #ff8ea0 !important;
-    background: rgba(200,16,46,.12) !important;
-    border-color: rgba(255,103,128,.20) !important;
-  }
-
-  .segempat-app-sidebar nav[aria-label="Módulos do SEGEMPAT"] {
-    padding: .75rem .7rem 1rem !important;
-  }
-
-  .segempat-sidebar-section-card {
-    border-radius: .9rem !important;
-    border-color: transparent !important;
-    background: transparent !important;
-  }
-
-  .segempat-sidebar-section-card[data-active="true"] {
-    background: rgba(255,255,255,.035) !important;
-    border-color: rgba(255,255,255,.055) !important;
-  }
-
-  .segempat-sidebar-section {
-    min-height: 42px;
-    padding: .55rem .7rem !important;
-  }
-
-  .segempat-sidebar-section:hover {
-    background: rgba(255,255,255,.045) !important;
-  }
-
-  .segempat-sidebar-section-icon {
-    background: rgba(255,255,255,.055) !important;
-    border: 1px solid rgba(255,255,255,.055);
-  }
-
-  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon {
-    background: rgba(200,16,46,.16) !important;
-    border-color: rgba(255,103,128,.16);
-  }
-
-  .segempat-sidebar-section-icon svg {
-    color: rgba(255,255,255,.55) !important;
-  }
-
-  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg {
-    color: #ff7189 !important;
-  }
-
-  .segempat-sidebar-section-title {
-    color: rgba(255,255,255,.66) !important;
-    letter-spacing: .115em !important;
-  }
-
-  .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title {
-    color: rgba(255,255,255,.92) !important;
-  }
-
-  .segempat-sidebar-section-count {
-    display: none;
-  }
-
-  .segempat-sidebar-section > svg:last-child {
-    color: rgba(255,255,255,.28) !important;
-  }
-
-  .segempat-sidebar-link {
-    min-height: 40px;
-    margin-left: .15rem;
-    padding: .55rem .72rem !important;
-    border-radius: .72rem !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .segempat-sidebar-link[data-active="false"] {
-    background: transparent !important;
-  }
-
-  .segempat-sidebar-link[data-active="false"]:hover {
-    background: rgba(255,255,255,.05) !important;
-  }
-
-  .segempat-sidebar-link[data-active="true"] {
-    background: linear-gradient(90deg,rgba(200,16,46,.96),rgba(173,13,38,.92)) !important;
-    border-color: rgba(255,122,143,.24) !important;
-    box-shadow: 0 8px 22px rgba(111,4,27,.24) !important;
-  }
-
-  .segempat-sidebar-link-icon {
-    color: rgba(255,255,255,.47) !important;
-  }
-
-  .segempat-sidebar-link-label {
-    color: rgba(255,255,255,.70) !important;
-    font-weight: 600 !important;
-    letter-spacing: 0 !important;
-  }
-
-  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
-  .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label {
-    color: #fff !important;
-  }
-
-  .segempat-sidebar-footer {
-    border-top-color: rgba(255,255,255,.07) !important;
-    background: rgba(0,0,0,.10);
-    padding: .8rem .8rem 1rem !important;
-  }
-
-  .segempat-sidebar-footer .segempat-theme-toggle {
-    background: rgba(255,255,255,.045) !important;
-    border-color: rgba(255,255,255,.07) !important;
-  }
-
-  .segempat-sidebar-footer .segempat-theme-toggle button[data-active="false"] {
-    color: rgba(255,255,255,.45) !important;
-  }
-
-  .segempat-sidebar-footer .segempat-theme-toggle button[data-active="true"] {
-    box-shadow: 0 6px 18px rgba(111,4,27,.28) !important;
-  }
-
-  .segempat-sidebar-footer > div > div:first-child span,
-  .segempat-sidebar-footer > div > div:first-child svg {
-    color: rgba(255,255,255,.38) !important;
-  }
-
-  .segempat-sidebar-footer > button {
-    color: #ff8ca0 !important;
-    background: rgba(200,16,46,.10) !important;
-    border-color: rgba(255,103,128,.15) !important;
-  }
-
-  .segempat-sidebar-footer > button span,
-  .segempat-sidebar-footer > button svg {
-    color: #ff8ca0 !important;
-  }
-
-  .segempat-app-header {
-    background: color-mix(in srgb, var(--header-bg) 94%, transparent) !important;
-    border-bottom-color: color-mix(in srgb, var(--border) 84%, transparent) !important;
-    backdrop-filter: blur(18px) saturate(1.18) !important;
-  }
-
-  .segempat-app-header-frame {
-    min-height: 46px;
-  }
-
-  .segempat-global-search-trigger {
-    height: 42px !important;
-    border-radius: .85rem !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 78%, var(--bg-surface)) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
-  }
-
-  .segempat-app-main {
-    background:
-      linear-gradient(180deg,rgba(255,255,255,.12),transparent 14rem);
-  }
-
-  .segempat-app-content {
-    position: relative;
-  }
-
-  .segempat-system-surface {
-    border-color: color-mix(in srgb, var(--border) 88%, transparent) !important;
-    box-shadow: var(--shadow-card) !important;
-  }
-
-  .segempat-system-surface:hover {
-    border-color: color-mix(in srgb, var(--border) 72%, var(--text-4)) !important;
-  }
-
-  .segempat-section-header {
-    padding-left: 1.25rem !important;
-    padding-right: 1.25rem !important;
-  }
-
-  .segempat-metric-card {
-    padding: 1.25rem !important;
+  .segempat-section-header p {
+    font-size: .68rem;
   }
 
   .segempat-admin-dashboard {
-    max-width: 1536px;
+    max-width: 1500px !important;
+    gap: 1rem;
   }
 
   .segempat-admin-hero {
-    min-height: 238px;
-    border-radius: 1.75rem !important;
-    background:
-      radial-gradient(circle at 86% 14%,rgba(231,34,67,.28),transparent 18rem),
-      radial-gradient(circle at 58% 115%,rgba(111,4,27,.26),transparent 22rem),
-      linear-gradient(135deg,#171116 0%,#2a0910 48%,#121319 100%) !important;
-    box-shadow: 0 22px 54px rgba(63,6,20,.18) !important;
+    min-height: 188px;
+    padding: 1.7rem 1.85rem !important;
+    border-radius: 1.35rem !important;
   }
 
-  .segempat-admin-metrics .segempat-system-surface {
-    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  .segempat-admin-hero-grid {
+    opacity: .36;
+    background-image:
+      linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    background-size: 30px 30px;
   }
 
-  .segempat-admin-metrics .segempat-system-surface:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md) !important;
-  }
-
-  .segempat-admin-primary-grid > .segempat-system-surface {
-    min-height: 420px;
-  }
-
-  [data-theme="dark"] .segempat-app-header {
-    background: rgba(17,17,21,.88) !important;
-  }
-
-  [data-theme="dark"] .segempat-global-search-trigger {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-  }
-}
-
-
-/* ═══════════════════════════════════════════════════════
-   DESKTOP LAYER 3 — executive composition
-   Reequilibra densidade, hierarquia e proporção para monitores.
-   ═══════════════════════════════════════════════════════ */
-@media (min-width: 1024px) {
-  :root {
-    --segempat-sidebar-width: 18rem;
-    --segempat-shell-max: 1560px;
-  }
-
-  .segempat-app-main {
-    padding-top: 2rem !important;
-  }
-
-  .segempat-app-content {
-    max-width: var(--segempat-shell-max) !important;
-  }
-
-  .segempat-app-header-frame {
-    max-width: var(--segempat-shell-max) !important;
-  }
-
-  .segempat-global-search-trigger {
-    width: min(31vw, 420px) !important;
-  }
-
-  .segempat-admin-dashboard {
-    max-width: 1480px !important;
-    gap: 1.15rem;
-  }
-
-  .segempat-admin-hero {
-    min-height: 220px;
-    padding: 2rem 2.1rem !important;
-    border: 1px solid rgba(255,255,255,.075) !important;
-    background:
-      linear-gradient(112deg,rgba(200,16,46,.13),transparent 38%),
-      radial-gradient(circle at 84% 20%,rgba(200,16,46,.18),transparent 17rem),
-      linear-gradient(135deg,#15161b 0%,#1c1519 48%,#111319 100%) !important;
-    box-shadow: 0 22px 54px rgba(16,24,40,.12) !important;
-  }
-
-  .segempat-admin-hero-content {
-    grid-template-columns: minmax(0,1fr) !important;
-    gap: 1.25rem !important;
+  .segempat-admin-hero-glow {
+    background: radial-gradient(circle,rgba(200,16,46,.16),transparent 68%);
   }
 
   .segempat-admin-hero-copy {
@@ -887,75 +1052,45 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 
   .segempat-admin-hero-copy h1 {
-    font-size: clamp(1.85rem, 2.1vw, 2.45rem) !important;
-    line-height: 1.08 !important;
-    letter-spacing: -.035em !important;
-  }
-
-  .segempat-admin-hero-copy > p {
-    max-width: 720px;
+    font-size: clamp(1.75rem,2vw,2.25rem) !important;
+    line-height: 1.08;
+    letter-spacing: -.03em;
   }
 
   .segempat-admin-hero-badges {
+    margin-top: 1rem !important;
     gap: .45rem !important;
-    margin-top: 1.15rem !important;
   }
 
   .segempat-admin-hero-badges > span {
     border-radius: .65rem !important;
-    padding: .42rem .7rem !important;
-    font-size: .68rem !important;
-    backdrop-filter: blur(8px);
+    padding: .38rem .65rem !important;
+    font-size: .66rem !important;
   }
 
   .segempat-admin-hero-actions {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr 42px !important;
     align-self: center;
-    padding: .7rem;
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: 1rem;
-    background: rgba(255,255,255,.045);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
-    backdrop-filter: blur(10px);
   }
 
   .segempat-admin-hero-actions > a,
   .segempat-admin-hero-actions > button {
-    height: 42px !important;
-    border-radius: .75rem !important;
+    height: 40px !important;
+    border-radius: .7rem !important;
     box-shadow: none !important;
   }
 
-  .segempat-admin-governance {
-    border-color: color-mix(in srgb, #f59e0b 18%, var(--border)) !important;
-    box-shadow: 0 10px 28px rgba(16,24,40,.045) !important;
-  }
-
-  .segempat-admin-governance > div:last-child {
-    gap: .75rem !important;
-    padding: .9rem !important;
-  }
-
-  .segempat-admin-governance > div:last-child > a {
-    min-height: 112px;
-    padding: .95rem !important;
-    border-color: var(--border-subtle) !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
-  }
-
   .segempat-admin-metrics {
-    gap: .8rem !important;
+    gap: .72rem !important;
   }
 
   .segempat-metric-card {
-    min-height: 126px !important;
-    padding: 1.15rem 1.2rem 1.05rem 1.35rem !important;
+    min-height: 118px !important;
+    padding: 1rem 1.05rem 1rem 1.2rem !important;
     overflow: hidden;
   }
 
   .segempat-metric-accent {
-    inset: 1rem auto 1rem 0 !important;
+    inset: .9rem auto .9rem 0 !important;
     width: 3px !important;
     height: auto !important;
     border-radius: 0 4px 4px 0;
@@ -966,136 +1101,40 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 
   .segempat-metric-label {
-    font-size: .66rem !important;
-    letter-spacing: .105em !important;
+    font-size: .64rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .08em !important;
   }
 
   .segempat-metric-value {
-    margin-top: .6rem !important;
-    font-size: 1.85rem !important;
+    margin-top: .52rem !important;
+    font-size: 1.72rem !important;
   }
 
   .segempat-metric-detail {
-    margin-top: .55rem !important;
-    font-size: .72rem !important;
-    line-height: 1.35rem !important;
-    font-weight: 550 !important;
+    margin-top: .48rem !important;
+    font-size: .7rem !important;
+    line-height: 1.2rem !important;
+    font-weight: 500 !important;
   }
 
   .segempat-metric-icon {
-    width: 2.55rem !important;
-    height: 2.55rem !important;
-    border-radius: .85rem !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    border-radius: .78rem !important;
   }
 
   .segempat-admin-primary-grid {
-    gap: 1rem !important;
+    gap: .85rem !important;
   }
 
-  .segempat-admin-sector-card,
-  .segempat-admin-priority-card {
-    min-height: 405px !important;
-  }
-
-  .segempat-admin-sector-row {
-    padding: .82rem .9rem !important;
-    border-color: transparent !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
-  }
-
-  .segempat-admin-sector-row + .segempat-admin-sector-row {
-    margin-top: .55rem !important;
-  }
-
-  .segempat-admin-priority-row {
-    padding: .82rem .9rem !important;
-    border-color: transparent !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
-  }
-
-  .segempat-admin-priority-row:hover,
-  .segempat-admin-sector-row:hover {
+  .segempat-admin-sector-row,
+  .segempat-admin-priority-row,
+  .segempat-admin-quick-tile,
+  .segempat-admin-performance-tile,
+  .segempat-admin-governance > div:last-child > a {
     background: var(--bg-surface-2) !important;
-  }
-
-  .segempat-admin-quick {
-    padding: .95rem !important;
-  }
-
-  .segempat-admin-quick > div:first-child {
-    margin-bottom: .75rem !important;
-  }
-
-  .segempat-admin-quick > div:last-child {
-    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
-    gap: .65rem !important;
-  }
-
-  .segempat-admin-quick-tile {
-    min-height: 72px !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    gap: .75rem !important;
-    padding: .8rem .9rem !important;
-    text-align: left !important;
-    border-radius: .85rem !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
-  }
-
-  .segempat-admin-quick-tile > div:nth-of-type(2) {
-    width: 2.35rem !important;
-    height: 2.35rem !important;
-    flex: 0 0 auto;
-  }
-
-  .segempat-admin-quick-tile > span {
-    font-size: .75rem !important;
-    line-height: 1rem !important;
-  }
-
-  .segempat-admin-performance {
-    box-shadow: 0 10px 28px rgba(16,24,40,.04) !important;
-  }
-
-  .segempat-admin-performance > div:last-child {
-    gap: .65rem !important;
-    padding: .85rem !important;
-  }
-
-  .segempat-admin-performance-tile {
-    min-height: 142px;
-    padding: .95rem !important;
     border-color: var(--border-subtle) !important;
-    background: color-mix(in srgb, var(--bg-surface-2) 76%, var(--bg-surface)) !important;
-  }
-
-  .segempat-admin-performance-tile:hover {
-    border-color: color-mix(in srgb, var(--accent) 20%, var(--border)) !important;
-  }
-
-  .segempat-section-header {
-    min-height: 62px !important;
-    padding-top: .85rem !important;
-    padding-bottom: .85rem !important;
-    background: linear-gradient(180deg,color-mix(in srgb,var(--bg-surface) 97%,var(--bg-surface-2)),var(--bg-surface));
-  }
-
-  .segempat-section-header h2 {
-    font-size: .82rem !important;
-    letter-spacing: -.01em !important;
-  }
-
-  .segempat-section-header p {
-    font-size: .68rem !important;
-  }
-
-  .segempat-system-surface {
-    border-radius: 1rem !important;
-  }
-
-  [data-theme="dark"] .segempat-admin-hero {
-    border-color: rgba(255,255,255,.07) !important;
-    box-shadow: 0 24px 58px rgba(0,0,0,.24) !important;
   }
 
   [data-theme="dark"] .segempat-admin-sector-row,
@@ -1103,7 +1142,45 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   [data-theme="dark"] .segempat-admin-quick-tile,
   [data-theme="dark"] .segempat-admin-performance-tile,
   [data-theme="dark"] .segempat-admin-governance > div:last-child > a {
-    background: rgba(255,255,255,.025) !important;
+    background: rgba(255,255,255,.022) !important;
+  }
+
+  .segempat-admin-quick {
+    padding: .9rem !important;
+  }
+
+  .segempat-admin-quick > div:last-child {
+    gap: .6rem !important;
+  }
+
+  .segempat-admin-quick-tile {
+    min-height: 70px !important;
+    border-radius: .8rem !important;
+  }
+
+  .segempat-admin-performance {
+    box-shadow: var(--shadow-card) !important;
+  }
+
+  .segempat-admin-performance-tile {
+    min-height: 132px;
+    padding: .9rem !important;
+  }
+
+  .segempat-admin-governance {
+    border-color: color-mix(in srgb, #f59e0b 15%, var(--border)) !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .segempat-admin-hero-content {
+    grid-template-columns: minmax(0,1fr) minmax(300px,350px) !important;
+    gap: 1.6rem !important;
+  }
+
+  .segempat-admin-quick > div:last-child {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
   }
 }
 
@@ -1121,23 +1198,9 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 }
 
-
-@media (min-width: 1280px) {
-  .segempat-admin-hero-content {
-    grid-template-columns: minmax(0,1fr) minmax(310px,360px) !important;
-    gap: 2rem !important;
-  }
-}
-
-
-/* Final visual audit: notebook/desktop alignment safeguards. */
 @media (min-width: 1024px) and (max-width: 1279px) {
-  .segempat-sidebar-brand {
-    justify-content: flex-start !important;
-  }
-
   .segempat-admin-hero-actions {
-    width: min(100%, 34rem) !important;
+    width: min(100%,32rem) !important;
     justify-self: start !important;
   }
 
@@ -1146,17 +1209,10 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   }
 }
 
-@media (min-width: 1280px) {
-  .segempat-sidebar-brand {
-    justify-content: flex-start !important;
-  }
-
-  .segempat-admin-hero-actions {
-    width: 100% !important;
-    justify-self: end !important;
-  }
-
-  .segempat-admin-quick > div:last-child {
-    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+@media (prefers-reduced-motion: reduce) {
+  .segempat-app-sidebar,
+  .segempat-app-stage,
+  .segempat-sidebar-collapse-button {
+    transition: none !important;
   }
 }
