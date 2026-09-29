@@ -155,11 +155,17 @@ function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<
   const priorityRouteActive = visiblePriorityItems.some((item) => routeMatches(pathname, item.path));
   const defaultSection = priorityRouteActive ? null : activeSection ?? visibleSections[0]?.section ?? null;
   const [openSection, setOpenSection] = useState<string | null>(defaultSection);
-  useEffect(() => { if (activeSection) setOpenSection(activeSection); }, [activeSection]);
+  useEffect(() => {
+    if (priorityRouteActive) {
+      setOpenSection(null);
+      return;
+    }
+    if (activeSection) setOpenSection(activeSection);
+  }, [activeSection, priorityRouteActive]);
 
   return <div className="space-y-3">
     {visiblePriorityItems.length > 0 && <div className="segempat-sidebar-priority space-y-1.5">
-      <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "rgba(255,255,255,.34)" }}>Principal</p>
+      <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
       <div className="space-y-1">{visiblePriorityItems.map((item) => <MenuLink key={item.path} item={item} />)}</div>
     </div>}
     <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
