@@ -22,8 +22,8 @@
    a generic dialog compatibility rule must never override its theme surface. */
 .segempat-sidebar-sheet[role="dialog"] {
   background: var(--sidebar-bg) !important;
-  color: #ffffff !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--sidebar-text) !important;
+  border-right: 1px solid var(--sidebar-border) !important;
 }
 
 .segempat-sidebar-sheet[role="dialog"] > div,
@@ -33,20 +33,20 @@
 
 .segempat-sidebar-sheet[role="dialog"] button[aria-label="Close"],
 .segempat-sidebar-sheet[role="dialog"] button > .lucide-x {
-  color: rgba(255, 255, 255, 0.62) !important;
+  color: var(--sidebar-muted) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover,
 .segempat-app-sidebar .segempat-sidebar-section:hover,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover,
 .segempat-sidebar-sheet .segempat-sidebar-section:hover {
-  background: rgba(255, 255, 255, 0.055) !important;
+  background: var(--sidebar-hover) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:focus-visible,
 .segempat-app-sidebar .segempat-sidebar-section:focus-visible,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:focus-visible,
 .segempat-sidebar-sheet .segempat-sidebar-section:focus-visible {
-  outline: 2px solid rgba(224, 20, 47, 0.62);
+  outline: 2px solid rgba(200, 16, 46, 0.58);
   outline-offset: 2px;
 }
