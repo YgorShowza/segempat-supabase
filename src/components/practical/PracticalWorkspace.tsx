@@ -38,7 +38,7 @@ import {
   type PracticalEvaluation,
 } from "@/lib/operations";
 import { useCurrentUser } from "@/lib/useCurrentUser";
-import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface as Card } from "@/components/system/SystemUI";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemPageHero, SystemSurface as Card } from "@/components/system/SystemUI";
 
 const STATUS_OPTIONS = ["Todos", "Planejada", "Em andamento", "Concluída"] as const;
 const defaultChecklist = [
@@ -357,11 +357,7 @@ export function PracticalWorkspace({ operatorTitle = false }: { operatorTitle?: 
 
   if (query.isError) {
     return (
-      <div
-        className="mx-auto max-w-2xl rounded-2xl p-8 text-center"
-        style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}
-        role="alert"
-      >
+      <Card className="mx-auto max-w-2xl p-8 text-center" role="alert">
         <AlertTriangle className="mx-auto h-9 w-9 text-red-500" />
         <p className="mt-3 font-bold text-red-500">Não foi possível carregar as avaliações práticas.</p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>
@@ -371,65 +367,29 @@ export function PracticalWorkspace({ operatorTitle = false }: { operatorTitle?: 
           <RotateCcw className={`mr-2 h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
           {query.isFetching ? "Tentando novamente..." : "Tentar novamente"}
         </Button>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 pb-10">
-      <section
-        className="relative overflow-hidden rounded-[1.75rem] p-5 md:p-6"
-        style={{
-          background: "linear-gradient(135deg,#171117 0%,#310912 55%,#160f14 100%)",
-          border: "1px solid rgba(200,16,46,.28)",
-          boxShadow: "0 12px 38px rgba(80,0,18,.16)",
-        }}
-      >
-        <div
-          className="absolute -right-20 -top-24 h-72 w-72 rounded-full"
-          style={{ background: "radial-gradient(circle,rgba(200,16,46,.25),transparent 68%)" }}
-        />
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <div
-              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.22em]"
-              style={{ color: "rgba(255,255,255,.44)" }}
-            >
-              <ClipboardCheck className="h-4 w-4" /> Competência operacional
-            </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">
-              {operatorTitle ? "Minha Avaliação Prática" : "Avaliação Prática"}
-            </h1>
-            <p className="mt-1 max-w-2xl text-sm" style={{ color: "rgba(255,255,255,.58)" }}>
-              {operatorTitle
-                ? "Acompanhe suas avaliações, checklists e resultados registrados pela Inspetoria."
-                : "Planeje, execute e conclua avaliações com checklist, nota e sincronização com o Cronograma."}
-            </p>
-            {!operatorTitle && counts.overdue > 0 && (
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-amber-200">
-                <AlertTriangle className="h-3.5 w-3.5" /> {counts.overdue} avaliação(ões) com data vencida
-              </div>
-            )}
+      <SystemPageHero
+        icon={ClipboardCheck}
+        eyebrow="Competência operacional"
+        title={operatorTitle ? "Minha Avaliação Prática" : "Avaliação Prática"}
+        description={
+          <div className="space-y-3">
+            <p>{operatorTitle
+              ? "Acompanhe suas avaliações, checklists e resultados registrados pela Inspetoria."
+              : "Planeje, execute e conclua avaliações com checklist, nota e sincronização com o Cronograma."}</p>
+            {!operatorTitle && counts.overdue > 0 && <span className="segempat-practical-overdue"><AlertTriangle className="h-3.5 w-3.5" /> {counts.overdue} avaliação(ões) com data vencida</span>}
           </div>
-          {showManagementTools && (
-            <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => setModelsOpen(true)}
-                className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
-                <Settings2 className="mr-2 h-4 w-4" /> Modelos
-              </Button>
-              <Button
-                onClick={openPlanning}
-                className="bg-[#e0142f] font-bold text-white shadow-lg shadow-red-950/20 hover:bg-[#C8102E]"
-              >
-                <Plus className="mr-2 h-4 w-4" /> Planejar avaliação
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
+        }
+        actions={showManagementTools ? <>
+          <Button variant="outline" onClick={() => setModelsOpen(true)} className="segempat-hero-button-secondary"><Settings2 className="mr-2 h-4 w-4" /> Modelos</Button>
+          <Button onClick={openPlanning} className="segempat-hero-button-primary"><Plus className="mr-2 h-4 w-4" /> Planejar avaliação</Button>
+        </> : undefined}
+      />
 
       {showManagementTools && <PracticalRecurrencePanel />}
 
