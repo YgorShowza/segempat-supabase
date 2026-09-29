@@ -38,7 +38,7 @@ async function proxyApiRequest(request: Request) {
   });
 }
 
-export const Route = createFileRoute("/api/$")({
+export const Route = createFileRoute("/api/$" as any)({
   server: {
     handlers: {
       GET: ({ request }) => proxyApiRequest(request),
