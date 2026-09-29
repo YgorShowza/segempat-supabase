@@ -46,7 +46,7 @@ import { logoutSession } from "@/lib/backend/auth-gateway";
 import { canAccessAdminPath } from "@/lib/access-control";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const LOGO_URL = "/empat-logo-report.png";
+const LOGO_URL = "/empat-mark.svg";
 
 type MenuItem = { path: string; label: string; icon: LucideIcon };
 type MenuSection = { section: string; description: string; icon: LucideIcon; items: MenuItem[] };
