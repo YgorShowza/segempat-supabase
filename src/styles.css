@@ -436,3 +436,125 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   DESKTOP FOUNDATION — visual system baseline
+   Unifica proporcao, superfícies, densidade e leitura em telas grandes.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --segempat-shell-max: 1600px;
+  --segempat-workspace-max: 1536px;
+  --segempat-sidebar-width: 19rem;
+  --segempat-surface-radius: 1.125rem;
+  --segempat-hero-bg: linear-gradient(135deg, #171117 0%, #310912 54%, #160f14 100%);
+  --segempat-hero-border: rgba(200, 16, 46, 0.28);
+  --segempat-hero-shadow: 0 16px 42px rgba(80, 0, 18, 0.14);
+}
+
+@media (min-width: 1024px) {
+  :root,
+  [data-theme="light"] {
+    --bg-base: #f4f6f8;
+    --bg-surface: #ffffff;
+    --bg-surface-2: #f8f9fb;
+    --bg-surface-3: #eef1f5;
+    --border: #dde2e8;
+    --border-subtle: #edf0f3;
+    --text-1: #101828;
+    --text-2: #344054;
+    --text-3: #667085;
+    --text-4: #98a2b3;
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.045);
+    --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.075);
+    --shadow-lg: 0 18px 48px rgba(16, 24, 40, 0.10);
+  }
+
+  [data-theme="dark"] {
+    --bg-base: #0d0e12;
+    --bg-surface: #15171c;
+    --bg-surface-2: #1b1e24;
+    --bg-surface-3: #232730;
+    --border: rgba(255, 255, 255, 0.085);
+    --border-subtle: rgba(255, 255, 255, 0.045);
+    --text-1: #f4f6f8;
+    --text-2: #d7dce3;
+    --text-3: #a5adba;
+    --text-4: #727b89;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28), 0 10px 28px rgba(0, 0, 0, 0.18);
+    --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.30);
+    --shadow-lg: 0 20px 52px rgba(0, 0, 0, 0.38);
+  }
+
+  body {
+    letter-spacing: -0.005em;
+  }
+
+  .segempat-app-sidebar {
+    width: var(--segempat-sidebar-width) !important;
+    box-shadow: 10px 0 32px rgba(15, 23, 42, 0.035) !important;
+  }
+
+  .segempat-app-stage {
+    margin-left: var(--segempat-sidebar-width) !important;
+  }
+
+  .segempat-app-header {
+    min-height: 72px;
+    padding-top: 0.875rem !important;
+    padding-bottom: 0.875rem !important;
+    box-shadow: 0 1px 0 rgba(16, 24, 40, 0.025);
+  }
+
+  .segempat-app-header-frame,
+  .segempat-app-content {
+    max-width: var(--segempat-shell-max) !important;
+  }
+
+  .segempat-app-main {
+    padding: 1.75rem 2rem 2.25rem !important;
+  }
+
+  .segempat-sidebar-brand {
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .segempat-sidebar-brand img {
+    image-rendering: auto;
+    transform: translateZ(0);
+  }
+
+  .segempat-sidebar-link {
+    min-height: 42px;
+  }
+
+  .segempat-sidebar-link[data-active="false"] {
+    color: var(--text-2);
+  }
+
+  .segempat-system-surface {
+    border-radius: var(--segempat-surface-radius) !important;
+  }
+
+  .segempat-section-header {
+    min-height: 68px;
+  }
+
+  .segempat-metric-card {
+    min-height: 138px !important;
+  }
+
+  .segempat-page-hero {
+    border-radius: 1.625rem !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .segempat-app-main {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+}
