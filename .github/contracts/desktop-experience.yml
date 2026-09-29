@@ -29,6 +29,13 @@ jobs:
           grep -F 'max-w-[1536px]' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'Central de Atenção' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'Painel TV' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'const [showAllQuick, setShowAllQuick] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'const visibleQuick = showAllQuick ? quick : quick.slice(0, 4);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'aria-expanded={showAllQuick}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F '{visibleQuick.map' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          for route in /equipe /analytics /cronograma /ocorrencias /provas /risco /individual /relatorios; do
+            grep -F "to: \"$route\"" src/components/dashboard/AdminDashboardV2.tsx >/dev/null || { echo "Atalho do Dashboard ausente: $route"; exit 1; }
+          done
           grep -F 'w-[19rem]' src/components/AppLayoutV2.tsx >/dev/null
           grep -F 'currentLocation' src/components/AppLayoutV2.tsx >/dev/null
           grep -F 'max-h-[62vh]' src/components/team/TeamManagementWorkspace.tsx >/dev/null

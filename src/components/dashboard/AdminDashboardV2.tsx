@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -32,6 +33,7 @@ const SECTOR_COLORS = ["#C8102E", "#2563eb", "#10b981", "#f59e0b", "#64748b", "#
 export function AdminDashboardV2() {
   const year = operationalYear();
   const { data: user } = useCurrentUser();
+  const [showAllQuick, setShowAllQuick] = useState(false);
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-snapshot", year],
     queryFn: () => getOperationalSnapshot(year),
@@ -91,6 +93,7 @@ export function AdminDashboardV2() {
     { to: "/individual", label: "Análise Individual", icon: BarChart3, accent: "#3b82f6" },
     { to: "/relatorios", label: "Relatórios", icon: FileSpreadsheet, accent: "#C8102E" },
   ];
+  const visibleQuick = showAllQuick ? quick : quick.slice(0, 4);
 
   const performanceOverview = data.employees
     .filter((employee) => employee.status === "Ativo" && employee.access_profile !== "Inspetor")
@@ -388,11 +391,20 @@ export function AdminDashboardV2() {
               <p className="hidden text-[10px] sm:block" style={{ color: "var(--text-4)" }}>Atalhos para as rotinas mais usadas pela Inspetoria.</p>
             </div>
           </div>
-          <span className="hidden text-[10px] font-bold uppercase tracking-[.12em] xl:block" style={{ color: "var(--text-4)" }}>8 atalhos</span>
+          <button
+            type="button"
+            onClick={() => setShowAllQuick((current) => !current)}
+            aria-expanded={showAllQuick}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[.08em] transition-colors"
+            style={{ color: "var(--accent)", background: "var(--accent-soft)", border: "1px solid rgba(200,16,46,.16)" }}
+          >
+            {showAllQuick ? "Mostrar menos" : "Ver todos"}
+            <ChevronRight className={`h-3.5 w-3.5 transition-transform ${showAllQuick ? "-rotate-90" : "rotate-90"}`} />
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
-          {quick.map(({ to, label, icon: Icon, accent }) => (
+          {visibleQuick.map(({ to, label, icon: Icon, accent }) => (
             <Link key={to} to={to as never} className="min-w-0">
               <div
                 className="segempat-admin-quick-tile group relative flex h-full min-h-[92px] flex-col items-center justify-center gap-2 overflow-hidden rounded-xl p-3 text-center transition-[border-color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-sm"
