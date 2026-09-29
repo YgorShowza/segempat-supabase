@@ -16,6 +16,13 @@ function requireFile(relativePath) {
   return read(relativePath);
 }
 
+function requirePng(relativePath) {
+  if (!exists(relativePath)) throw new Error(`PNG obrigatório ausente: ${relativePath}`);
+  const bytes = fs.readFileSync(path.join(root, relativePath));
+  const signature = bytes.subarray(0, 8).toString("hex");
+  if (signature !== "89504e470d0a1a0a") throw new Error(`PNG inválido: ${relativePath}`);
+}
+
 function requireText(content, needle, label) {
   if (!content.includes(needle)) throw new Error(`${label}: contrato ausente (${needle})`);
 }
@@ -169,7 +176,9 @@ requireText(
   "Recuperação de senha restrita ao ambiente corporativo",
 );
 requireText(loginRoute, "{!demoAvailable && (", "Primeiro acesso restrito ao ambiente corporativo");
-requireText(appLayout, originalLogo, "Logo original EMPAT no layout autenticado");
+const authenticatedLogo = "/empat-logo-report.png";
+requireText(appLayout, authenticatedLogo, "Logo EMPAT local validada no layout autenticado");
+requirePng("public/empat-logo-report.png");
 
 const vite = requireFile("vite.config.ts");
 requireAbsent(vite, "segempat-local-brand-asset", "Substituição raster de baixa resolução da marca EMPAT");
@@ -181,4 +190,4 @@ console.log(`- ${adminRoutes.length} rotas do Inspetor protegidas`);
 console.log(`- ${operatorRoutes.length} rotas do Operador protegidas`);
 console.log("- demo Inspetor/Operador, notas 0–10 e evolução 5.8 → 6.6 → 7.6 → 8.8 protegidos");
 console.log("- login demo sem falso alerta de indisponibilidade e sem fluxos corporativos inválidos");
-console.log("- Worker segempat-supabase e logo EMPAT original protegidos");
+console.log("- Worker segempat-supabase e identidade EMPAT validada protegidos");

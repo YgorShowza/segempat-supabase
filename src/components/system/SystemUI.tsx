@@ -10,7 +10,7 @@ export function SystemSurface({
   return (
     <section
       {...props}
-      className={`rounded-2xl ${className}`}
+      className={`segempat-system-surface rounded-2xl ${className}`}
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border)",
@@ -38,11 +38,11 @@ export function SystemPageHero({
 }) {
   return (
     <section
-      className="relative overflow-hidden rounded-[1.75rem] p-5 md:p-6 lg:p-7"
+      className="segempat-page-hero relative overflow-hidden rounded-[1.75rem] p-5 md:p-6 lg:p-7"
       style={{
-        background: "linear-gradient(135deg,#171117 0%,#310912 54%,#160f14 100%)",
-        border: "1px solid rgba(200,16,46,.28)",
-        boxShadow: "0 12px 38px rgba(80,0,18,.16)",
+        background: "var(--segempat-hero-bg)",
+        border: "1px solid var(--segempat-hero-border)",
+        boxShadow: "var(--segempat-hero-shadow)",
       }}
     >
       <div
@@ -81,7 +81,7 @@ export function SystemSectionHeader({
   accent?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 border-b p-4 lg:px-5" style={{ borderColor: "var(--border)" }}>
+    <div className="segempat-section-header flex items-center gap-3 border-b p-4 lg:px-5" style={{ borderColor: "var(--border)" }}>
       <span
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
         style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
@@ -111,7 +111,7 @@ export function SystemMetricCard({
   accent: string;
 }) {
   return (
-    <SystemSurface className="relative min-h-[132px] overflow-hidden p-4 sm:p-5">
+    <SystemSurface className="segempat-metric-card relative min-h-[132px] overflow-hidden p-4 sm:p-5">
       <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
       <div className="absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-[.055]" style={{ background: accent }} />
       <div className="relative flex h-full items-start justify-between gap-4">
