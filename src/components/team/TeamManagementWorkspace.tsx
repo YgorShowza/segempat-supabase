@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { canAccessAdminPath, hasPermission } from "@/lib/access-control";
-import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemSurface as Surface } from "@/components/system/SystemUI";
+import { SystemDataWorkspaceSkeleton, SystemMetricCard, SystemPageHero, SystemSurface as Surface } from "@/components/system/SystemUI";
 import { invalidateEmployeeFlow } from "@/lib/operational-query-sync";
 import {
   PERFIS,
@@ -150,17 +150,19 @@ export function TeamManagementWorkspace() {
 
   return (
     <div className="mx-auto w-full max-w-[1536px] space-y-5 pb-10">
-      <section className="relative overflow-hidden rounded-[1.75rem] p-5 md:p-6 xl:p-7" style={{ background: "linear-gradient(135deg,#171117 0%,#310912 55%,#160f14 100%)", border: "1px solid rgba(200,16,46,.28)", boxShadow: "0 12px 38px rgba(80,0,18,.16)" }}>
-        <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.25),transparent 68%)" }} />
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div><div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.22em]" style={{ color: "rgba(255,255,255,.44)" }}><UserRoundCog className="h-4 w-4" /> Gestão operacional</div><h1 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl xl:text-[2.1rem]">Gestão de Equipe</h1><p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,.52)" }}>{isLoading ? "Carregando cadastros..." : isError ? "Cadastros temporariamente indisponíveis" : `${employees.length} cadastrados · ${cadastrosAtivos} ativos · ${inativos} inativos`}</p></div>
-          <div className="flex flex-wrap items-center gap-2">
-            {!canManageTeam && <div className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 text-xs font-bold text-white/70"><LockKeyhole className="h-3.5 w-3.5" />Somente leitura</div>}
-            {canOpenAccess && <Button asChild variant="outline" className="border-white/15 bg-white/5 font-bold text-white hover:bg-white/10 hover:text-white"><Link to="/acessos"><KeyRound className="mr-2 h-4 w-4" />Acessos</Link></Button>}
-            {canManageTeam && <Button onClick={openNew} className="bg-[#e0142f] font-bold text-white shadow-lg shadow-red-950/20 hover:bg-[#C8102E]"><Plus className="mr-2 h-4 w-4" />Novo Funcionário</Button>}
-          </div>
-        </div>
-      </section>
+      <SystemPageHero
+        icon={UserRoundCog}
+        eyebrow="Gestão operacional"
+        title="Gestão de Equipe"
+        description={isLoading ? "Carregando cadastros..." : isError ? "Cadastros temporariamente indisponíveis" : `${employees.length} cadastrados · ${cadastrosAtivos} ativos · ${inativos} inativos`}
+        actions={
+          <>
+            {!canManageTeam && <div className="segempat-hero-readonly"><LockKeyhole className="h-3.5 w-3.5" />Somente leitura</div>}
+            {canOpenAccess && <Button asChild variant="outline" className="segempat-hero-button-secondary"><Link to="/acessos"><KeyRound className="mr-2 h-4 w-4" />Acessos</Link></Button>}
+            {canManageTeam && <Button onClick={openNew} className="segempat-hero-button-primary"><Plus className="mr-2 h-4 w-4" />Novo Funcionário</Button>}
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <SystemMetricCard label="Equipe ativa" value={metricValue(operacionaisAtivos)} icon={ShieldCheck} accent="#10b981" detail="operacionais ativos" />
@@ -176,7 +178,7 @@ export function TeamManagementWorkspace() {
         </Surface>
       )}
 
-      <Surface className="p-4 xl:p-5">
+      <Surface className="segempat-team-filters p-4 xl:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Funcionários</p><p className="mt-0.5 text-[11px]" style={{ color: "var(--text-4)" }}>{isError ? "Dados indisponíveis" : isFetching && !isLoading ? `Atualizando · ${filtered.length} de ${employees.length} registros exibidos` : `${filtered.length} de ${employees.length} registros exibidos`}</p></div>
           {hasFilters && <Button type="button" variant="ghost" size="sm" onClick={clearFilters} className="self-start lg:self-auto">Limpar filtros</Button>}
@@ -206,7 +208,7 @@ export function TeamManagementWorkspace() {
         </Surface>
       ) : (
         <>
-          <Surface className="hidden overflow-hidden lg:block">
+          <Surface className="segempat-team-table hidden overflow-hidden lg:block">
             <div className="max-h-[62vh] overflow-auto">
               <table className={`w-full border-collapse text-left ${canManageTeam ? "min-w-[920px]" : "min-w-[760px]"}`}>
                 <thead className="sticky top-0 z-10" style={{ background: "var(--bg-surface)" }}>
