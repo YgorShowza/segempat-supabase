@@ -566,13 +566,29 @@ export function InspectorProductionWorkspace() {
     });
 
     const logo = document.querySelector<HTMLImageElement>("#inspector-production-print-report .segempat-print-logo");
-    if (logo && (!logo.complete || logo.naturalWidth === 0)) {
-      await new Promise<void>((resolve) => {
-        const finish = () => resolve();
-        logo.addEventListener("load", finish, { once: true });
-        logo.addEventListener("error", finish, { once: true });
-        window.setTimeout(finish, 2500);
-      });
+    if (logo) {
+      if (!logo.complete || logo.naturalWidth === 0) {
+        await new Promise<void>((resolve) => {
+          const finish = () => resolve();
+          logo.addEventListener("load", finish, { once: true });
+          logo.addEventListener("error", finish, { once: true });
+          window.setTimeout(finish, 3000);
+        });
+      }
+
+      if (logo.decode && logo.naturalWidth > 0) {
+        try {
+          await logo.decode();
+        } catch {
+          // naturalWidth below remains the authoritative print-safety check.
+        }
+      }
+
+      if (logo.naturalWidth === 0) {
+        restoreTitle();
+        toast.error("A logo institucional não carregou. O relatório não será impresso sem a identidade visual.");
+        return;
+      }
     }
 
     window.print();
