@@ -63,6 +63,16 @@ jobs:
           grep -F -- '--segempat-sidebar-collapsed-width: 5.25rem;' src/styles.css >/dev/null
           grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/styles.css >/dev/null
           grep -F 'UNIFIED DESKTOP EXPERIENCE' src/styles.css >/dev/null
+          grep -F 'SHARED SYSTEM SURFACES + DASHBOARD REFINEMENT' src/styles.css >/dev/null
+          grep -F 'segempat-admin-hero-action--primary' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'segempat-admin-governance-card' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'segempat-admin-quick-toggle' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'segempat-empty-state' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'className={`segempat-system-surface rounded-2xl ${className}`}' src/components/system/SystemUI.tsx >/dev/null
+          grep -F 'style={style}' src/components/system/SystemUI.tsx >/dev/null
+          if grep -F 'boxShadow: "var(--shadow-card, var(--shadow-md))"' src/components/system/SystemUI.tsx >/dev/null; then
+            echo "SystemSurface voltou a definir aparência inline em vez do design system"; exit 1
+          fi
           if grep -F 'DESKTOP LAYER 2' src/styles.css >/dev/null || grep -F 'DESKTOP LAYER 3' src/styles.css >/dev/null; then
             echo "Camadas desktop concorrentes voltaram ao stylesheet principal"; exit 1
           fi
