@@ -26,6 +26,7 @@ jobs:
           grep -F 'segempat-training-question-bank' src/routes/_authenticated/banco-questoes.tsx >/dev/null
           grep -F 'segempat-training-cycles' src/routes/_authenticated/ciclos-treinamento.tsx >/dev/null
           grep -F 'segempat-training-knowledge' src/routes/_authenticated/conteudos.tsx >/dev/null
+          grep -F 'SystemPageHero' src/components/knowledge/KnowledgeWorkspace.tsx >/dev/null
           grep -F 'segempat-training-signatures' src/routes/_authenticated/assinaturas-provas.tsx >/dev/null
           grep -F 'segempat-training-practical' src/routes/_authenticated/avaliacao-pratica.tsx >/dev/null
           grep -F 'SystemPageHero' src/components/training/TrainingModulesAdmin.tsx >/dev/null

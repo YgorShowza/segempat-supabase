@@ -11,10 +11,10 @@ Navegador / Cloudflare
 API SEGEMPAT — Node.js / Express
         | TLS
         v
-MySQL 8 corporativo
+Supabase / PostgreSQL
 ```
 
-O frontend nunca acessa o MySQL diretamente. Credenciais do banco, segredo de sessão e material TLS privado pertencem exclusivamente ao ambiente da API/secret manager da empresa e nunca devem ser colocados em variáveis `VITE_*`.
+O frontend nunca acessa o PostgreSQL/Supabase diretamente. Credenciais do banco, segredo de sessão e credenciais de storage pertencem exclusivamente ao ambiente da API/secret manager e nunca devem ser colocados em variáveis `VITE_*`.
 
 A aplicação implementa, entre outros controles:
 
@@ -26,12 +26,12 @@ A aplicação implementa, entre outros controles:
 - recuperação de senha com hierarquia de autoridade, código temporário em hash, expiração e limite de tentativas;
 - invalidação de sessões após mudanças relevantes de credencial/privilégio;
 - CORS/origem explícita para operações de escrita;
-- TLS obrigatório para MySQL em produção;
-- usuário MySQL de runtime separado da credencial de migration;
+- TLS obrigatório para PostgreSQL em produção;
+- papel PostgreSQL de runtime `segempat_app` separado da credencial temporária de migration;
 - trilha de auditoria para ações privilegiadas;
 - bloqueio de indexação pública da aplicação (`noindex`/`Disallow: /`).
 
-Detalhes e limitações estão registrados em `SECURITY_AUDIT.md`, `LGPD_GOVERNANCE.md`, `ENTREGA_TI.md` e nos checklists de homologação.
+Detalhes e limitações desta edição estão registrados em `SUPABASE_EDITION.md`, `SUPABASE_RUNTIME_CONNECTION.md`, `RENDER_SUPABASE_HANDOFF.md`, `SECURITY_AUDIT.md`, `LGPD_GOVERNANCE.md` e nos gates de homologação.
 
 ## Relato de vulnerabilidade
 
@@ -59,4 +59,4 @@ O gate verifica arquivos versionados atuais e nomes/padrões sensíveis presente
 
 A publicação do código **não equivale à homologação corporativa** e não autoriza exposição de configurações reais. O status permanece:
 
-**PARTE DO MYSQL NO CÓDIGO CONCLUÍDA — PRONTO PARA CONECTAR AO BANCO DA EMPRESA.**
+**EDIÇÃO SUPABASE/POSTGRESQL COM ARQUITETURA API-OWNED — HOMOLOGAÇÃO DEPENDE DOS GATES REAIS DE API, BANCO, STORAGE, AUTENTICAÇÃO E INFRAESTRUTURA.**
