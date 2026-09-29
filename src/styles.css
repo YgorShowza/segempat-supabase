@@ -1128,3 +1128,35 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     gap: 2rem !important;
   }
 }
+
+
+/* Final visual audit: notebook/desktop alignment safeguards. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .segempat-sidebar-brand {
+    justify-content: flex-start !important;
+  }
+
+  .segempat-admin-hero-actions {
+    width: min(100%, 34rem) !important;
+    justify-self: start !important;
+  }
+
+  .segempat-admin-quick > div:last-child {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .segempat-sidebar-brand {
+    justify-content: flex-start !important;
+  }
+
+  .segempat-admin-hero-actions {
+    width: 100% !important;
+    justify-self: end !important;
+  }
+
+  .segempat-admin-quick > div:last-child {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+  }
+}
