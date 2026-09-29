@@ -27,6 +27,11 @@ jobs:
           grep -F 'Prática & desenvolvimento' "$FILE" >/dev/null
           grep -F 'Começar pela trilha' "$FILE" >/dev/null
           grep -F 'Biblioteca' "$FILE" >/dev/null
+          grep -F 'SystemSurface' "$FILE" >/dev/null
+          grep -F 'segempat-academy-module-card' "$FILE" >/dev/null
+          grep -F 'segempat-academy-tool' "$FILE" >/dev/null
+          grep -F 'segempat-academy-admin-link' "$FILE" >/dev/null
+          grep -F 'Profile and Academy convergence' src/styles.css >/dev/null
           for route in /teste-rapido /simulador /stress-test /desafio-diario /progresso /certificados; do
             grep -F "path=\"$route\"" "$FILE" >/dev/null || { echo "Ferramenta ausente da Academia: $route"; exit 1; }
           done

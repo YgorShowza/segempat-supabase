@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SystemSurface } from "@/components/system/SystemUI";
 import { fmtDate, listAvailableExams, listMyAttempts } from "@/lib/exams";
 import { getMyTrainingSchedule, type TrainingCycleStatus } from "@/lib/training-schedules";
 import { listMyTrainingActivities } from "@/lib/training-activities";
@@ -115,11 +116,7 @@ export function MyProfileWorkspace() {
   if (criticalError) {
     return (
       <div className="segempat-profile-page mx-auto pb-10">
-        <section
-          className="rounded-3xl p-6 text-center md:p-8"
-          style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}
-          role="alert"
-        >
+        <SystemSurface className="rounded-3xl p-6 text-center md:p-8" role="alert">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: "rgba(239,68,68,.10)", color: "#ef4444" }}>
             <AlertCircle className="h-5 w-5" />
           </div>
@@ -130,7 +127,7 @@ export function MyProfileWorkspace() {
           <Button className="mt-5" onClick={retryAll}>
             <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
           </Button>
-        </section>
+        </SystemSurface>
       </div>
     );
   }
@@ -201,7 +198,7 @@ export function MyProfileWorkspace() {
       </section>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
-        <section className="segempat-profile-card rounded-3xl p-4 md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }} aria-labelledby="atalhos-title">
+        <SystemSurface className="segempat-profile-card rounded-3xl p-4 md:p-5" aria-labelledby="atalhos-title">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Acesso rápido</p>
@@ -211,9 +208,9 @@ export function MyProfileWorkspace() {
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {QUICK_ACTIONS.map((action) => <QuickAction key={action.to} {...action} />)}
           </div>
-        </section>
+        </SystemSurface>
 
-        <section className="segempat-profile-card rounded-3xl p-4 md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }} aria-labelledby="ciclo-title">
+        <SystemSurface className="segempat-profile-card rounded-3xl p-4 md:p-5" aria-labelledby="ciclo-title">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Reciclagem e capacitação</p>
@@ -236,7 +233,7 @@ export function MyProfileWorkspace() {
               <CycleDetail label="Periodicidade" value={currentCycle?.cycle_days ? `${currentCycle.cycle_days} dias` : "—"} />
             </dl>
           </div>
-        </section>
+        </SystemSurface>
       </div>
 
       {exams.isError && (
@@ -305,7 +302,7 @@ export function MyProfileWorkspace() {
         </HistoryPanel>
       </div>
 
-      <section className="segempat-profile-card flex flex-col gap-3 rounded-2xl px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }} aria-label="Origem dos dados do perfil">
+      <SystemSurface className="segempat-profile-card flex flex-col gap-3 rounded-2xl px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between" aria-label="Origem dos dados do perfil">
         <div className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}><IdCard className="h-4 w-4" /></div>
           <div>
@@ -316,7 +313,7 @@ export function MyProfileWorkspace() {
         <Link to="/progresso" className="inline-flex shrink-0 items-center gap-1 text-xs font-black" style={{ color: "var(--accent)" }}>
           Meu progresso <ChevronRight className="h-3.5 w-3.5" />
         </Link>
-      </section>
+      </SystemSurface>
     </div>
   );
 }
@@ -331,7 +328,7 @@ function IdentityPill({ icon: Icon, children }: { icon: LucideIcon; children: Re
 
 function Metric({ label, value, helper, icon: Icon, tone, compact = false }: { label: string; value: string | number; helper: string; icon: LucideIcon; tone: string; compact?: boolean }) {
   return (
-    <section className="segempat-profile-card rounded-2xl p-4 md:p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+    <SystemSurface className="segempat-profile-card rounded-2xl p-4 md:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>{label}</p>
@@ -340,7 +337,7 @@ function Metric({ label, value, helper, icon: Icon, tone, compact = false }: { l
         </div>
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${tone}18`, color: tone }}><Icon className="h-4 w-4" /></div>
       </div>
-    </section>
+    </SystemSurface>
   );
 }
 
@@ -368,7 +365,7 @@ function CycleDetail({ label, value }: { label: string; value: string }) {
 
 function HistoryPanel({ title, eyebrow, icon: Icon, count, emptyTitle, emptyDescription, footer, children }: { title: string; eyebrow: string; icon: LucideIcon; count: number; emptyTitle: string; emptyDescription: string; footer: ReactNode; children: ReactNode }) {
   return (
-    <section className="segempat-profile-card overflow-hidden rounded-3xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+    <SystemSurface className="segempat-profile-card overflow-hidden rounded-3xl">
       <div className="flex items-center gap-3 px-4 py-4 md:px-5" style={{ background: "var(--bg-surface-2)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}><Icon className="h-4 w-4" /></div>
         <div className="min-w-0 flex-1">
@@ -379,7 +376,7 @@ function HistoryPanel({ title, eyebrow, icon: Icon, count, emptyTitle, emptyDesc
       </div>
       {count === 0 ? <EmptyHistory title={emptyTitle} description={emptyDescription} /> : <div>{children}</div>}
       {footer}
-    </section>
+    </SystemSurface>
   );
 }
 

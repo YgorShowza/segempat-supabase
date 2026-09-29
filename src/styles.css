@@ -1773,3 +1773,40 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     border-radius: .95rem;
   }
 }
+
+
+/* Profile and Academy convergence */
+.segempat-academy-module-card,
+.segempat-academy-admin-link {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.segempat-academy-module-card:hover,
+.segempat-academy-admin-link:hover {
+  border-color: color-mix(in srgb, var(--accent) 16%, var(--border));
+  box-shadow: 0 9px 24px rgba(16,24,40,.05);
+  transform: translateY(-1px);
+}
+
+.segempat-academy-tool {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-subtle);
+}
+
+.segempat-academy-tool:hover {
+  border-color: color-mix(in srgb, var(--accent) 14%, var(--border));
+  background: color-mix(in srgb, var(--bg-surface-2) 76%, var(--bg-surface));
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .segempat-academy-module-card,
+[data-theme="dark"] .segempat-academy-admin-link {
+  border-color: rgba(255,255,255,.065);
+}
+
+[data-theme="dark"] .segempat-academy-tool {
+  background: rgba(255,255,255,.022);
+  border-color: rgba(255,255,255,.045);
+}
