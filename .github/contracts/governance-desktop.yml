@@ -34,6 +34,14 @@ jobs:
           grep -F 'governanceDesktopCss from "../governance-desktop.css?url"' src/routes/__root.tsx >/dev/null
           grep -F '{ rel: "stylesheet", href: governanceDesktopCss }' src/routes/__root.tsx >/dev/null
           grep -F 'O frontend atual não possui fallback de backend' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          grep -F 'const LOGO_URL = "/empat-logo-report.png";' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          grep -F 'Supabase/PostgreSQL' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          grep -F 'PostgreSQL Supabase' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          grep -F 'SystemSurface' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+          if grep -F 'MySQL corporativo' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null; then
+            echo "::error::Documento de Segurança da edição Supabase voltou a descrever MySQL corporativo"
+            exit 1
+          fi
           if grep -F 'fallback legado permanece' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null; then
             echo "::error::Documento de Segurança voltou a descrever fallback legado ativo"
             exit 1
