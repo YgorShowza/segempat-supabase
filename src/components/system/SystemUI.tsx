@@ -112,16 +112,16 @@ export function SystemMetricCard({
 }) {
   return (
     <SystemSurface className="segempat-metric-card relative min-h-[132px] overflow-hidden p-4 sm:p-5">
-      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
+      <div className="segempat-metric-accent absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
       <div className="absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-[.055]" style={{ background: accent }} />
-      <div className="relative flex h-full items-start justify-between gap-4">
+      <div className="segempat-metric-content relative flex h-full items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[.11em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="mt-3 text-[2rem] font-black leading-none tracking-tight" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="mt-3 text-xs font-semibold leading-5" style={{ color: "var(--text-3)" }}>{detail}</p>
+          <p className="segempat-metric-label text-[11px] font-black uppercase tracking-[.11em]" style={{ color: "var(--text-4)" }}>{label}</p>
+          <p className="segempat-metric-value mt-3 text-[2rem] font-black leading-none tracking-tight" style={{ color: "var(--text-1)" }}>{value}</p>
+          <p className="segempat-metric-detail mt-3 text-xs font-semibold leading-5" style={{ color: "var(--text-3)" }}>{detail}</p>
         </div>
         <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+          className="segempat-metric-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
           style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}
         >
           <Icon className="h-5 w-5" style={{ color: accent }} />
