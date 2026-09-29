@@ -51,19 +51,22 @@ const LOGO_URL = "/empat-logo-report.png";
 type MenuItem = { path: string; label: string; icon: LucideIcon };
 type MenuSection = { section: string; icon: LucideIcon; items: MenuItem[] };
 
+const adminPriorityMenu: MenuItem[] = [
+  { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/atencao", label: "Central de Atenção", icon: BellRing },
+  { path: "/producao-inspetoria", label: "Produção da Inspetoria", icon: ClipboardList },
+];
+
 const adminSections: MenuSection[] = [
   { section: "Operação", icon: Activity, items: [
-    { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/atencao", label: "Central de Atenção", icon: BellRing },
-    { path: "/cronograma", label: "Cronograma", icon: CalendarDays },
     { path: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle },
+    { path: "/cronograma", label: "Cronograma", icon: CalendarDays },
     { path: "/avaliacao-pratica", label: "Avaliação Prática", icon: ClipboardCheck },
   ] },
   { section: "Equipe & Desempenho", icon: Users, items: [
     { path: "/equipe", label: "Equipe", icon: Users },
-    { path: "/producao-inspetoria", label: "Produção da Inspetoria", icon: ClipboardList },
-    { path: "/risco", label: "Zona de Risco", icon: Target },
     { path: "/individual", label: "Análise Individual", icon: FileBarChart },
+    { path: "/risco", label: "Zona de Risco", icon: Target },
   ] },
   { section: "Capacitação & Avaliação", icon: GraduationCap, items: [
     { path: "/provas-criar", label: "Criar Prova", icon: PlusCircle },
@@ -108,6 +111,8 @@ function routeMatches(pathname: string, itemPath: string) {
 function currentLocation(pathname: string, isAdmin: boolean) {
   if (routeMatches(pathname, "/meu-perfil")) return { section: "Conta", label: "Meu Perfil", icon: UserRound };
   if (isAdmin) {
+    const priorityItem = adminPriorityMenu.find((candidate) => routeMatches(pathname, candidate.path));
+    if (priorityItem) return { section: "Principal", label: priorityItem.label, icon: priorityItem.icon };
     for (const section of adminSections) {
       const item = section.items.find((candidate) => routeMatches(pathname, candidate.path));
       if (item) return { section: section.section, label: item.label, icon: item.icon };
@@ -140,17 +145,31 @@ function MobileNavLink({ item }: { item: MenuItem }) {
 }
 
 function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<typeof useCurrentUser>["data"] }) {
+  const visiblePriorityItems = user ? adminPriorityMenu.filter((item) => canAccessAdminPath(user, item.path)) : [];
   const visibleSections = user
     ? adminSections
         .map((section) => ({ ...section, items: section.items.filter((item) => canAccessAdminPath(user, item.path)) }))
         .filter((section) => section.items.length > 0)
     : [];
   const activeSection = visibleSections.find((section) => section.items.some((item) => routeMatches(pathname, item.path)))?.section;
-  const defaultSection = activeSection ?? (visibleSections.some((section) => section.section === "Operação") ? "Operação" : visibleSections[0]?.section ?? null);
+  const priorityRouteActive = visiblePriorityItems.some((item) => routeMatches(pathname, item.path));
+  const defaultSection = priorityRouteActive ? null : activeSection ?? visibleSections[0]?.section ?? null;
   const [openSection, setOpenSection] = useState<string | null>(defaultSection);
-  useEffect(() => { if (activeSection) setOpenSection(activeSection); }, [activeSection]);
+  useEffect(() => {
+    if (priorityRouteActive) {
+      setOpenSection(null);
+      return;
+    }
+    if (activeSection) setOpenSection(activeSection);
+  }, [activeSection, priorityRouteActive]);
 
-  return <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>;
+  return <div className="space-y-3">
+    {visiblePriorityItems.length > 0 && <div className="segempat-sidebar-priority space-y-1.5">
+      <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
+      <div className="space-y-1">{visiblePriorityItems.map((item) => <MenuLink key={item.path} item={item} />)}</div>
+    </div>}
+    <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+  </div>;
 }
 
 function NavItems({ isAdmin, pathname, user }: { isAdmin: boolean; pathname: string; user: ReturnType<typeof useCurrentUser>["data"] }) {
