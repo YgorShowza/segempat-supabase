@@ -197,7 +197,7 @@ export function GlobalSearch() {
       .filter((item) => item.audience === "all" || item.audience === audience)
       .filter((item) => !isAdmin || !user || canAccessAdminPath(user, item.path))
       .filter((item) => matches(term, item.title, item.subtitle, item.keywords))
-      .slice(0, term ? 8 : 6)
+      .slice(0, term ? 8 : 3)
       .map((item) => ({ id: `nav-${item.id}`, group: "Navegação" as const, title: item.title, subtitle: item.subtitle, path: item.path, icon: item.icon }));
 
     const people = canSearchPeople && term
@@ -282,11 +282,12 @@ export function GlobalSearch() {
           <div className="max-h-[62vh] overflow-y-auto p-3">
             {partialFailure && <div className="mb-3 flex items-start gap-2 rounded-xl p-3 text-xs" style={{ background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.16)", color: "#d97706" }}><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><span>Uma fonte de dados está indisponível. Os demais resultados continuam funcionando.</span></div>}
 
-            {!term && <p className="px-2 pb-2 text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Acesso rápido</p>}
+            {!term && <p className="px-2 pb-2 text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Principal</p>}
             {groups.map((group) => {
               const rows = results.filter((result) => result.group === group);
               if (!rows.length) return null;
-              return <section key={group} className="mb-4 last:mb-0"><p className="px-2 pb-1.5 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>{group}</p><div className="space-y-1">{rows.map((result) => { const Icon = result.icon; return <button key={result.id} type="button" onClick={() => openResult(result.path)} className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.035]"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: result.tone ? `${result.tone}12` : "var(--accent-soft)", color: result.tone || "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{result.title}</p><p className="mt-0.5 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{result.subtitle}</p></div><span className="text-xs" style={{ color: "var(--text-4)" }}>↵</span></button>; })}</div></section>;
+              const showGroupLabel = term || group !== "Navegação";
+              return <section key={group} className="mb-4 last:mb-0">{showGroupLabel && <p className="px-2 pb-1.5 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>{group}</p>}<div className="space-y-1">{rows.map((result) => { const Icon = result.icon; return <button key={result.id} type="button" onClick={() => openResult(result.path)} className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.035]"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: result.tone ? `${result.tone}12` : "var(--accent-soft)", color: result.tone || "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{result.title}</p><p className="mt-0.5 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{result.subtitle}</p></div><span className="text-xs" style={{ color: "var(--text-4)" }}>↵</span></button>; })}</div></section>;
             })}
 
             {term && !results.length && <div className="py-12 text-center"><Search className="mx-auto h-8 w-8 opacity-25" /><p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Nenhum resultado encontrado.</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Tente outro nome, matrícula, tema ou palavra-chave.</p></div>}
