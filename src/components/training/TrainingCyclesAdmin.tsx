@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SystemPageHero, SystemSurface } from "@/components/system/SystemUI";
 import { hasPermission } from "@/lib/access-control";
 import { listEmployees } from "@/lib/employees";
 import { operationalDate } from "@/lib/operational-time";
@@ -161,29 +162,31 @@ export function TrainingCyclesAdmin() {
 
   if (userLoading) return <Loading label="Validando acesso aos ciclos de treinamento..." />;
   if (!canManage) {
-    return <section className="mx-auto max-w-3xl rounded-2xl p-10 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><CalendarClock className="mx-auto h-9 w-9 opacity-30" /><p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Acesso restrito à gestão de treinamentos.</p><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Sua conta não possui a permissão necessária para administrar ciclos e vencimentos.</p></section>;
+    return <SystemSurface className="mx-auto max-w-3xl p-10 text-center"><CalendarClock className="mx-auto h-9 w-9 opacity-30" /><p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Acesso restrito à gestão de treinamentos.</p><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Sua conta não possui a permissão necessária para administrar ciclos e vencimentos.</p></SystemSurface>;
   }
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 pb-10">
-      <section className="rounded-[1.5rem] p-5 md:p-6" style={{ background: "linear-gradient(135deg,#171118,#2b0b13 50%,#111216)", border: "1px solid rgba(200,16,46,.26)" }}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.2em] text-white/40"><CalendarClock className="h-4 w-4" /> Controle de validade</div>
-            <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Ciclos e Vencimentos</h1>
-            <p className="mt-1 max-w-2xl text-sm text-white/50">Priorize vencidos, acompanhe a janela de atenção e mantenha o histórico de capacitação por colaborador.</p>
-          </div>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row"><Link to="/treinamentos" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white/80" style={{ border: "1px solid rgba(255,255,255,.14)", background: "rgba(255,255,255,.06)" }}><ArrowLeft className="h-4 w-4" /> Academia</Link><Button onClick={openNew} className="bg-[#C8102E] text-white hover:bg-[#A00D24]"><Plus className="mr-2 h-4 w-4" /> Novo ciclo</Button></div>
-        </div>
-      </section>
+      <SystemPageHero
+        icon={CalendarClock}
+        eyebrow="Controle de validade"
+        title="Ciclos e Vencimentos"
+        description="Priorize vencidos, acompanhe a janela de atenção e mantenha o histórico de capacitação por colaborador."
+        actions={
+          <>
+            <Link to="/treinamentos" className="segempat-hero-button-secondary inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold"><ArrowLeft className="h-4 w-4" /> Academia</Link>
+            <Button onClick={openNew} className="segempat-hero-button-primary"><Plus className="mr-2 h-4 w-4" /> Novo ciclo</Button>
+          </>
+        }
+      />
 
       {schedules.isLoading ? <Loading label="Carregando ciclos e vencimentos..." /> : schedules.isError ? (
-        <section className="rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <SystemSurface className="p-8 text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
           <p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>Não foi possível carregar os ciclos.</p>
           <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Tente novamente antes de cadastrar, atualizar ou excluir ciclos.</p>
           <Button variant="outline" className="mt-4" onClick={() => schedules.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button>
-        </section>
+        </SystemSurface>
       ) : <>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Resumo dos ciclos">
           <Metric label="Em dia" value={counts.ok} color="#10b981" icon={CheckCircle2} active={filter === "Em dia"} onClick={() => setFilter((current) => current === "Em dia" ? "Todos" : "Em dia")} />
@@ -191,20 +194,20 @@ export function TrainingCyclesAdmin() {
           <Metric label="Vencidos" value={counts.expired} color="#ef4444" icon={AlertTriangle} active={filter === "Vencido"} onClick={() => setFilter((current) => current === "Vencido" ? "Todos" : "Vencido")} />
         </div>
 
-        <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <SystemSurface className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_220px]">
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por colaborador, matrícula ou observação..." className="pl-10" aria-label="Buscar ciclos" /></div>
             <Select value={filter} onValueChange={(value) => setFilter(value as (typeof FILTERS)[number])}><SelectTrigger aria-label="Filtrar ciclos por situação"><SelectValue /></SelectTrigger><SelectContent>{FILTERS.map((value) => <SelectItem key={value} value={value}>{value === "Todos" ? "Todas as situações" : value}</SelectItem>)}</SelectContent></Select>
           </div>
           <div className="mt-3 flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between"><p style={{ color: "var(--text-4)" }}>{filtersActive ? `Exibindo ${filtered.length} de ${rows.length} ciclo(s)` : `${rows.length} ciclo(s) cadastrado(s) · vencidos e próximos aparecem primeiro`}</p>{filtersActive && <Button size="sm" variant="ghost" className="justify-start sm:justify-center" onClick={clearFilters}><X className="mr-2 h-3.5 w-3.5" /> Limpar filtros</Button>}</div>
-        </section>
+        </SystemSurface>
 
         <div className="space-y-3">
           {filtered.map((row) => {
             const conf = statusStyle[row.status];
             const Icon = conf.icon;
             return (
-              <article key={row.id} className="relative overflow-hidden rounded-2xl p-4 pl-5 md:p-5 md:pl-6" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card, var(--shadow-md))" }}>
+              <article key={row.id} className="segempat-training-card relative overflow-hidden rounded-2xl p-4 pl-5 md:p-5 md:pl-6">
                 <div className="absolute bottom-0 left-0 top-0 w-[3px]" style={{ background: conf.color }} />
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex min-w-0 items-start gap-3">
@@ -223,7 +226,7 @@ export function TrainingCyclesAdmin() {
           })}
         </div>
 
-        {filtered.length === 0 && <section className="rounded-2xl p-10 text-center md:p-12" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><CalendarClock className="mx-auto h-10 w-10 opacity-25" /><p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>{rows.length === 0 ? "Nenhum ciclo cadastrado." : "Nenhum ciclo corresponde aos filtros."}</p><p className="mx-auto mt-1 max-w-lg text-sm" style={{ color: "var(--text-4)" }}>{rows.length === 0 ? "Cadastre ciclos para acompanhar prazos de capacitação da equipe." : "Limpe ou ajuste os filtros para voltar a visualizar os ciclos cadastrados."}</p>{rows.length === 0 ? <Button className="mt-4 bg-[#C8102E] text-white hover:bg-[#A00D24]" onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Criar primeiro ciclo</Button> : <Button variant="outline" className="mt-4" onClick={clearFilters}><X className="mr-2 h-4 w-4" /> Limpar filtros</Button>}</section>}
+        {filtered.length === 0 && <SystemSurface className="p-10 text-center md:p-12"><CalendarClock className="mx-auto h-10 w-10 opacity-25" /><p className="mt-3 font-bold" style={{ color: "var(--text-1)" }}>{rows.length === 0 ? "Nenhum ciclo cadastrado." : "Nenhum ciclo corresponde aos filtros."}</p><p className="mx-auto mt-1 max-w-lg text-sm" style={{ color: "var(--text-4)" }}>{rows.length === 0 ? "Cadastre ciclos para acompanhar prazos de capacitação da equipe." : "Limpe ou ajuste os filtros para voltar a visualizar os ciclos cadastrados."}</p>{rows.length === 0 ? <Button className="mt-4 bg-[#C8102E] text-white hover:bg-[#A00D24]" onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Criar primeiro ciclo</Button> : <Button variant="outline" className="mt-4" onClick={clearFilters}><X className="mr-2 h-4 w-4" /> Limpar filtros</Button>}</SystemSurface>}
       </>}
 
       <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? setOpen(true) : closeEditor()}>
