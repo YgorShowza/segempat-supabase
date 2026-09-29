@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Shield,
   Target,
-  Trophy,
   Users,
 } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
