@@ -833,3 +833,290 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   DESKTOP LAYER 3 — executive composition
+   Reequilibra densidade, hierarquia e proporção para monitores.
+   ═══════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  :root {
+    --segempat-sidebar-width: 18rem;
+    --segempat-shell-max: 1560px;
+  }
+
+  .segempat-app-main {
+    padding-top: 2rem !important;
+  }
+
+  .segempat-app-content {
+    max-width: var(--segempat-shell-max) !important;
+  }
+
+  .segempat-app-header-frame {
+    max-width: var(--segempat-shell-max) !important;
+  }
+
+  .segempat-global-search-trigger {
+    width: min(31vw, 420px) !important;
+  }
+
+  .segempat-admin-dashboard {
+    max-width: 1480px !important;
+    gap: 1.15rem;
+  }
+
+  .segempat-admin-hero {
+    min-height: 220px;
+    padding: 2rem 2.1rem !important;
+    border: 1px solid rgba(255,255,255,.075) !important;
+    background:
+      linear-gradient(112deg,rgba(200,16,46,.13),transparent 38%),
+      radial-gradient(circle at 84% 20%,rgba(200,16,46,.18),transparent 17rem),
+      linear-gradient(135deg,#15161b 0%,#1c1519 48%,#111319 100%) !important;
+    box-shadow: 0 22px 54px rgba(16,24,40,.12) !important;
+  }
+
+  .segempat-admin-hero-content {
+    grid-template-columns: minmax(0,1fr) minmax(310px,360px) !important;
+    gap: 2rem !important;
+  }
+
+  .segempat-admin-hero-copy {
+    max-width: 820px;
+  }
+
+  .segempat-admin-hero-copy h1 {
+    font-size: clamp(1.85rem, 2.1vw, 2.45rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.035em !important;
+  }
+
+  .segempat-admin-hero-copy > p {
+    max-width: 720px;
+  }
+
+  .segempat-admin-hero-badges {
+    gap: .45rem !important;
+    margin-top: 1.15rem !important;
+  }
+
+  .segempat-admin-hero-badges > span {
+    border-radius: .65rem !important;
+    padding: .42rem .7rem !important;
+    font-size: .68rem !important;
+    backdrop-filter: blur(8px);
+  }
+
+  .segempat-admin-hero-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 42px !important;
+    align-self: center;
+    padding: .7rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 1rem;
+    background: rgba(255,255,255,.045);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    backdrop-filter: blur(10px);
+  }
+
+  .segempat-admin-hero-actions > a,
+  .segempat-admin-hero-actions > button {
+    height: 42px !important;
+    border-radius: .75rem !important;
+    box-shadow: none !important;
+  }
+
+  .segempat-admin-governance {
+    border-color: color-mix(in srgb, #f59e0b 18%, var(--border)) !important;
+    box-shadow: 0 10px 28px rgba(16,24,40,.045) !important;
+  }
+
+  .segempat-admin-governance > div:last-child {
+    gap: .75rem !important;
+    padding: .9rem !important;
+  }
+
+  .segempat-admin-governance > div:last-child > a {
+    min-height: 112px;
+    padding: .95rem !important;
+    border-color: var(--border-subtle) !important;
+    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
+  }
+
+  .segempat-admin-metrics {
+    gap: .8rem !important;
+  }
+
+  .segempat-metric-card {
+    min-height: 126px !important;
+    padding: 1.15rem 1.2rem 1.05rem 1.35rem !important;
+    overflow: hidden;
+  }
+
+  .segempat-metric-accent {
+    inset: 1rem auto 1rem 0 !important;
+    width: 3px !important;
+    height: auto !important;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .segempat-metric-content {
+    align-items: center !important;
+  }
+
+  .segempat-metric-label {
+    font-size: .66rem !important;
+    letter-spacing: .105em !important;
+  }
+
+  .segempat-metric-value {
+    margin-top: .6rem !important;
+    font-size: 1.85rem !important;
+  }
+
+  .segempat-metric-detail {
+    margin-top: .55rem !important;
+    font-size: .72rem !important;
+    line-height: 1.35rem !important;
+    font-weight: 550 !important;
+  }
+
+  .segempat-metric-icon {
+    width: 2.55rem !important;
+    height: 2.55rem !important;
+    border-radius: .85rem !important;
+  }
+
+  .segempat-admin-primary-grid {
+    gap: 1rem !important;
+  }
+
+  .segempat-admin-sector-card,
+  .segempat-admin-priority-card {
+    min-height: 405px !important;
+  }
+
+  .segempat-admin-sector-row {
+    padding: .82rem .9rem !important;
+    border-color: transparent !important;
+    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
+  }
+
+  .segempat-admin-sector-row + .segempat-admin-sector-row {
+    margin-top: .55rem !important;
+  }
+
+  .segempat-admin-priority-row {
+    padding: .82rem .9rem !important;
+    border-color: transparent !important;
+    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
+  }
+
+  .segempat-admin-priority-row:hover,
+  .segempat-admin-sector-row:hover {
+    background: var(--bg-surface-2) !important;
+  }
+
+  .segempat-admin-quick {
+    padding: .95rem !important;
+  }
+
+  .segempat-admin-quick > div:first-child {
+    margin-bottom: .75rem !important;
+  }
+
+  .segempat-admin-quick > div:last-child {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    gap: .65rem !important;
+  }
+
+  .segempat-admin-quick-tile {
+    min-height: 72px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: .75rem !important;
+    padding: .8rem .9rem !important;
+    text-align: left !important;
+    border-radius: .85rem !important;
+    background: color-mix(in srgb, var(--bg-surface-2) 72%, var(--bg-surface)) !important;
+  }
+
+  .segempat-admin-quick-tile > div:nth-of-type(2) {
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    flex: 0 0 auto;
+  }
+
+  .segempat-admin-quick-tile > span {
+    font-size: .75rem !important;
+    line-height: 1rem !important;
+  }
+
+  .segempat-admin-performance {
+    box-shadow: 0 10px 28px rgba(16,24,40,.04) !important;
+  }
+
+  .segempat-admin-performance > div:last-child {
+    gap: .65rem !important;
+    padding: .85rem !important;
+  }
+
+  .segempat-admin-performance-tile {
+    min-height: 142px;
+    padding: .95rem !important;
+    border-color: var(--border-subtle) !important;
+    background: color-mix(in srgb, var(--bg-surface-2) 76%, var(--bg-surface)) !important;
+  }
+
+  .segempat-admin-performance-tile:hover {
+    border-color: color-mix(in srgb, var(--accent) 20%, var(--border)) !important;
+  }
+
+  .segempat-section-header {
+    min-height: 62px !important;
+    padding-top: .85rem !important;
+    padding-bottom: .85rem !important;
+    background: linear-gradient(180deg,color-mix(in srgb,var(--bg-surface) 97%,var(--bg-surface-2)),var(--bg-surface));
+  }
+
+  .segempat-section-header h2 {
+    font-size: .82rem !important;
+    letter-spacing: -.01em !important;
+  }
+
+  .segempat-section-header p {
+    font-size: .68rem !important;
+  }
+
+  .segempat-system-surface {
+    border-radius: 1rem !important;
+  }
+
+  [data-theme="dark"] .segempat-admin-hero {
+    border-color: rgba(255,255,255,.07) !important;
+    box-shadow: 0 24px 58px rgba(0,0,0,.24) !important;
+  }
+
+  [data-theme="dark"] .segempat-admin-sector-row,
+  [data-theme="dark"] .segempat-admin-priority-row,
+  [data-theme="dark"] .segempat-admin-quick-tile,
+  [data-theme="dark"] .segempat-admin-performance-tile,
+  [data-theme="dark"] .segempat-admin-governance > div:last-child > a {
+    background: rgba(255,255,255,.025) !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .segempat-admin-primary-grid {
+    grid-template-columns: repeat(12,minmax(0,1fr)) !important;
+  }
+
+  .segempat-admin-sector-card {
+    grid-column: span 8 / span 8 !important;
+  }
+
+  .segempat-admin-priority-card {
+    grid-column: span 4 / span 4 !important;
+  }
+}
