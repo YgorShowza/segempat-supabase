@@ -34,6 +34,7 @@ export function AdminDashboardV2() {
   const year = operationalYear();
   const { data: user } = useCurrentUser();
   const [showAllQuick, setShowAllQuick] = useState(false);
+  const [showGovernance, setShowGovernance] = useState(false);
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-snapshot", year],
     queryFn: () => getOperationalSnapshot(year),
@@ -204,12 +205,21 @@ export function AdminDashboardV2() {
             description="Atalhos de alto privilégio separados das rotinas operacionais para reduzir ruído e acelerar decisões administrativas."
             accent="#f59e0b"
             action={
-              <span className="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black sm:block" style={{ background: "rgba(245,158,11,.10)", color: "#d97706" }}>
-                {permissionCount} permissões efetivas
-              </span>
+              <button
+                type="button"
+                onClick={() => setShowGovernance((current) => !current)}
+                aria-expanded={showGovernance}
+                aria-controls="segempat-master-governance"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[.08em] transition-colors"
+                style={{ background: "rgba(245,158,11,.10)", border: "1px solid rgba(245,158,11,.18)", color: "#d97706" }}
+                title={`${permissionCount} permissões efetivas`}
+              >
+                {showGovernance ? "Ocultar" : "Abrir"}
+                <ChevronRight className={`h-3.5 w-3.5 transition-transform ${showGovernance ? "rotate-90" : ""}`} />
+              </button>
             }
           />
-          <div className="grid gap-3 p-4 md:grid-cols-3 lg:p-5">
+          <div id="segempat-master-governance" className={`${showGovernance ? "grid" : "hidden"} gap-3 p-4 md:grid-cols-3 lg:p-5`}>
             <Link to="/acessos" className="group rounded-xl p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>
               <div className="flex items-center justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)" }}><KeyRound className="h-4 w-4" style={{ color: "var(--accent)" }} /></span><ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></div>
               <p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Acessos e privilégios</p>
