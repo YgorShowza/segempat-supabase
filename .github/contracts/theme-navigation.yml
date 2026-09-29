@@ -31,17 +31,32 @@ jobs:
 
           grep -F 'segempat-sidebar-sheet' "$LAYOUT" >/dev/null
           grep -F 'w-[86vw] max-w-[340px]' "$LAYOUT" >/dev/null
-          grep -F 'hidden w-[19rem] flex-col lg:flex' "$LAYOUT" >/dev/null
-          grep -F 'lg:ml-[19rem]' "$LAYOUT" >/dev/null
+          grep -F 'segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden flex-col lg:flex' "$LAYOUT" >/dev/null
+          grep -F 'data-sidebar-collapsed={sidebarCollapsed ? "true" : "false"}' "$LAYOUT" >/dev/null
+          grep -F 'const SIDEBAR_COLLAPSED_KEY = "segempat_sidebar_collapsed";' "$LAYOUT" >/dev/null
+          grep -F 'function CollapsedNavItems' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-collapse-button' "$LAYOUT" >/dev/null
+          grep -F 'PanelLeftClose' "$LAYOUT" >/dev/null
+          grep -F 'PanelLeftOpen' "$LAYOUT" >/dev/null
           grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
           grep -F 'background: "var(--header-bg)"' "$LAYOUT" >/dev/null
           grep -F 'color: isActive ? "#fff" : "var(--text-2)"' "$LAYOUT" >/dev/null
           grep -F 'color: isActive ? "#fff" : "var(--text-3)"' "$LAYOUT" >/dev/null
           grep -F 'Tema da interface' "$LAYOUT" >/dev/null
+          grep -F 'window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY' "$LAYOUT" >/dev/null
+
+          grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/final-experience.css >/dev/null
+          grep -F -- '--segempat-sidebar-width: 5.25rem;' src/final-experience.css >/dev/null
+          grep -F 'rgba(16,18,23,.925) !important' src/final-experience.css >/dev/null
+          grep -F 'backdrop-filter: blur(22px) saturate(1.08)' src/final-experience.css >/dev/null
+          grep -F '.segempat-sidebar-link--collapsed' src/final-experience.css >/dev/null
+          grep -F '.segempat-sidebar-collapsed-footer' src/final-experience.css >/dev/null
 
           grep -F '.segempat-sidebar-sheet[role="dialog"]' src/theme-contrast-fixes.css >/dev/null
           grep -F 'background: var(--header-bg) !important' src/theme-contrast-fixes.css >/dev/null
           grep -F 'color: var(--text-1) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F '.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'background: rgba(255, 255, 255, 0.055) !important' src/theme-contrast-fixes.css >/dev/null
 
           if grep -F '[class*="w-[280px]"]' src/theme-contrast-fixes.css >/dev/null; then
             echo 'ERRO: proteção de tema não pode depender da largura histórica do drawer.' >&2
