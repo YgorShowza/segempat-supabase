@@ -26,11 +26,16 @@ jobs:
           grep -F 'OPERATOR_DESKTOP_PATHS' src/routes/_authenticated/route.tsx >/dev/null
           grep -F 'segempat-operator-desktop' src/routes/_authenticated/route.tsx >/dev/null
           grep -F 'data-operator-route' src/routes/_authenticated/route.tsx >/dev/null
-          for route in /painel /pendencias /provas /progresso /certificados /treinamentos /meu-perfil /pratico /minhas-ocorrencias; do
+          for route in /painel /pendencias /provas /progresso /certificados /treinamentos /conteudos /meu-perfil /pratico /minhas-ocorrencias; do
             grep -F "\"${route}\"" src/routes/_authenticated/route.tsx >/dev/null
           done
-          grep -F '{ path: "/provas", label: "Provas", icon: FileText }' src/components/AppLayoutV2.tsx >/dev/null
-          grep -F 'operatorMenu.slice(0, 5)' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'const operatorPriorityMenu: MenuItem[] = [' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F '{ path: "/minhas-ocorrencias", label: "Ocorrências", icon: AlertTriangle }' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'section: "Capacitação"' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'section: "Desempenho"' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'section: "Conta"' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'function OperatorNavItems' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'operatorQuickMenu.map' src/components/AppLayoutV2.tsx >/dev/null
           grep -F '@media (min-width: 1280px)' src/operator-desktop.css >/dev/null
           grep -F 'max-width: 1536px !important' src/operator-desktop.css >/dev/null
           grep -F 'max-width: 1280px !important' src/operator-desktop.css >/dev/null
