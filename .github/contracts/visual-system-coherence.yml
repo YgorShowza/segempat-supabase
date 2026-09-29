@@ -1,0 +1,75 @@
+name: SEGEMPAT Visual System Coherence
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: segempat-visual-system-coherence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-system-coherence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Validate unified visual ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          STYLES="src/styles.css"
+          FINAL="src/final-experience.css"
+
+          grep -F 'UNIFIED DESKTOP EXPERIENCE' "$STYLES" >/dev/null
+          grep -F 'SHARED SYSTEM SURFACES + DASHBOARD REFINEMENT' "$STYLES" >/dev/null
+          grep -F 'CROSS-APP SHELL CONSISTENCY' "$STYLES" >/dev/null
+
+          if grep -F 'DESKTOP LAYER 2' "$STYLES" >/dev/null || grep -F 'DESKTOP LAYER 3' "$STYLES" >/dev/null; then
+            echo 'ERRO: camadas desktop concorrentes voltaram ao stylesheet principal.' >&2
+            exit 1
+          fi
+
+          if grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' "$FINAL" >/dev/null; then
+            echo 'ERRO: final-experience voltou a assumir responsabilidade visual da sidebar desktop.' >&2
+            exit 1
+          fi
+
+          for file in \
+            src/components/team/TeamManagementWorkspace.tsx \
+            src/components/cronograma/CronogramaWorkspace.tsx \
+            src/components/occurrences/OccurrencesWorkspace.tsx \
+            src/components/reports/MonthlyReportWorkspace.tsx \
+            src/components/training/TrainingModulesAdmin.tsx \
+            src/components/training/TrainingCyclesAdmin.tsx \
+            src/components/knowledge/KnowledgeWorkspace.tsx \
+            src/components/certificates/CertificateValidationWorkspace.tsx \
+            src/components/certificates/ExamSignaturesWorkspace.tsx \
+            src/components/question-bank/QuestionBankAdmin.tsx \
+            src/components/practical/PracticalWorkspace.tsx; do
+            grep -F 'SystemPageHero' "$file" >/dev/null || { echo "ERRO: $file perdeu o hero compartilhado."; exit 1; }
+          done
+
+          grep -F 'SystemSurface' src/components/profile/MyProfileWorkspace.tsx >/dev/null
+          grep -F 'SystemSurface' src/components/training/TrainingLibrary.tsx >/dev/null
+          grep -F 'const LOGO_URL = "/empat-logo-report.png";' src/components/security/SecurityDocumentWorkspace.tsx >/dev/null
+
+          IMPORTANT_COUNT=$(grep -Rho '!important' \
+            src/styles.css \
+            src/theme-contrast-fixes.css \
+            src/operational-desktop.css \
+            src/analytical-desktop.css \
+            src/governance-desktop.css \
+            src/training-management-desktop.css \
+            src/operator-desktop.css \
+            src/inspector-desktop.css \
+            src/final-experience.css | wc -l | tr -d ' ')
+
+          if [ "$IMPORTANT_COUNT" -gt 200 ]; then
+            echo "ERRO: dívida de cascade voltou a crescer: $IMPORTANT_COUNT usos de !important (limite 200)." >&2
+            exit 1
+          fi
+
+          echo "Sistema visual unificado protegido: $IMPORTANT_COUNT usos de !important dentro do teto de regressão."
