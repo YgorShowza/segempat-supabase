@@ -39,13 +39,19 @@ type SearchPath =
   | "/cronograma"
   | "/ocorrencias"
   | "/avaliacao-pratica"
+  | "/provas-criar"
+  | "/provas"
+  | "/banco-questoes"
+  | "/modulos-treinamento"
+  | "/ciclos-treinamento"
+  | "/conteudos"
+  | "/assinaturas-provas"
+  | "/validar-certificados"
   | "/relatorios"
   | "/ia-base"
   | "/acessos"
   | "/auditoria"
-  | "/provas"
-  | "/banco-questoes"
-  | "/conteudos"
+  | "/documento-seguranca"
   | "/treinamentos"
   | "/painel"
   | "/pendencias"
@@ -76,32 +82,52 @@ type SearchResult = {
 };
 
 const staticResults: StaticResult[] = [
+  // Principal: keep the highest-priority administrative destinations first.
   { id: "dashboard-admin", title: "Dashboard", subtitle: "Visão geral da Inspetoria", keywords: "inicio indicadores gestão", path: "/admin", icon: LayoutDashboard, audience: "admin" },
   { id: "attention", title: "Central de Atenção", subtitle: "Prioridades e sinais que exigem acompanhamento", keywords: "alerta pendência crítico atenção", path: "/atencao", icon: BellRing, audience: "admin" },
-  { id: "analytics", title: "Analytics", subtitle: "Indicadores e gráficos operacionais", keywords: "grafico desempenho dados painel tv", path: "/analytics", icon: BarChart3, audience: "admin" },
-  { id: "team", title: "Equipe", subtitle: "Gestão dos colaboradores operacionais", keywords: "colaborador matrícula setor funcionário", path: "/equipe", icon: Users, audience: "admin" },
   { id: "inspector-production", title: "Produção da Inspetoria", subtitle: "Atribuições executadas e histórico dos inspetores", keywords: "produção inspetoria atribuição execução produtividade inspetor histórico", path: "/producao-inspetoria", icon: ClipboardList, audience: "admin" },
-  { id: "risk", title: "Zona de Risco", subtitle: "Sinais de desempenho e pendências da equipe", keywords: "risco atenção desempenho", path: "/risco", icon: Target, audience: "admin" },
-  { id: "individual", title: "Análise Individual", subtitle: "Dossiê de desempenho do colaborador", keywords: "pessoa nota histórico evolução prova", path: "/individual", icon: UserRoundSearch, audience: "admin" },
-  { id: "schedule", title: "Cronograma", subtitle: "Planejamento e execução operacional", keywords: "agenda atividade treinamento planejamento", path: "/cronograma", icon: CalendarDays, audience: "admin" },
+
+  // Operação
   { id: "occurrences", title: "Ocorrências", subtitle: "Registros, evidências e acompanhamento", keywords: "incidente foto pessoa envolvida registro", path: "/ocorrencias", icon: ShieldAlert, audience: "admin" },
+  { id: "schedule", title: "Cronograma", subtitle: "Planejamento e execução operacional", keywords: "agenda atividade treinamento planejamento", path: "/cronograma", icon: CalendarDays, audience: "admin" },
   { id: "practical-admin", title: "Avaliação Prática", subtitle: "Gestão das avaliações práticas", keywords: "pratico checklist desempenho", path: "/avaliacao-pratica", icon: Target, audience: "admin" },
+
+  // Equipe & Desempenho
+  { id: "team", title: "Equipe", subtitle: "Gestão dos colaboradores operacionais", keywords: "colaborador matrícula setor funcionário", path: "/equipe", icon: Users, audience: "admin" },
+  { id: "individual", title: "Análise Individual", subtitle: "Dossiê de desempenho do colaborador", keywords: "pessoa nota histórico evolução prova", path: "/individual", icon: UserRoundSearch, audience: "admin" },
+  { id: "risk", title: "Zona de Risco", subtitle: "Sinais de desempenho e pendências da equipe", keywords: "risco atenção desempenho", path: "/risco", icon: Target, audience: "admin" },
+
+  // Capacitação & Avaliação
+  { id: "exam-create", title: "Criar Prova", subtitle: "Criação e configuração de avaliações", keywords: "criar prova avaliação questões", path: "/provas-criar", icon: Target, audience: "admin" },
+  { id: "exams", title: "Provas", subtitle: "Avaliações cadastradas e disponíveis", keywords: "teste avaliação questões", path: "/provas", icon: Target, audience: "all" },
+  { id: "question-bank", title: "Banco de Questões", subtitle: "Questões para avaliações", keywords: "pergunta resposta prova", path: "/banco-questoes", icon: BookOpen, audience: "admin" },
+  { id: "training-modules", title: "Módulos", subtitle: "Estrutura dos módulos de capacitação", keywords: "modulo treinamento capacitação", path: "/modulos-treinamento", icon: GraduationCap, audience: "admin" },
+  { id: "training-cycles", title: "Ciclos e Vencimentos", subtitle: "Ciclos, prazos e vencimentos de capacitação", keywords: "ciclo vencimento prazo treinamento", path: "/ciclos-treinamento", icon: CalendarDays, audience: "admin" },
+  { id: "content-admin", title: "Conteúdos", subtitle: "Gestão da base de conteúdo operacional", keywords: "conteúdo procedimento documento conhecimento", path: "/conteudos", icon: BookOpen, audience: "admin" },
+  { id: "exam-signatures", title: "Certificados e Assinaturas", subtitle: "Documentos e assinaturas vinculados às avaliações", keywords: "certificado assinatura prova documento", path: "/assinaturas-provas", icon: FileSpreadsheet, audience: "admin" },
+  { id: "certificate-validation", title: "Validar Certificados", subtitle: "Validação de autenticidade dos certificados", keywords: "validar certificado autenticidade", path: "/validar-certificados", icon: FileSpreadsheet, audience: "admin" },
+
+  // Análise & Relatórios
+  { id: "analytics", title: "Analytics", subtitle: "Indicadores e gráficos operacionais", keywords: "grafico desempenho dados painel tv", path: "/analytics", icon: BarChart3, audience: "admin" },
   { id: "reports", title: "Central de Relatórios", subtitle: "Visão executiva e fechamento mensal", keywords: "relatório mensal csv imprimir setor", path: "/relatorios", icon: FileSpreadsheet, audience: "admin" },
   { id: "knowledge-admin", title: "IA Base", subtitle: "Pesquisa de procedimentos e conhecimento operacional", keywords: "procedimento documento conteúdo pesquisa", path: "/ia-base", icon: BookOpen, audience: "admin" },
-  { id: "exams", title: "Provas", subtitle: "Avaliações cadastradas", keywords: "teste avaliação questões", path: "/provas", icon: Target, audience: "admin" },
-  { id: "question-bank", title: "Banco de Questões", subtitle: "Questões para avaliações", keywords: "pergunta resposta prova", path: "/banco-questoes", icon: BookOpen, audience: "admin" },
+
+  // Administração & Governança
   { id: "access", title: "Acessos", subtitle: "Gestão operacional de acesso", keywords: "conta ativação usuário", path: "/acessos", icon: Users, audience: "admin" },
   { id: "audit", title: "Auditoria", subtitle: "Rastreabilidade das ações do sistema", keywords: "log histórico segurança", path: "/auditoria", icon: ShieldAlert, audience: "admin" },
+  { id: "security-document", title: "Documento de Segurança", subtitle: "Controles, arquitetura e evidências de segurança", keywords: "segurança arquitetura controle homologação", path: "/documento-seguranca", icon: ShieldAlert, audience: "admin" },
+
+  // Operador
   { id: "operator-home", title: "Início", subtitle: "Painel pessoal", keywords: "dashboard painel", path: "/painel", icon: LayoutDashboard, audience: "operator" },
   { id: "operator-pending", title: "Pendências", subtitle: "Atividades e ações pendentes", keywords: "atividade vencimento atenção", path: "/pendencias", icon: BellRing, audience: "operator" },
-  { id: "operator-progress", title: "Progresso", subtitle: "Evolução pessoal", keywords: "nota desempenho evolução", path: "/progresso", icon: BarChart3, audience: "operator" },
+  { id: "operator-occurrences", title: "Minhas Ocorrências", subtitle: "Registros vinculados ao seu perfil", keywords: "incidente ocorrência", path: "/minhas-ocorrencias", icon: AlertTriangle, audience: "operator" },
   { id: "academy", title: "Academia SEGEMPAT", subtitle: "Capacitação, prática e desenvolvimento", keywords: "treinamento simulador desafio teste rápido stress", path: "/treinamentos", icon: GraduationCap, audience: "all" },
-  { id: "my-profile", title: "Meu Perfil", subtitle: "Identidade, nível, ciclo e histórico individual", keywords: "perfil conta matrícula nivel pontos histórico", path: "/meu-perfil", icon: UserRound, audience: "all" },
+  { id: "operator-progress", title: "Progresso", subtitle: "Evolução pessoal", keywords: "nota desempenho evolução", path: "/progresso", icon: BarChart3, audience: "operator" },
   { id: "operator-certificates", title: "Certificados", subtitle: "Aprovações e documentos pessoais", keywords: "certificado prova aprovação", path: "/certificados", icon: FileSpreadsheet, audience: "operator" },
   { id: "operator-knowledge", title: "Base de Conhecimento", subtitle: "Procedimentos e referências operacionais", keywords: "conteúdo procedimento documento", path: "/conteudos", icon: BookOpen, audience: "operator" },
   { id: "operator-practical", title: "Avaliação Prática", subtitle: "Minhas avaliações práticas", keywords: "prático checklist", path: "/pratico", icon: Target, audience: "operator" },
-  { id: "operator-occurrences", title: "Minhas Ocorrências", subtitle: "Registros vinculados ao seu perfil", keywords: "incidente ocorrência", path: "/minhas-ocorrencias", icon: AlertTriangle, audience: "operator" },
-];
+  { id: "my-profile", title: "Meu Perfil", subtitle: "Identidade, nível, ciclo e histórico individual", keywords: "perfil conta matrícula nivel pontos histórico", path: "/meu-perfil", icon: UserRound, audience: "all" },
+]
 
 function normalize(value: unknown) {
   return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();

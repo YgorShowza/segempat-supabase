@@ -37,6 +37,10 @@ jobs:
           grep -F 'audience: "operator"' "$FILE" >/dev/null
           grep -F 'audience: "all"' "$FILE" >/dev/null
           grep -F 'path: "/meu-perfil"' "$FILE" >/dev/null
+          for route in /admin /atencao /producao-inspetoria /ocorrencias /cronograma /avaliacao-pratica /equipe /individual /risco /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /analytics /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
+            grep -F "path: \"$route\"" "$FILE" >/dev/null || { echo "Rota administrativa ausente da Busca Global: $route"; exit 1; }
+          done
+          grep -F 'path: "/provas", icon: Target, audience: "all"' "$FILE" >/dev/null
           grep -F 'Uma fonte de dados está indisponível' "$FILE" >/dev/null
           grep -F '<GlobalSearch />' "$LAYOUT" >/dev/null
           echo "Busca Global SEGEMPAT validada com permissões granulares e Meu Perfil."
