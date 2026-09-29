@@ -31,8 +31,9 @@ jobs:
           if grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null || grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null; then
             echo "Agrupamento legado voltou à navegação"; exit 1
           fi
+          ADMIN_MENU=$(sed -n '/const adminSections: MenuSection\[\] = \[/,/^\];/p' "$FILE")
           for route in /admin /atencao /analytics /equipe /producao-inspetoria /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
-            COUNT=$(grep -F -c "path: \"$route\"" "$FILE")
+            COUNT=$(printf '%s\n' "$ADMIN_MENU" | grep -F -c "path: \"$route\"" || true)
             [ "$COUNT" -eq 1 ] || { echo "Rota deve aparecer exatamente uma vez no menu do Inspetor: $route (encontrado: $COUNT)"; exit 1; }
           done
           grep -F 'label: "Central de Relatórios"' "$FILE" >/dev/null
