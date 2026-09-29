@@ -23,3 +23,15 @@ jobs:
           node-version: 20
       - name: Validate analytics and reports coherence
         run: node scripts/check-analytics-reports.mjs
+
+      - name: Protect shared report visual shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=src/components/reports/MonthlyReportWorkspace.tsx
+          grep -F 'SystemPageHero' "$FILE" >/dev/null
+          grep -F 'SystemSurface' "$FILE" >/dev/null
+          grep -F 'segempat-report-print' "$FILE" >/dev/null
+          if grep -F 'background: "linear-gradient(135deg,#171118,#2b0b13 50%,#111216)"' "$FILE" >/dev/null; then
+            echo "Relatório Mensal voltou a manter hero visual independente do design system"; exit 1
+          fi
