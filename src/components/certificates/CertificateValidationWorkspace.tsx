@@ -7,7 +7,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { SystemMetricCard, SystemPanelSkeleton } from "@/components/system/SystemUI";
+import { SystemMetricCard, SystemPageHero, SystemPanelSkeleton, SystemSurface } from "@/components/system/SystemUI";
 
 function normalizeCode(value: string) {
   return value.trim().toUpperCase().replace(/\s+/g, "");
@@ -119,28 +119,30 @@ export function CertificateValidationWorkspace() {
   const filtersActive = Boolean(listSearch || stateFilter !== "all" || yearFilter !== "all");
 
   return <div className="mx-auto w-full max-w-6xl space-y-5 pb-10">
-    <section className="relative overflow-hidden rounded-[1.7rem] p-5 md:p-6" style={{ background: "linear-gradient(135deg,#171117 0%,#2f0a13 52%,#111216 100%)", border: "1px solid rgba(200,16,46,.26)", boxShadow: "0 12px 34px rgba(80,0,18,.14)" }}>
-      <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.24),transparent 70%)" }} />
-      <div className="relative"><div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-white/40"><FileCheck2 className="h-4 w-4" /> Autenticidade documental</div><h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Validação de Certificados</h1><p className="mt-1 max-w-3xl text-sm leading-relaxed text-white/55">Confirme o código e acompanhe separadamente aprovação, assinatura eletrônica, formalização do registro e eventual revogação. Um código existente não significa, sozinho, que o certificado esteja vigente.</p></div>
-    </section>
+    <SystemPageHero
+      icon={FileCheck2}
+      eyebrow="Autenticidade documental"
+      title="Validação de Certificados"
+      description="Confirme o código e acompanhe separadamente aprovação, assinatura eletrônica, formalização do registro e eventual revogação. Um código existente não significa, sozinho, que o certificado esteja vigente."
+    />
 
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4"><Metric label="Válidos" value={counts.valid} state="valid" /><Metric label="Assinatura pendente" value={counts.signature} state="signature-pending" /><Metric label="Formalização" value={counts.formalization} state="formalization-pending" /><Metric label="Revogados" value={counts.revoked} state="revoked" /></div>
 
-    <form onSubmit={handleValidate} className="rounded-2xl p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+    <form onSubmit={handleValidate} className="segempat-document-form rounded-2xl p-5">
       <div className="mb-3"><label htmlFor="certificate-code" className="block text-xs font-black uppercase tracking-wider" style={{ color: "var(--text-3)" }}>Validar código do certificado</label><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>A consulta é interna e verifica o registro disponível no SEGEMPAT.</p></div>
       <div className="flex flex-col gap-2 sm:flex-row"><Input id="certificate-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Informe o código de validação" className="font-mono" autoComplete="off" /><Button type="submit" disabled={!normalizeCode(code)} className="gap-2 bg-[#C8102E] text-white hover:bg-[#A00D24]"><Search className="h-4 w-4" /> Validar código</Button></div>
       {searchedCode && result === "not-found" && <div role="alert" className="mt-4 flex items-start gap-3 rounded-xl p-4" style={{ background: "rgba(239,68,68,.07)", border: "1px solid rgba(239,68,68,.25)" }}><XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" /><div><p className="text-sm font-black text-red-500">Código não encontrado</p><p className="mt-1 text-xs" style={{ color: "var(--text-3)" }}>O código informado não corresponde a um certificado ou aprovação formalizável presente nesta base.</p></div></div>}
       {result && result !== "not-found" && <CertificateResult record={result} onCopy={copyCode} />}
     </form>
 
-    <section className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+    <SystemSurface className="p-4">
       <div className="flex flex-col gap-3"><div><h2 className="text-sm font-black" style={{ color: "var(--text-1)" }}>Registros com potencial documental</h2><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>A lista não chama toda pendência de “assinatura”: cada etapa do ciclo documental aparece com sua situação real.</p></div>
         <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_190px_150px_auto]"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} /><Input value={listSearch} onChange={(event) => setListSearch(event.target.value)} placeholder="Código, colaborador, matrícula, setor ou atividade" className="pl-9" /></div><select aria-label="Filtrar por situação" value={stateFilter} onChange={(event) => setStateFilter(event.target.value as StateFilter)} className="h-10 rounded-md border bg-transparent px-3 text-sm" style={{ borderColor: "var(--border)", color: "var(--text-2)", background: "var(--bg-surface)" }}><option value="all">Todas as situações</option><option value="valid">Válidos</option><option value="signature-pending">Assinatura pendente</option><option value="formalization-pending">Formalização pendente</option><option value="revoked">Revogados</option></select><select aria-label="Filtrar por ano" value={yearFilter} onChange={(event) => setYearFilter(event.target.value)} className="h-10 rounded-md border bg-transparent px-3 text-sm" style={{ borderColor: "var(--border)", color: "var(--text-2)", background: "var(--bg-surface)" }}><option value="all">Todos os anos</option>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select><Button variant="outline" disabled={!filtersActive} onClick={clearFilters}><FilterX className="mr-2 h-4 w-4" /> Limpar</Button></div>
       </div>
 
       {recordsQuery.isLoading ? <Loading /> : recordsQuery.isError ? <div role="alert" className="py-9 text-center"><p className="text-sm font-bold text-red-500">Não foi possível carregar os registros. Nenhum total ou situação deve ser interpretado enquanto a consulta estiver indisponível.</p><Button variant="outline" className="mt-3" onClick={() => recordsQuery.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button></div> : filtered.length === 0 ? <div className="py-10 text-center"><FileCheck2 className="mx-auto h-9 w-9 opacity-25" /><p className="mt-3 text-sm font-bold" style={{ color: "var(--text-1)" }}>{candidates.length === 0 ? "Nenhum registro documental disponível." : "Nenhum registro corresponde aos filtros."}</p>{filtersActive && <Button variant="ghost" className="mt-2" onClick={clearFilters}>Limpar filtros</Button>}</div> : <div className="mt-4 space-y-2">{filtered.map((row) => <RecordRow key={row.id} row={row} onSelect={() => { setCode(row.certificate_code ?? ""); setSearchedCode(normalizeCode(row.certificate_code ?? "")); window.scrollTo({ top: 0, behavior: "smooth" }); }} />)}</div>}
       {!recordsQuery.isLoading && !recordsQuery.isError && <p className="mt-3 text-right text-[11px] font-semibold" style={{ color: "var(--text-4)" }}>{filtered.length} de {candidates.length} registro{candidates.length === 1 ? "" : "s"}</p>}
-    </section>
+    </SystemSurface>
   </div>;
 }
 
@@ -186,7 +188,7 @@ function Step({ label, value, ok }: { label: string; value: string; ok: boolean 
 }
 
 function Restricted() {
-  return <div className="mx-auto max-w-xl rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><ShieldCheck className="mx-auto mb-3 h-10 w-10" style={{ color: "var(--accent)" }} /><h1 className="text-lg font-black" style={{ color: "var(--text-1)" }}>Acesso restrito</h1><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Seu nível de acesso não possui permissão para validar ou gerenciar certificados.</p></div>;
+  return <SystemSurface className="mx-auto max-w-xl p-8 text-center"><ShieldCheck className="mx-auto mb-3 h-10 w-10" style={{ color: "var(--accent)" }} /><h1 className="text-lg font-black" style={{ color: "var(--text-1)" }}>Acesso restrito</h1><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Seu nível de acesso não possui permissão para validar ou gerenciar certificados.</p></SystemSurface>;
 }
 
 function Loading() {
