@@ -1732,3 +1732,26 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     justify-content: space-between;
   }
 }
+
+
+/* Operational workspace convergence */
+.segempat-occurrence-hero-trust > span {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .34rem .55rem;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  color: rgba(255,255,255,.52);
+  background: rgba(255,255,255,.035);
+}
+
+.segempat-occurrence-hero-meta {
+  color: var(--text-4);
+}
+
+@media (min-width: 1024px) {
+  .segempat-occurrence-metrics .segempat-metric-card {
+    min-height: 104px !important;
+  }
+}
