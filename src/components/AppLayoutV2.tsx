@@ -153,24 +153,21 @@ function ThemeToggle() {
     { value: "dark" as const, icon: Moon, label: "Escuro" },
     { value: "auto" as const, icon: Monitor, label: "Auto" },
   ];
-  return <div className="segempat-theme-toggle grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>{options.map((option) => { const Icon = option.icon; const active = theme === option.value; return <motion.button key={option.value} type="button" data-active={active ? "true" : "false"} onClick={() => setTheme(option.value)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 transition-colors duration-150" style={active ? { background: "#C8102E", color: "#fff", boxShadow: "0 3px 12px rgba(200,16,46,.20)" } : { color: "var(--text-3)" }} aria-label={`Tema ${option.label}`} title={`Tema ${option.label}`}><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-bold">{option.label}</span></motion.button>; })}</div>;
+  return <div className="segempat-theme-toggle grid grid-cols-3 gap-1 rounded-xl p-1">{options.map((option) => { const Icon = option.icon; const active = theme === option.value; return <motion.button key={option.value} type="button" data-active={active ? "true" : "false"} onClick={() => setTheme(option.value)} whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} className="segempat-theme-option flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 transition-colors duration-150" aria-label={`Tema ${option.label}`} title={`Tema ${option.label}`}><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-bold">{option.label}</span></motion.button>; })}</div>;
 }
 
 function SidebarBrand({ compact = false }: { compact?: boolean }) {
   return (
-    <div
-      className={`segempat-sidebar-brand ${compact ? "segempat-sidebar-brand--compact" : ""}`}
-      style={{ borderBottom: "1px solid rgba(255,255,255,.07)" }}
-    >
+    <div className={`segempat-sidebar-brand ${compact ? "segempat-sidebar-brand--compact" : ""}`}>
       <div className="segempat-sidebar-logo-mark" aria-hidden="true">
         <img src={LOGO_URL} alt="" className="segempat-sidebar-logo-image" />
       </div>
-      <div className="min-w-0">
+      <div className="segempat-sidebar-brand-copy min-w-0">
         <p className="segempat-sidebar-wordmark" aria-label="SEGEMPAT">
           <span className="segempat-sidebar-wordmark-seg">SEG</span>
           <span className="segempat-sidebar-wordmark-empat">EMPAT</span>
         </p>
-        <p className="segempat-sidebar-tagline">Segurança · Gestão · Operação</p>
+        <p className="segempat-sidebar-tagline">Gestão de Segurança Portuária</p>
       </div>
     </div>
   );
@@ -211,7 +208,7 @@ function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<
       <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
       <div className="space-y-1">{visiblePriorityItems.map((item) => <MenuLink key={item.path} item={item} />)}</div>
     </div>}
-    <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 truncate text-[9px]" style={{ color: "var(--text-4)" }}>{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+    <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title text-[11px] font-bold leading-4">{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px] leading-3">{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
   </div>;
 }
 
@@ -234,7 +231,7 @@ function OperatorNavItems({ pathname }: { pathname: string }) {
       <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
       <div className="space-y-1">{operatorPriorityMenu.map((item) => <MenuLink key={item.path} item={item} />)}</div>
     </div>
-    <div className="space-y-2">{operatorSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 truncate text-[9px]" style={{ color: "var(--text-4)" }}>{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+    <div className="space-y-2">{operatorSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title text-[11px] font-bold leading-4">{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px] leading-3">{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
   </div>;
 }
 
@@ -254,11 +251,26 @@ function HeaderClock() {
 function SidebarIdentity({ user, isAdmin }: { user: ReturnType<typeof useCurrentUser>["data"]; isAdmin: boolean }) {
   const initial = user?.nome?.trim()?.charAt(0)?.toUpperCase() || "S";
   const accessLabel = user?.accessLevelLabel || (isAdmin ? "Inspetor" : "Operador");
-  return <div className="segempat-sidebar-identity px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}><Link to="/meu-perfil" aria-label="Abrir Meu Perfil" className="group -m-1 flex items-center gap-3 rounded-xl p-1 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.035]"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black text-white" style={{ background: "linear-gradient(135deg,#e0142f,#C8102E)", boxShadow: "0 8px 18px rgba(200,16,46,.20)" }}>{initial}</div><div className="min-w-0 flex-1"><p className="truncate text-[13px] font-black" style={{ color: "var(--text-1)" }}>{user?.nome ?? "SEGEMPAT"}</p><p className="mt-0.5 text-[10px] font-mono" style={{ color: "var(--text-4)" }}>Mat. {user?.matricula ?? "—"}</p></div><ChevronRight className="h-4 w-4 shrink-0 opacity-45 transition-transform group-hover:translate-x-0.5" style={{ color: "var(--text-4)" }} /></Link><div className="mt-3 inline-flex max-w-full items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] font-black" style={{ background: "var(--accent-soft)", border: "1px solid rgba(200,16,46,.28)", color: "var(--accent)" }}><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8102E]" /><span className="truncate">{accessLabel}{user?.setor ? ` · ${user.setor}` : ""}</span></div></div>;
+  return (
+    <div className="segempat-sidebar-identity">
+      <Link to="/meu-perfil" aria-label="Abrir Meu Perfil" className="segempat-sidebar-profile group">
+        <div className="segempat-sidebar-avatar">{initial}</div>
+        <div className="min-w-0 flex-1">
+          <p className="segempat-sidebar-profile-name">{user?.nome ?? "SEGEMPAT"}</p>
+          <p className="segempat-sidebar-profile-matricula">Mat. {user?.matricula ?? "—"}</p>
+        </div>
+        <ChevronRight className="segempat-sidebar-profile-chevron h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+      <div className="segempat-sidebar-profile-meta">
+        <span className="segempat-sidebar-access-pill"><span className="segempat-sidebar-access-dot" />{accessLabel}</span>
+        {user?.setor && <span className="segempat-sidebar-sector" title={user.setor}>{user.setor}</span>}
+      </div>
+    </div>
+  );
 }
 
 function SidebarFooter({ loggingOut, onLogout }: { loggingOut: boolean; onLogout: () => void }) {
-  return <div className="segempat-sidebar-footer space-y-3 px-3 pb-4 pt-3" style={{ borderTop: "1px solid var(--border)" }}><div><div className="mb-1.5 flex items-center gap-1.5 px-1"><Palette className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /><span className="text-[9px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Tema da interface</span></div><ThemeToggle /></div><button disabled={loggingOut} onClick={onLogout} className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 transition-colors duration-150 disabled:opacity-50" style={{ border: "1px solid rgba(200,16,46,.26)", background: "var(--accent-soft)" }}><LogOut className="h-[17px] w-[17px]" style={{ color: "var(--accent)" }} /><span className="text-[13px] font-semibold" style={{ color: "var(--accent)" }}>{loggingOut ? "Saindo..." : "Sair do sistema"}</span></button></div>;
+  return <div className="segempat-sidebar-footer"><div><div className="segempat-sidebar-theme-label"><Palette className="h-3.5 w-3.5" /><span>Tema da interface</span></div><ThemeToggle /></div><button disabled={loggingOut} onClick={onLogout} className="segempat-sidebar-logout disabled:opacity-50"><LogOut className="h-[17px] w-[17px]" /><span>{loggingOut ? "Saindo..." : "Sair do sistema"}</span></button></div>;
 }
 
 export function AppLayoutV2({ children }: { children: ReactNode }) {
@@ -296,7 +308,7 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
   };
 
   return <div className="segempat-app-shell min-h-screen overflow-x-clip" style={{ background: "var(--bg-base)" }}>
-    <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex" style={{ background: "var(--sidebar-bg)", borderRight: "1px solid rgba(255,255,255,.07)", boxShadow: "10px 0 34px rgba(15,23,42,.08)" }}>
+    <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex">
       <SidebarBrand />
       <SidebarIdentity user={user} isAdmin={isAdmin} />
       <nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav>
@@ -309,7 +321,7 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild><button className="shrink-0 rounded-lg p-2 lg:hidden" style={{ color: "var(--text-2)", border: "1px solid var(--border)", background: "var(--bg-surface)" }} aria-label="Abrir menu"><Menu className="h-5 w-5" /></button></SheetTrigger>
-              <SheetContent side="left" className="segempat-sidebar-sheet w-[86vw] max-w-[340px] border-0 p-0 sm:max-w-[340px]" style={{ background: "var(--sidebar-bg)", color: "#fff" }}><SheetTitle className="sr-only">Menu</SheetTitle><div className="segempat-sidebar-sheet-panel flex h-full flex-col" style={{ background: "var(--sidebar-bg)" }}><SidebarBrand compact /><SidebarIdentity user={user} isAdmin={isAdmin} /><nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav><SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} /></div></SheetContent>
+              <SheetContent side="left" className="segempat-sidebar-sheet w-[86vw] max-w-[340px] border-0 p-0 sm:max-w-[340px]"><SheetTitle className="sr-only">Menu</SheetTitle><div className="segempat-sidebar-sheet-panel flex h-full flex-col"><SidebarBrand compact /><SidebarIdentity user={user} isAdmin={isAdmin} /><nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav><SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} /></div></SheetContent>
             </Sheet>
             <div className="segempat-mobile-logo-mark shrink-0 overflow-hidden lg:hidden" aria-label="EMPAT"><img src={LOGO_URL} alt="" className="segempat-mobile-logo-image" /></div>
             <Link to="/meu-perfil" aria-label="Abrir Meu Perfil" className="min-w-0 max-w-[9rem] rounded-lg sm:max-w-none lg:hidden"><p className="truncate text-sm font-bold" style={{ color: "var(--text-1)" }}>{user?.nome ?? "…"}</p><p className="truncate text-[11px] font-mono" style={{ color: "var(--text-4)" }}>Mat. {user?.matricula ?? "—"}</p></Link>

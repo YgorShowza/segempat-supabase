@@ -108,25 +108,75 @@ main .overflow-x-auto,
   max-width: 100%;
 }
 
-/* Premium sidebar foundation: transparent EMPAT mark, SEGEMPAT wordmark,
-   dark-safe interactions and consistent hierarchy on desktop/mobile. */
+/* Premium sidebar foundation — theme-aware, calm and corporate. */
+:root,
+[data-theme="light"] {
+  --sidebar-bg: #f8fafc;
+  --sidebar-panel: #ffffff;
+  --sidebar-text: #172033;
+  --sidebar-muted: #667085;
+  --sidebar-faint: #98a2b3;
+  --sidebar-border: #e3e7ec;
+  --sidebar-hover: #eef2f6;
+  --sidebar-icon-bg: #f1f4f7;
+  --sidebar-active-bg: #fff1f3;
+  --sidebar-active-border: rgba(200,16,46,.22);
+  --sidebar-section-active: #fff8f9;
+  --sidebar-footer-bg: #f8fafc;
+  --sidebar-shadow: 10px 0 30px rgba(15,23,42,.06);
+}
+
+[data-theme="dark"] {
+  --sidebar-bg: #102d43;
+  --sidebar-panel: #102d43;
+  --sidebar-text: #f4f7fa;
+  --sidebar-muted: #a8b4c2;
+  --sidebar-faint: #718094;
+  --sidebar-border: rgba(255,255,255,.085);
+  --sidebar-hover: rgba(255,255,255,.065);
+  --sidebar-icon-bg: rgba(255,255,255,.055);
+  --sidebar-active-bg: rgba(200,16,46,.17);
+  --sidebar-active-border: rgba(255,96,119,.22);
+  --sidebar-section-active: rgba(200,16,46,.075);
+  --sidebar-footer-bg: rgba(4,16,26,.16);
+  --sidebar-shadow: 10px 0 34px rgba(0,0,0,.20);
+}
+
+.segempat-app-sidebar,
+.segempat-sidebar-sheet,
+.segempat-sidebar-sheet-panel {
+  background: var(--sidebar-bg) !important;
+  color: var(--sidebar-text) !important;
+}
+
+.segempat-app-sidebar {
+  border-right: 1px solid var(--sidebar-border) !important;
+  box-shadow: var(--sidebar-shadow) !important;
+}
+
+.segempat-sidebar-sheet[role="dialog"] {
+  border-right: 1px solid var(--sidebar-border) !important;
+  box-shadow: 18px 0 48px rgba(15,23,42,.16) !important;
+}
+
 .segempat-sidebar-brand {
-  min-height: 80px !important;
+  min-height: 82px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: .8rem !important;
-  padding: .9rem .95rem !important;
+  gap: .72rem !important;
+  padding: .95rem .95rem .9rem !important;
+  border-bottom: 1px solid var(--sidebar-border) !important;
 }
 
 .segempat-sidebar-brand--compact {
-  min-height: 76px !important;
+  min-height: 78px !important;
 }
 
 .segempat-sidebar-logo-mark {
-  width: 84px;
-  height: 40px;
-  flex: 0 0 84px;
+  width: 82px;
+  height: 43px;
+  flex: 0 0 82px;
   overflow: hidden;
   display: flex;
   align-items: flex-start;
@@ -138,12 +188,15 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-logo-image {
-  width: 84px;
+  width: 82px;
   max-width: none;
   height: auto;
   display: block;
-  transform: translateY(0);
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,.18));
+  filter: drop-shadow(0 4px 8px rgba(15,23,42,.12));
+}
+
+.segempat-sidebar-brand-copy {
+  max-width: calc(100% - 94px);
 }
 
 .segempat-sidebar-wordmark {
@@ -152,35 +205,35 @@ main .overflow-x-auto,
   gap: 0;
   margin: 0;
   font-family: "Sora", "Inter", sans-serif;
-  font-size: 1.03rem;
+  font-size: 1.02rem;
   line-height: 1;
   font-weight: 800;
-  letter-spacing: .035em;
+  letter-spacing: .025em;
 }
 
 .segempat-sidebar-wordmark-seg {
-  color: rgba(255,255,255,.96);
+  color: var(--sidebar-text);
 }
 
 .segempat-sidebar-wordmark-empat {
-  color: #e01833;
+  color: #d71938;
 }
 
 .segempat-sidebar-tagline {
-  margin-top: .38rem;
-  color: rgba(255,255,255,.42);
+  margin-top: .4rem;
+  color: var(--sidebar-muted);
   font-family: "Inter", sans-serif;
-  font-size: .56rem;
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: .11em;
-  text-transform: uppercase;
-  white-space: nowrap;
+  font-size: .58rem;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: .025em;
+  text-transform: none;
+  white-space: normal;
 }
 
 .segempat-mobile-logo-mark {
-  width: 58px;
-  height: 28px;
+  width: 62px;
+  height: 31px;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -188,130 +241,283 @@ main .overflow-x-auto,
 }
 
 .segempat-mobile-logo-image {
-  width: 58px;
+  width: 62px;
   max-width: none;
   height: auto;
   display: block;
 }
 
+.segempat-sidebar-identity {
+  padding: .9rem .9rem .85rem !important;
+  border-bottom: 1px solid var(--sidebar-border) !important;
+}
+
+.segempat-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 46px;
+  padding: .3rem .35rem;
+  border-radius: .75rem;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.segempat-sidebar-profile:hover {
+  background: var(--sidebar-hover) !important;
+}
+
+.segempat-sidebar-avatar {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: .7rem;
+  background: color-mix(in srgb, #d71938 11%, var(--sidebar-panel));
+  border: 1px solid color-mix(in srgb, #d71938 24%, var(--sidebar-border));
+  color: #d71938;
+  font-family: "Sora", "Inter", sans-serif;
+  font-size: .76rem;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .segempat-sidebar-avatar {
+  color: #ff8fa1;
+  background: rgba(215,25,56,.14);
+  border-color: rgba(255,101,125,.18);
+}
+
+.segempat-sidebar-profile-name {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--sidebar-text);
+  font-family: "Sora", "Inter", sans-serif;
+  font-size: .72rem;
+  line-height: 1.25;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.segempat-sidebar-profile-matricula {
+  margin-top: .18rem;
+  color: var(--sidebar-muted);
+  font-family: "Inter", sans-serif;
+  font-size: .61rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.segempat-sidebar-profile-chevron {
+  color: var(--sidebar-faint);
+  opacity: .72;
+}
+
+.segempat-sidebar-profile-meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .65rem;
+  padding: 0 .35rem;
+}
+
+.segempat-sidebar-access-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: .35rem;
+  min-height: 23px;
+  padding: .2rem .48rem;
+  border-radius: 999px;
+  color: #c8102e;
+  background: color-mix(in srgb, #c8102e 7%, var(--sidebar-panel));
+  border: 1px solid color-mix(in srgb, #c8102e 18%, var(--sidebar-border));
+  font-size: .57rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+[data-theme="dark"] .segempat-sidebar-access-pill {
+  color: #ff93a4;
+  background: rgba(200,16,46,.12);
+  border-color: rgba(255,105,128,.18);
+}
+
+.segempat-sidebar-access-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.segempat-sidebar-sector {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sidebar-muted);
+  font-size: .57rem;
+  line-height: 1.2;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.segempat-app-sidebar nav[aria-label="Módulos do SEGEMPAT"],
+.segempat-sidebar-sheet nav[aria-label="Módulos do SEGEMPAT"] {
+  padding: .75rem .72rem 1rem !important;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sidebar-muted) 35%, transparent) transparent;
+}
+
 .segempat-app-sidebar .segempat-sidebar-priority > p,
 .segempat-sidebar-sheet .segempat-sidebar-priority > p {
-  color: rgba(255,255,255,.34) !important;
-  letter-spacing: .13em !important;
+  padding-left: .55rem !important;
+  color: var(--sidebar-faint) !important;
+  font-size: .56rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .11em !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link,
 .segempat-sidebar-sheet .segempat-sidebar-link {
   position: relative;
+  min-height: 41px;
   overflow: hidden;
+  margin: 0 !important;
+  padding: .52rem .68rem !important;
   border: 1px solid transparent !important;
+  border-radius: .68rem !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover {
-  background: linear-gradient(90deg,rgba(255,255,255,.065),rgba(255,255,255,.035)) !important;
-  border-color: rgba(255,255,255,.075) !important;
+  background: var(--sidebar-hover) !important;
+  border-color: color-mix(in srgb, var(--sidebar-border) 88%, transparent) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="true"],
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] {
-  background: linear-gradient(90deg,rgba(200,16,46,.28),rgba(200,16,46,.075)) !important;
-  border-color: rgba(255,91,114,.19) !important;
-  box-shadow: inset 3px 0 0 #e01833, 0 8px 18px rgba(0,0,0,.10) !important;
+  background: var(--sidebar-active-bg) !important;
+  border-color: var(--sidebar-active-border) !important;
+  box-shadow: inset 2px 0 0 #d71938 !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link-icon,
 .segempat-sidebar-sheet .segempat-sidebar-link-icon {
-  color: rgba(255,255,255,.50) !important;
+  color: var(--sidebar-muted) !important;
   transition: color 150ms ease, transform 150ms ease;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link-label,
 .segempat-sidebar-sheet .segempat-sidebar-link-label {
-  color: rgba(255,255,255,.72) !important;
+  color: var(--sidebar-text) !important;
+  font-size: .72rem !important;
   font-weight: 650 !important;
-  letter-spacing: 0 !important;
+  letter-spacing: -.005em !important;
   transition: color 150ms ease;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-icon,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-icon {
-  color: #ff6f86 !important;
+  color: #d71938 !important;
   transform: translateX(1px);
-}
-
-.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-label,
-.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-label,
-.segempat-app-sidebar .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label,
-.segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label {
-  color: #ffffff !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon {
-  color: #ff8ca0 !important;
+  color: #d71938 !important;
+}
+
+[data-theme="dark"] .segempat-app-sidebar .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
+[data-theme="dark"] .segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon {
+  color: #ff8fa1 !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-card,
 .segempat-sidebar-sheet .segempat-sidebar-section-card {
-  border-radius: .82rem !important;
+  overflow: hidden;
   border: 1px solid transparent !important;
+  border-radius: .72rem !important;
   background: transparent !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"],
 .segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] {
-  border-color: rgba(255,93,116,.12) !important;
-  background: rgba(200,16,46,.055) !important;
+  border-color: color-mix(in srgb, #d71938 12%, var(--sidebar-border)) !important;
+  background: var(--sidebar-section-active) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section,
 .segempat-sidebar-sheet .segempat-sidebar-section {
-  border-radius: .75rem !important;
+  min-height: 44px;
+  padding: .5rem .58rem !important;
+  border-radius: .66rem !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section:hover,
 .segempat-sidebar-sheet .segempat-sidebar-section:hover,
 .segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"],
 .segempat-sidebar-sheet .segempat-sidebar-section[aria-expanded="true"] {
-  background: rgba(255,255,255,.05) !important;
-}
-
-.segempat-app-sidebar .segempat-sidebar-section-title,
-.segempat-sidebar-sheet .segempat-sidebar-section-title {
-  color: rgba(255,255,255,.67) !important;
-  font-family: "Sora", "Inter", sans-serif;
-  font-size: .61rem !important;
-  letter-spacing: .075em !important;
-}
-
-.segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title,
-.segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title,
-.segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-title,
-.segempat-sidebar-sheet .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-title {
-  color: rgba(255,255,255,.94) !important;
+  background: var(--sidebar-hover) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-icon,
 .segempat-sidebar-sheet .segempat-sidebar-section-icon {
-  background: rgba(255,255,255,.045) !important;
-  border-color: rgba(255,255,255,.055) !important;
+  width: 29px !important;
+  height: 29px !important;
+  background: var(--sidebar-icon-bg) !important;
+  border: 1px solid var(--sidebar-border) !important;
+  border-radius: .6rem !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-icon svg,
+.segempat-sidebar-sheet .segempat-sidebar-section-icon svg {
+  color: var(--sidebar-muted) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon,
 .segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon {
-  background: rgba(200,16,46,.16) !important;
-  border-color: rgba(255,91,114,.14) !important;
+  background: color-mix(in srgb, #d71938 8%, var(--sidebar-panel)) !important;
+  border-color: color-mix(in srgb, #d71938 20%, var(--sidebar-border)) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg,
+.segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg {
+  color: #d71938 !important;
+}
+
+[data-theme="dark"] .segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg,
+[data-theme="dark"] .segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon svg {
+  color: #ff8fa1 !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-title,
+.segempat-sidebar-sheet .segempat-sidebar-section-title {
+  overflow: visible !important;
+  color: var(--sidebar-text) !important;
+  font-family: "Inter", sans-serif;
+  font-size: .67rem !important;
+  line-height: 1.25 !important;
+  font-weight: 720 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: normal !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-count,
 .segempat-sidebar-sheet .segempat-sidebar-section-count {
   display: none !important;
-  color: rgba(255,255,255,.36) !important;
-  font-size: .56rem !important;
-  line-height: 1.15 !important;
+  margin-top: .18rem !important;
+  color: var(--sidebar-muted) !important;
+  font-size: .55rem !important;
+  line-height: 1.2 !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-count,
@@ -319,33 +525,105 @@ main .overflow-x-auto,
   display: block !important;
 }
 
-.segempat-sidebar-sheet .segempat-sidebar-identity p:first-of-type {
-  color: rgba(255,255,255,.92) !important;
-}
-
-.segempat-sidebar-sheet .segempat-sidebar-identity p:nth-of-type(2),
+.segempat-app-sidebar .segempat-sidebar-section > svg:last-child,
 .segempat-sidebar-sheet .segempat-sidebar-section > svg:last-child {
-  color: rgba(255,255,255,.38) !important;
+  color: var(--sidebar-faint) !important;
 }
 
-.segempat-sidebar-sheet .segempat-sidebar-identity {
-  border-bottom-color: rgba(255,255,255,.07) !important;
+.segempat-sidebar-footer {
+  display: grid;
+  gap: .72rem;
+  padding: .75rem .78rem .9rem !important;
+  border-top: 1px solid var(--sidebar-border) !important;
+  background: var(--sidebar-footer-bg) !important;
 }
 
-.segempat-sidebar-sheet .segempat-sidebar-identity > a:hover {
-  background: rgba(255,255,255,.045) !important;
+.segempat-sidebar-theme-label {
+  display: flex;
+  align-items: center;
+  gap: .42rem;
+  margin-bottom: .42rem;
+  padding: 0 .2rem;
+  color: var(--sidebar-muted);
 }
 
-.segempat-sidebar-sheet .segempat-sidebar-footer {
-  border-top-color: rgba(255,255,255,.07) !important;
-  background: rgba(0,0,0,.10) !important;
+.segempat-sidebar-theme-label span {
+  font-size: .56rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
-.segempat-sidebar-sheet .segempat-sidebar-footer .segempat-theme-toggle {
-  background: rgba(255,255,255,.045) !important;
-  border-color: rgba(255,255,255,.07) !important;
+.segempat-theme-toggle {
+  background: var(--sidebar-panel) !important;
+  border: 1px solid var(--sidebar-border) !important;
+  border-radius: .72rem !important;
+  padding: .22rem !important;
 }
 
+.segempat-theme-option {
+  min-height: 34px !important;
+  color: var(--sidebar-muted) !important;
+  border: 1px solid transparent;
+  box-shadow: none !important;
+}
+
+.segempat-theme-option:hover {
+  background: var(--sidebar-hover) !important;
+  color: var(--sidebar-text) !important;
+}
+
+.segempat-theme-option[data-active="true"] {
+  color: #ffffff !important;
+  background: #c8102e !important;
+  border-color: #c8102e !important;
+  box-shadow: 0 4px 12px rgba(200,16,46,.18) !important;
+}
+
+.segempat-sidebar-logout {
+  display: flex;
+  width: 100%;
+  min-height: 39px;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem .72rem;
+  border: 1px solid color-mix(in srgb, #c8102e 18%, var(--sidebar-border));
+  border-radius: .72rem;
+  color: #c8102e;
+  background: color-mix(in srgb, #c8102e 5%, var(--sidebar-panel));
+  font-size: .7rem;
+  font-weight: 700;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.segempat-sidebar-logout:hover {
+  background: color-mix(in srgb, #c8102e 9%, var(--sidebar-panel));
+  border-color: color-mix(in srgb, #c8102e 28%, var(--sidebar-border));
+}
+
+[data-theme="dark"] .segempat-sidebar-logout {
+  color: #ff8fa1;
+  background: rgba(200,16,46,.08);
+  border-color: rgba(255,101,125,.16);
+}
+
+.segempat-app-sidebar .segempat-sidebar-link:focus-visible,
+.segempat-app-sidebar .segempat-sidebar-section:focus-visible,
+.segempat-sidebar-sheet .segempat-sidebar-link:focus-visible,
+.segempat-sidebar-sheet .segempat-sidebar-section:focus-visible,
+.segempat-sidebar-profile:focus-visible,
+.segempat-theme-option:focus-visible,
+.segempat-sidebar-logout:focus-visible {
+  outline: 2px solid color-mix(in srgb, #c8102e 68%, transparent) !important;
+  outline-offset: 2px;
+}
+
+@media (max-width: 1100px) {
+  .segempat-sidebar-tagline {
+    font-size: .55rem;
+  }
+}
 
 .segempat-dialog-content,
 .segempat-sheet-content {
