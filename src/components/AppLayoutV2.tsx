@@ -49,7 +49,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 const LOGO_URL = "/empat-logo-report.png";
 
 type MenuItem = { path: string; label: string; icon: LucideIcon };
-type MenuSection = { section: string; icon: LucideIcon; items: MenuItem[] };
+type MenuSection = { section: string; description: string; icon: LucideIcon; items: MenuItem[] };
 
 const adminPriorityMenu: MenuItem[] = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -58,17 +58,17 @@ const adminPriorityMenu: MenuItem[] = [
 ];
 
 const adminSections: MenuSection[] = [
-  { section: "Operação", icon: Activity, items: [
+  { section: "Operação", description: "Rotinas e registros do dia a dia", icon: Activity, items: [
     { path: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle },
     { path: "/cronograma", label: "Cronograma", icon: CalendarDays },
     { path: "/avaliacao-pratica", label: "Avaliação Prática", icon: ClipboardCheck },
   ] },
-  { section: "Equipe & Desempenho", icon: Users, items: [
+  { section: "Equipe & Desempenho", description: "Pessoas, acompanhamento e evolução", icon: Users, items: [
     { path: "/equipe", label: "Equipe", icon: Users },
     { path: "/individual", label: "Análise Individual", icon: FileBarChart },
     { path: "/risco", label: "Zona de Risco", icon: Target },
   ] },
-  { section: "Capacitação & Avaliação", icon: GraduationCap, items: [
+  { section: "Capacitação & Avaliação", description: "Formação, provas e certificações", icon: GraduationCap, items: [
     { path: "/provas-criar", label: "Criar Prova", icon: PlusCircle },
     { path: "/provas", label: "Provas", icon: FileText },
     { path: "/banco-questoes", label: "Banco de Questões", icon: BookOpenCheck },
@@ -78,12 +78,12 @@ const adminSections: MenuSection[] = [
     { path: "/assinaturas-provas", label: "Certificados e Assinaturas", icon: ClipboardCheck },
     { path: "/validar-certificados", label: "Validar Certificados", icon: Award },
   ] },
-  { section: "Análise & Relatórios", icon: BarChart3, items: [
+  { section: "Análise & Relatórios", description: "Indicadores, consultas e documentos", icon: BarChart3, items: [
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
     { path: "/relatorios", label: "Central de Relatórios", icon: FileSpreadsheet },
     { path: "/ia-base", label: "IA Base", icon: BookOpenCheck },
   ] },
-  { section: "Administração & Governança", icon: ShieldCheck, items: [
+  { section: "Administração & Governança", description: "Acessos, auditoria e controles", icon: ShieldCheck, items: [
     { path: "/acessos", label: "Acessos", icon: ClipboardList },
     { path: "/auditoria", label: "Auditoria", icon: History },
     { path: "/documento-seguranca", label: "Documento de Segurança", icon: FileText },
@@ -97,17 +97,17 @@ const operatorPriorityMenu: MenuItem[] = [
 ];
 
 const operatorSections: MenuSection[] = [
-  { section: "Capacitação", icon: GraduationCap, items: [
+  { section: "Capacitação", description: "Aprendizado, provas e prática", icon: GraduationCap, items: [
     { path: "/treinamentos", label: "Academia SEGEMPAT", icon: GraduationCap },
     { path: "/provas", label: "Provas", icon: FileText },
     { path: "/conteudos", label: "Base de Conhecimento", icon: BookOpen },
     { path: "/pratico", label: "Avaliação Prática", icon: ClipboardCheck },
   ] },
-  { section: "Desempenho", icon: TrendingUp, items: [
+  { section: "Desempenho", description: "Progresso e certificados", icon: TrendingUp, items: [
     { path: "/progresso", label: "Progresso", icon: TrendingUp },
     { path: "/certificados", label: "Certificados", icon: Award },
   ] },
-  { section: "Conta", icon: UserRound, items: [
+  { section: "Conta", description: "Dados e identidade profissional", icon: UserRound, items: [
     { path: "/meu-perfil", label: "Meu Perfil", icon: UserRound },
   ] },
 ];
@@ -137,8 +137,13 @@ function currentLocation(pathname: string, isAdmin: boolean) {
     }
     return { section: "SEGEMPAT", label: "Gestão Operacional", icon: Activity };
   }
-  const item = operatorMenu.find((candidate) => routeMatches(pathname, candidate.path));
-  return item ? { section: "Área do Operador", label: item.label, icon: item.icon } : { section: "SEGEMPAT", label: "Área Operacional", icon: Activity };
+  const priorityItem = operatorPriorityMenu.find((candidate) => routeMatches(pathname, candidate.path));
+  if (priorityItem) return { section: "Principal", label: priorityItem.label, icon: priorityItem.icon };
+  for (const section of operatorSections) {
+    const item = section.items.find((candidate) => routeMatches(pathname, candidate.path));
+    if (item) return { section: section.section, label: item.label, icon: item.icon };
+  }
+  return { section: "SEGEMPAT", label: "Área Operacional", icon: Activity };
 }
 
 function ThemeToggle() {
@@ -186,7 +191,7 @@ function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<
       <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
       <div className="space-y-1">{visiblePriorityItems.map((item) => <MenuLink key={item.path} item={item} />)}</div>
     </div>}
-    <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+    <div className="space-y-2">{visibleSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 truncate text-[9px]" style={{ color: "var(--text-4)" }}>{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
   </div>;
 }
 
@@ -209,7 +214,7 @@ function OperatorNavItems({ pathname }: { pathname: string }) {
       <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
       <div className="space-y-1">{operatorPriorityMenu.map((item) => <MenuLink key={item.path} item={item} />)}</div>
     </div>
-    <div className="space-y-2">{operatorSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+    <div className="space-y-2">{operatorSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 truncate text-[9px]" style={{ color: "var(--text-4)" }}>{section.description}</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
   </div>;
 }
 
