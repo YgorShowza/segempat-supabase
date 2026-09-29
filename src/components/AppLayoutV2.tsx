@@ -29,6 +29,8 @@ import {
   Monitor,
   Moon,
   Palette,
+  PanelLeftClose,
+  PanelLeftOpen,
   PlusCircle,
   ShieldCheck,
   Sun,
@@ -47,6 +49,7 @@ import { canAccessAdminPath } from "@/lib/access-control";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const LOGO_URL = "/empat-logo-report.png";
+const SIDEBAR_COLLAPSED_KEY = "segempat_sidebar_collapsed";
 
 type MenuItem = { path: string; label: string; icon: LucideIcon };
 type MenuSection = { section: string; description: string; icon: LucideIcon; items: MenuItem[] };
@@ -156,9 +159,9 @@ function ThemeToggle() {
   return <div className="segempat-theme-toggle grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>{options.map((option) => { const Icon = option.icon; const active = theme === option.value; return <motion.button key={option.value} type="button" data-active={active ? "true" : "false"} onClick={() => setTheme(option.value)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 transition-colors duration-150" style={active ? { background: "#C8102E", color: "#fff", boxShadow: "0 3px 12px rgba(200,16,46,.20)" } : { color: "var(--text-3)" }} aria-label={`Tema ${option.label}`} title={`Tema ${option.label}`}><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-bold">{option.label}</span></motion.button>; })}</div>;
 }
 
-function MenuLink({ item }: { item: MenuItem }) {
+function MenuLink({ item, collapsed = false }: { item: MenuItem; collapsed?: boolean }) {
   const Icon = item.icon;
-  return <Link to={item.path} className="block" activeOptions={{ exact: item.path === "/admin" || item.path === "/painel" }}>{({ isActive }) => <div className="segempat-sidebar-link relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-150" data-active={isActive ? "true" : "false"} style={isActive ? { background: "linear-gradient(135deg,#e0142f,#C8102E)", border: "1px solid rgba(255,84,112,.34)", boxShadow: "0 8px 20px rgba(200,16,46,.18)" } : { border: "1px solid transparent" }}><Icon className="segempat-sidebar-link-icon h-[17px] w-[17px] shrink-0" style={{ color: isActive ? "#fff" : "var(--text-3)" }} /><span className="segempat-sidebar-link-label text-[13px] font-semibold tracking-wide" style={{ color: isActive ? "#fff" : "var(--text-2)" }}>{item.label}</span></div>}</Link>;
+  return <Link to={item.path} className="block" activeOptions={{ exact: item.path === "/admin" || item.path === "/painel" }} title={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined}>{({ isActive }) => <div className={`segempat-sidebar-link relative flex items-center transition-all duration-200 ${collapsed ? "segempat-sidebar-link--collapsed justify-center" : "gap-3 rounded-xl px-3.5 py-2.5"}`} data-active={isActive ? "true" : "false"} data-collapsed={collapsed ? "true" : "false"} style={isActive ? { background: "linear-gradient(135deg,#e0142f,#C8102E)", border: "1px solid rgba(255,84,112,.34)", boxShadow: "0 8px 20px rgba(200,16,46,.18)" } : { border: "1px solid transparent" }}><Icon className="segempat-sidebar-link-icon h-[17px] w-[17px] shrink-0" style={{ color: isActive ? "#fff" : "var(--text-3)" }} />{!collapsed && <span className="segempat-sidebar-link-label text-[13px] font-semibold tracking-wide" style={{ color: isActive ? "#fff" : "var(--text-2)" }}>{item.label}</span>}</div>}</Link>;
 }
 
 function MobileNavLink({ item }: { item: MenuItem }) {
@@ -223,6 +226,17 @@ function NavItems({ isAdmin, pathname, user }: { isAdmin: boolean; pathname: str
   return <AdminNavItems pathname={pathname} user={user} />;
 }
 
+function CollapsedNavItems({ isAdmin, user }: { isAdmin: boolean; user: ReturnType<typeof useCurrentUser>["data"] }) {
+  const groups = isAdmin
+    ? [
+        user ? adminPriorityMenu.filter((item) => canAccessAdminPath(user, item.path)) : [],
+        ...(user ? adminSections.map((section) => section.items.filter((item) => canAccessAdminPath(user, item.path))) : []),
+      ]
+    : [operatorPriorityMenu, ...operatorSections.map((section) => section.items)];
+
+  return <div className="segempat-sidebar-rail">{groups.filter((group) => group.length > 0).map((group, index) => <div key={index} className="segempat-sidebar-rail-group">{group.map((item) => <MenuLink key={item.path} item={item} collapsed />)}</div>)}</div>;
+}
+
 function HeaderClock() {
   const [currentTime, setCurrentTime] = useState(() => new Date());
   useEffect(() => { const interval = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(interval); }, []);
@@ -249,10 +263,17 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
   const isAdmin = user?.isAdmin ?? false;
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  });
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const location = currentLocation(pathname, isAdmin);
   const LocationIcon = location.icon;
   useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? "true" : "false");
+  }, [sidebarCollapsed]);
 
   const apiUnavailable = readiness === "unavailable";
   const apiChecking = readiness === "checking";
@@ -275,15 +296,18 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
     }
   };
 
-  return <div className="segempat-app-shell min-h-screen overflow-x-clip" style={{ background: "var(--bg-base)" }}>
-    <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex" style={{ background: "var(--sidebar-bg)", borderRight: "1px solid rgba(255,255,255,.07)", boxShadow: "10px 0 34px rgba(15,23,42,.08)" }}>
-      <div className="segempat-sidebar-brand px-4 pb-4 pt-5" style={{ borderBottom: "1px solid rgba(255,255,255,.07)" }}><div className="flex items-center gap-3"><div className="segempat-sidebar-logo-shell overflow-hidden rounded-xl bg-white p-1.5"><img src={LOGO_URL} alt="EMPAT" className="h-11 w-auto object-contain" /></div><div className="min-w-0"><p className="text-[15px] font-black tracking-[.08em] text-white">SEGEMPAT</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[.12em]" style={{ color: "rgba(255,255,255,.42)" }}>Gestão · Operações · Desempenho</p></div></div></div>
-      <SidebarIdentity user={user} isAdmin={isAdmin} />
-      <nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav>
-      <SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} />
+  return <div className="segempat-app-shell min-h-screen overflow-x-clip" data-sidebar-collapsed={sidebarCollapsed ? "true" : "false"} style={{ background: "var(--bg-base)" }}>
+    <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden flex-col lg:flex" data-collapsed={sidebarCollapsed ? "true" : "false"}>
+      <div className="segempat-sidebar-brand" data-collapsed={sidebarCollapsed ? "true" : "false"}>
+        {sidebarCollapsed ? <div className="segempat-sidebar-brand-collapsed" title="SEGEMPAT"><ShieldCheck className="h-6 w-6" /></div> : <div className="flex min-w-0 items-center gap-3"><div className="segempat-sidebar-logo-shell overflow-hidden rounded-xl bg-white p-1.5"><img src={LOGO_URL} alt="EMPAT" className="h-11 w-auto object-contain" /></div><div className="min-w-0"><p className="text-[15px] font-black tracking-[.08em] text-white">SEGEMPAT</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[.12em]" style={{ color: "rgba(255,255,255,.42)" }}>Gestão · Operações · Desempenho</p></div></div>}
+        <button type="button" className="segempat-sidebar-collapse-button" onClick={() => setSidebarCollapsed((current) => !current)} aria-label={sidebarCollapsed ? "Expandir barra lateral" : "Recolher barra lateral"} title={sidebarCollapsed ? "Expandir barra lateral" : "Recolher barra lateral"}>{sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</button>
+      </div>
+      {sidebarCollapsed ? <div className="segempat-sidebar-collapsed-identity"><Link to="/meu-perfil" title={user?.nome ?? "Meu Perfil"} aria-label="Abrir Meu Perfil"><div>{user?.nome?.trim()?.charAt(0)?.toUpperCase() || "S"}</div></Link></div> : <SidebarIdentity user={user} isAdmin={isAdmin} />}
+      <nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto">{sidebarCollapsed ? <CollapsedNavItems isAdmin={isAdmin} user={user} /> : <NavItems isAdmin={isAdmin} pathname={pathname} user={user} />}</nav>
+      {sidebarCollapsed ? <div className="segempat-sidebar-collapsed-footer"><button disabled={loggingOut} onClick={handleLogout} aria-label="Sair do sistema" title="Sair do sistema"><LogOut className="h-[17px] w-[17px]" /></button></div> : <SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} />}
     </aside>
 
-    <div className="segempat-app-stage flex min-h-screen min-w-0 flex-col lg:ml-[19rem]">
+    <div className="segempat-app-stage flex min-h-screen min-w-0 flex-col">
       <header className="segempat-app-header sticky top-0 z-30 px-4 py-3 md:px-6 xl:px-8" style={{ background: "var(--header-bg)", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)" }}>
         <div className="segempat-app-header-frame mx-auto grid w-full max-w-[1680px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[minmax(170px,1fr)_minmax(200px,520px)_auto] lg:justify-between xl:grid-cols-[minmax(210px,1fr)_minmax(280px,680px)_auto] xl:gap-6">
           <div className="flex min-w-0 items-center gap-3">

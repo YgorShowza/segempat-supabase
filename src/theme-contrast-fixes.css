@@ -35,13 +35,20 @@
   color: var(--text-3) !important;
 }
 
-.segempat-sidebar-link[data-active="false"]:hover,
-.segempat-sidebar-section:hover {
+.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover,
+.segempat-app-sidebar .segempat-sidebar-section:hover {
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover,
+.segempat-sidebar-sheet .segempat-sidebar-section:hover {
   background: var(--bg-surface-2) !important;
 }
 
-.segempat-sidebar-link[data-active="false"]:focus-visible,
-.segempat-sidebar-section:focus-visible {
+.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:focus-visible,
+.segempat-app-sidebar .segempat-sidebar-section:focus-visible,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:focus-visible,
+.segempat-sidebar-sheet .segempat-sidebar-section:focus-visible {
   outline: 2px solid rgba(200, 16, 46, 0.42);
   outline-offset: 2px;
 }
