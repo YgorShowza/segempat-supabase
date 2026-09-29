@@ -31,7 +31,11 @@ jobs:
           if grep -F 'section: "Comando Operacional"' "$FILE" >/dev/null || grep -F 'section: "Relatórios & Inteligência"' "$FILE" >/dev/null; then
             echo "Agrupamento legado voltou à navegação"; exit 1
           fi
-          ADMIN_MENU=$(sed -n '/const adminSections: MenuSection\[\] = \[/,/^\];/p' "$FILE")
+          grep -F 'const adminPriorityMenu: MenuItem[] = [' "$FILE" >/dev/null
+          grep -F 'path: "/admin", label: "Dashboard"' "$FILE" >/dev/null
+          grep -F 'path: "/atencao", label: "Central de Atenção"' "$FILE" >/dev/null
+          grep -F 'path: "/producao-inspetoria", label: "Produção da Inspetoria"' "$FILE" >/dev/null
+          ADMIN_MENU=$(sed -n '/const adminPriorityMenu: MenuItem\[\] = \[/,/const operatorMenu: MenuItem\[\] = \[/p' "$FILE" | sed '$d')
           for route in /admin /atencao /analytics /equipe /producao-inspetoria /risco /individual /cronograma /ocorrencias /avaliacao-pratica /provas-criar /provas /banco-questoes /modulos-treinamento /ciclos-treinamento /conteudos /assinaturas-provas /validar-certificados /relatorios /ia-base /acessos /auditoria /documento-seguranca; do
             COUNT=$(printf '%s\n' "$ADMIN_MENU" | grep -F -c "path: \"$route\"" || true)
             [ "$COUNT" -eq 1 ] || { echo "Rota deve aparecer exatamente uma vez no menu do Inspetor: $route (encontrado: $COUNT)"; exit 1; }
@@ -48,6 +52,7 @@ jobs:
           done
           grep -F 'function AdminNavItems' "$FILE" >/dev/null
           grep -F 'const [openSection, setOpenSection]' "$FILE" >/dev/null
+          grep -F 'if (priorityRouteActive)' "$FILE" >/dev/null
           grep -F 'current === section.section ? null : section.section' "$FILE" >/dev/null
           grep -F 'aria-expanded={isOpen}' "$FILE" >/dev/null
           grep -F '<GlobalSearch />' "$FILE" >/dev/null
