@@ -59,15 +59,26 @@ jobs:
             exit 1
           fi
 
-          grep -F -- '--sidebar-bg: #f8fafc;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-bg: #102d43;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-text: #172033;' "$POLISH" >/dev/null
-          grep -F -- '--sidebar-text: #f4f7fa;' "$POLISH" >/dev/null
+          grep -F -- '--sidebar-bg: #f7f8fa;' "$POLISH" >/dev/null
+          grep -F -- '--sidebar-bg: #15181d;' "$POLISH" >/dev/null
+          grep -F -- '--sidebar-text: #18202b;' "$POLISH" >/dev/null
+          grep -F -- '--sidebar-text: #f4f6f8;' "$POLISH" >/dev/null
           grep -F '.segempat-sidebar-wordmark-empat' "$POLISH" >/dev/null
           grep -F 'color: #d71938;' "$POLISH" >/dev/null
           grep -F 'background: var(--sidebar-hover) !important' "$POLISH" >/dev/null
           grep -F 'background: var(--sidebar-active-bg) !important' "$POLISH" >/dev/null
-          grep -F 'box-shadow: inset 2px 0 0 #d71938' "$POLISH" >/dev/null
+          grep -F 'box-shadow: inset 2px 0 0 #c8102e' "$POLISH" >/dev/null
+          grep -F 'background: transparent;' "$POLISH" >/dev/null
+          grep -F '.segempat-theme-option[data-active="true"]' "$POLISH" >/dev/null
+          grep -F 'color: #c8102e !important' "$POLISH" >/dev/null
+          if grep -F -- '--sidebar-ink:' src/styles.css >/dev/null; then
+            echo 'ERRO: camada desktop antiga voltou a forçar cores claras na sidebar.' >&2
+            exit 1
+          fi
+          if grep -F 'linear-gradient(180deg,#13151b' src/styles.css >/dev/null; then
+            echo 'ERRO: gradiente legado voltou a competir com o tema da sidebar.' >&2
+            exit 1
+          fi
           grep -F 'text-transform: none !important' "$POLISH" >/dev/null
           grep -F '.segempat-theme-option[data-active="true"]' "$POLISH" >/dev/null
 
