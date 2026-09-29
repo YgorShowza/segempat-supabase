@@ -108,8 +108,8 @@ main .overflow-x-auto,
   max-width: 100%;
 }
 
-.segempat-sidebar-link[data-active="false"]:hover,
-.segempat-sidebar-section:hover {
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover,
+.segempat-sidebar-sheet .segempat-sidebar-section:hover {
   background: var(--bg-surface-2);
 }
 
