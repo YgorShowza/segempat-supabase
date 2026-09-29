@@ -29,6 +29,15 @@ jobs:
           grep -F 'max-w-[1536px]' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'Central de Atenção' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'Painel TV' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F '{priorityCount} em acompanhamento' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'label="Equipe ativa"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'label="Execução anual"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          if grep -F '{metrics.activeEmployees} ativos' src/components/dashboard/AdminDashboardV2.tsx >/dev/null; then
+            echo "Indicador de equipe ativa voltou a duplicar o card de métricas no hero"; exit 1
+          fi
+          if grep -F '{metrics.pending} pendentes' src/components/dashboard/AdminDashboardV2.tsx >/dev/null; then
+            echo "Indicador de pendências voltou a duplicar o card de métricas no hero"; exit 1
+          fi
           grep -F 'const [showAllQuick, setShowAllQuick] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'const visibleQuick = showAllQuick ? quick : quick.slice(0, 4);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'aria-expanded={showAllQuick}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
