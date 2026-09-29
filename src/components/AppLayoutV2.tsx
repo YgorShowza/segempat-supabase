@@ -156,9 +156,29 @@ function ThemeToggle() {
   return <div className="segempat-theme-toggle grid grid-cols-3 gap-1 rounded-xl p-1" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)" }}>{options.map((option) => { const Icon = option.icon; const active = theme === option.value; return <motion.button key={option.value} type="button" data-active={active ? "true" : "false"} onClick={() => setTheme(option.value)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 transition-colors duration-150" style={active ? { background: "#C8102E", color: "#fff", boxShadow: "0 3px 12px rgba(200,16,46,.20)" } : { color: "var(--text-3)" }} aria-label={`Tema ${option.label}`} title={`Tema ${option.label}`}><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-bold">{option.label}</span></motion.button>; })}</div>;
 }
 
+function SidebarBrand({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      className={`segempat-sidebar-brand ${compact ? "segempat-sidebar-brand--compact" : ""}`}
+      style={{ borderBottom: "1px solid rgba(255,255,255,.07)" }}
+    >
+      <div className="segempat-sidebar-logo-mark" aria-hidden="true">
+        <img src={LOGO_URL} alt="" className="segempat-sidebar-logo-image" />
+      </div>
+      <div className="min-w-0">
+        <p className="segempat-sidebar-wordmark" aria-label="SEGEMPAT">
+          <span className="segempat-sidebar-wordmark-seg">SEG</span>
+          <span className="segempat-sidebar-wordmark-empat">EMPAT</span>
+        </p>
+        <p className="segempat-sidebar-tagline">Segurança · Gestão · Operação</p>
+      </div>
+    </div>
+  );
+}
+
 function MenuLink({ item }: { item: MenuItem }) {
   const Icon = item.icon;
-  return <Link to={item.path} className="block" activeOptions={{ exact: item.path === "/admin" || item.path === "/painel" }}>{({ isActive }) => <div className="segempat-sidebar-link relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-150" data-active={isActive ? "true" : "false"} style={isActive ? { background: "linear-gradient(135deg,#e0142f,#C8102E)", border: "1px solid rgba(255,84,112,.34)", boxShadow: "0 8px 20px rgba(200,16,46,.18)" } : { border: "1px solid transparent" }}><Icon className="segempat-sidebar-link-icon h-[17px] w-[17px] shrink-0" style={{ color: isActive ? "#fff" : "var(--text-3)" }} /><span className="segempat-sidebar-link-label text-[13px] font-semibold tracking-wide" style={{ color: isActive ? "#fff" : "var(--text-2)" }}>{item.label}</span></div>}</Link>;
+  return <Link to={item.path} className="block" activeOptions={{ exact: item.path === "/admin" || item.path === "/painel" }}>{({ isActive }) => <div className="segempat-sidebar-link relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-150" data-active={isActive ? "true" : "false"}><Icon className="segempat-sidebar-link-icon h-[17px] w-[17px] shrink-0" /><span className="segempat-sidebar-link-label text-[13px] font-semibold">{item.label}</span></div>}</Link>;
 }
 
 function MobileNavLink({ item }: { item: MenuItem }) {
@@ -277,7 +297,7 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
 
   return <div className="segempat-app-shell min-h-screen overflow-x-clip" style={{ background: "var(--bg-base)" }}>
     <aside aria-label="Navegação principal" className="segempat-app-sidebar fixed bottom-0 left-0 top-0 z-40 hidden w-[19rem] flex-col lg:flex" style={{ background: "var(--sidebar-bg)", borderRight: "1px solid rgba(255,255,255,.07)", boxShadow: "10px 0 34px rgba(15,23,42,.08)" }}>
-      <div className="segempat-sidebar-brand px-4 pb-4 pt-5" style={{ borderBottom: "1px solid rgba(255,255,255,.07)" }}><div className="flex items-center gap-3"><div className="segempat-sidebar-logo-shell overflow-hidden rounded-xl bg-white p-1.5"><img src={LOGO_URL} alt="EMPAT" className="h-11 w-auto object-contain" /></div><div className="min-w-0"><p className="text-[15px] font-black tracking-[.08em] text-white">SEGEMPAT</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[.12em]" style={{ color: "rgba(255,255,255,.42)" }}>Gestão · Operações · Desempenho</p></div></div></div>
+      <SidebarBrand />
       <SidebarIdentity user={user} isAdmin={isAdmin} />
       <nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav>
       <SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} />
@@ -289,9 +309,9 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild><button className="shrink-0 rounded-lg p-2 lg:hidden" style={{ color: "var(--text-2)", border: "1px solid var(--border)", background: "var(--bg-surface)" }} aria-label="Abrir menu"><Menu className="h-5 w-5" /></button></SheetTrigger>
-              <SheetContent side="left" className="segempat-sidebar-sheet w-[86vw] max-w-[340px] border-0 p-0 sm:max-w-[340px]" style={{ background: "var(--header-bg)", color: "var(--text-1)" }}><SheetTitle className="sr-only">Menu</SheetTitle><div className="flex h-full flex-col" style={{ background: "var(--header-bg)" }}><div className="px-4 pb-4 pt-5" style={{ borderBottom: "1px solid var(--border)" }}><div className="flex items-center justify-center"><div className="overflow-hidden rounded-xl bg-white p-1.5" style={{ border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><img src={LOGO_URL} alt="EMPAT" className="h-10 w-auto object-contain" /></div></div></div><SidebarIdentity user={user} isAdmin={isAdmin} /><nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav><SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} /></div></SheetContent>
+              <SheetContent side="left" className="segempat-sidebar-sheet w-[86vw] max-w-[340px] border-0 p-0 sm:max-w-[340px]" style={{ background: "var(--sidebar-bg)", color: "#fff" }}><SheetTitle className="sr-only">Menu</SheetTitle><div className="segempat-sidebar-sheet-panel flex h-full flex-col" style={{ background: "var(--sidebar-bg)" }}><SidebarBrand compact /><SidebarIdentity user={user} isAdmin={isAdmin} /><nav aria-label="Módulos do SEGEMPAT" className="flex-1 overflow-y-auto px-3 py-3"><NavItems isAdmin={isAdmin} pathname={pathname} user={user} /></nav><SidebarFooter loggingOut={loggingOut} onLogout={handleLogout} /></div></SheetContent>
             </Sheet>
-            <div className="shrink-0 overflow-hidden rounded-lg bg-white p-1 lg:hidden" style={{ border: "1px solid var(--border)" }}><img src={LOGO_URL} alt="EMPAT" className="h-8 w-auto object-contain" /></div>
+            <div className="segempat-mobile-logo-mark shrink-0 overflow-hidden lg:hidden" aria-label="EMPAT"><img src={LOGO_URL} alt="" className="segempat-mobile-logo-image" /></div>
             <Link to="/meu-perfil" aria-label="Abrir Meu Perfil" className="min-w-0 max-w-[9rem] rounded-lg sm:max-w-none lg:hidden"><p className="truncate text-sm font-bold" style={{ color: "var(--text-1)" }}>{user?.nome ?? "…"}</p><p className="truncate text-[11px] font-mono" style={{ color: "var(--text-4)" }}>Mat. {user?.matricula ?? "—"}</p></Link>
             <div className="hidden min-w-0 items-center gap-3 lg:flex"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", border: "1px solid rgba(200,16,46,.18)" }}><LocationIcon className="h-4 w-4" style={{ color: "var(--accent)" }} /></div><div className="min-w-0"><p className="truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: "var(--text-4)" }}>{location.section}</p><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{location.label}</p></div></div>
           </div>
