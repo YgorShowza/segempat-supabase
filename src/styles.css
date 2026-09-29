@@ -1846,3 +1846,36 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
 [data-theme="dark"] .segempat-document-record {
   border-color: rgba(255,255,255,.065);
 }
+
+
+/* Assessment and practical evaluation convergence */
+.segempat-question-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+.segempat-question-card[data-inactive="true"] {
+  opacity: .82;
+}
+
+.segempat-question-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 13%, var(--border));
+  box-shadow: 0 9px 24px rgba(16,24,40,.045);
+}
+
+.segempat-practical-overdue {
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  padding: .34rem .62rem;
+  border: 1px solid rgba(245,158,11,.18);
+  border-radius: 999px;
+  color: #f3c467;
+  background: rgba(245,158,11,.08);
+  font-size: .63rem;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: .025em;
+}
