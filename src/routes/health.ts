@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const SEGEMPAT_HEALTH_URL = "https://segempat-api-supabase.onrender.com/health";
 
-export const Route = createFileRoute("/health" as any)({
+export const Route = createFileRoute("/health")({
   server: {
     handlers: {
       GET: async () => {
