@@ -256,41 +256,40 @@ export function GlobalSearch() {
         type="button"
         onClick={() => setOpen(true)}
         className="segempat-global-search-trigger hidden h-10 min-w-0 items-center gap-2 rounded-xl px-3 text-left transition-colors md:flex xl:w-[330px]"
-        style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-4)" }}
         aria-label="Buscar no SEGEMPAT"
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="min-w-0 flex-1 truncate text-xs">Buscar no SEGEMPAT...</span>
-        <span className="rounded-md px-1.5 py-0.5 text-[9px] font-black" style={{ background: "var(--bg-surface-3)", border: "1px solid var(--border-subtle)", color: "var(--text-4)" }}>Ctrl K</span>
+        <span className="segempat-global-search-shortcut rounded-md px-1.5 py-0.5 text-[9px] font-bold">Ctrl K</span>
       </button>
-      <button type="button" onClick={() => setOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-lg md:hidden" style={{ color: "var(--text-3)", border: "1px solid var(--border)" }} aria-label="Buscar no SEGEMPAT"><Search className="h-4 w-4" /></button>
+      <button type="button" onClick={() => setOpen(true)} className="segempat-global-search-mobile flex h-9 w-9 items-center justify-center rounded-lg md:hidden" aria-label="Buscar no SEGEMPAT"><Search className="h-4 w-4" /></button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[86vh] overflow-hidden p-0 sm:max-w-2xl">
-          <DialogHeader className="border-b p-4 pb-3" style={{ borderColor: "var(--border)" }}>
+          <DialogHeader className="segempat-global-search-header border-b p-4 pb-3">
             <DialogTitle className="flex items-center justify-between gap-3 text-left">
               <span>Busca Global</span>
-              <span className="text-[10px] font-normal" style={{ color: "var(--text-4)" }}>Ctrl/Cmd + K</span>
+              <span className="segempat-global-search-hint text-[10px] font-normal">Ctrl/Cmd + K</span>
             </DialogTitle>
             <div className="relative mt-2">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--text-4)" }} />
+              <Search className="segempat-global-search-input-icon absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
               <Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder={isAdmin ? "Buscar colaborador, ocorrência, procedimento ou função..." : "Buscar procedimento, ocorrência ou função..."} className="h-11 pl-10 pr-10" />
-              {query && <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-4)" }} aria-label="Limpar busca"><X className="h-4 w-4" /></button>}
+              {query && <button type="button" onClick={() => setQuery("")} className="segempat-global-search-clear absolute right-3 top-1/2 -translate-y-1/2" aria-label="Limpar busca"><X className="h-4 w-4" /></button>}
             </div>
           </DialogHeader>
 
           <div className="max-h-[62vh] overflow-y-auto p-3">
-            {partialFailure && <div className="mb-3 flex items-start gap-2 rounded-xl p-3 text-xs" style={{ background: "rgba(245,158,11,.07)", border: "1px solid rgba(245,158,11,.16)", color: "#d97706" }}><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><span>Uma fonte de dados está indisponível. Os demais resultados continuam funcionando.</span></div>}
+            {partialFailure && <div className="segempat-global-search-warning mb-3 flex items-start gap-2 rounded-xl p-3 text-xs"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><span>Uma fonte de dados está indisponível. Os demais resultados continuam funcionando.</span></div>}
 
-            {!term && <p className="px-2 pb-2 text-[10px] font-black uppercase tracking-[.14em]" style={{ color: "var(--text-4)" }}>Principal</p>}
+            {!term && <p className="segempat-global-search-group px-2 pb-2 text-[10px] font-bold uppercase tracking-[.12em]">Principal</p>}
             {groups.map((group) => {
               const rows = results.filter((result) => result.group === group);
               if (!rows.length) return null;
               const showGroupLabel = term || group !== "Navegação";
-              return <section key={group} className="mb-4 last:mb-0">{showGroupLabel && <p className="px-2 pb-1.5 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>{group}</p>}<div className="space-y-1">{rows.map((result) => { const Icon = result.icon; return <button key={result.id} type="button" onClick={() => openResult(result.path)} className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.035]"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: result.tone ? `${result.tone}12` : "var(--accent-soft)", color: result.tone || "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{result.title}</p><p className="mt-0.5 truncate text-[10px]" style={{ color: "var(--text-4)" }}>{result.subtitle}</p></div><span className="text-xs" style={{ color: "var(--text-4)" }}>↵</span></button>; })}</div></section>;
+              return <section key={group} className="mb-4 last:mb-0">{showGroupLabel && <p className="segempat-global-search-group px-2 pb-1.5 text-[9px] font-bold uppercase tracking-[.12em]">{group}</p>}<div className="space-y-1">{rows.map((result) => { const Icon = result.icon; return <button key={result.id} type="button" onClick={() => openResult(result.path)} className="segempat-global-search-result flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors"><div className="segempat-global-search-result-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: result.tone ? `${result.tone}12` : "var(--accent-soft)", color: result.tone || "var(--accent)" }}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="segempat-global-search-result-title truncate text-sm font-bold">{result.title}</p><p className="segempat-global-search-result-subtitle mt-0.5 truncate text-[10px]">{result.subtitle}</p></div><span className="segempat-global-search-enter text-xs">↵</span></button>; })}</div></section>;
             })}
 
-            {term && !results.length && <div className="py-12 text-center"><Search className="mx-auto h-8 w-8 opacity-25" /><p className="mt-3 text-sm font-black" style={{ color: "var(--text-1)" }}>Nenhum resultado encontrado.</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>Tente outro nome, matrícula, tema ou palavra-chave.</p></div>}
+            {term && !results.length && <div className="segempat-global-search-empty py-10 text-center"><Search className="mx-auto h-8 w-8 opacity-25" /><p className="mt-3 text-sm font-bold">Nenhum resultado encontrado.</p><p className="mt-1 text-xs">Tente outro nome, matrícula, tema ou palavra-chave.</p></div>}
           </div>
         </DialogContent>
       </Dialog>
