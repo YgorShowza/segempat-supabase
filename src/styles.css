@@ -1810,3 +1810,39 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
   background: rgba(255,255,255,.022);
   border-color: rgba(255,255,255,.045);
 }
+
+
+/* Governance and certificate workflow convergence */
+.segempat-document-form,
+.segempat-document-record {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.segempat-document-record {
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.segempat-document-record:hover {
+  border-color: color-mix(in srgb, var(--accent) 13%, var(--border));
+  box-shadow: 0 9px 24px rgba(16,24,40,.045);
+}
+
+.segempat-document-hero-summary {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 .8rem;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: .7rem;
+  color: rgba(255,255,255,.66);
+  background: rgba(255,255,255,.05);
+  font-size: .7rem;
+  font-weight: 650;
+}
+
+[data-theme="dark"] .segempat-document-form,
+[data-theme="dark"] .segempat-document-record {
+  border-color: rgba(255,255,255,.065);
+}
