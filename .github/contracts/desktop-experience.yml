@@ -38,6 +38,14 @@ jobs:
           if grep -F '{metrics.pending} pendentes' src/components/dashboard/AdminDashboardV2.tsx >/dev/null; then
             echo "Indicador de pendências voltou a duplicar o card de métricas no hero"; exit 1
           fi
+          grep -F 'const [showGovernance, setShowGovernance] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'aria-expanded={showGovernance}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'aria-controls="segempat-master-governance"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'id="segempat-master-governance"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          grep -F 'showGovernance ? "grid" : "hidden"' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
+          for route in /acessos /auditoria /documento-seguranca; do
+            grep -F "to=\"$route\"" src/components/dashboard/AdminDashboardV2.tsx >/dev/null || { echo "Atalho de governança ausente: $route"; exit 1; }
+          done
           grep -F 'const [showAllQuick, setShowAllQuick] = useState(false);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'const visibleQuick = showAllQuick ? quick : quick.slice(0, 4);' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
           grep -F 'aria-expanded={showAllQuick}' src/components/dashboard/AdminDashboardV2.tsx >/dev/null
