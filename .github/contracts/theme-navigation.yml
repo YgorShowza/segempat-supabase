@@ -35,6 +35,8 @@ jobs:
           grep -F 'lg:ml-[19rem]' "$LAYOUT" >/dev/null
           grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
           grep -F 'style={{ background: "var(--sidebar-bg)", color: "#fff" }}' "$LAYOUT" >/dev/null
+          test -f public/empat-mark.svg
+          grep -F 'const LOGO_URL = "/empat-mark.svg";' "$LAYOUT" >/dev/null
           grep -F 'function SidebarBrand' "$LAYOUT" >/dev/null
           grep -F 'segempat-sidebar-logo-mark' "$LAYOUT" >/dev/null
           grep -F 'segempat-sidebar-wordmark-seg' "$LAYOUT" >/dev/null
