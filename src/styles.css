@@ -1216,3 +1216,344 @@ p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
     transition: none !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   SHARED SYSTEM SURFACES + DASHBOARD REFINEMENT
+   Complementa o sistema unificado sem criar uma camada visual concorrente.
+   ═══════════════════════════════════════════════════════ */
+.segempat-system-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card, var(--shadow-md));
+}
+
+.segempat-page-hero {
+  background: var(--segempat-hero-bg);
+  border: 1px solid var(--segempat-hero-border);
+  box-shadow: var(--segempat-hero-shadow);
+}
+
+.segempat-page-hero-grid {
+  opacity: .42;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size: 30px 30px;
+}
+
+.segempat-page-hero-glow {
+  background: radial-gradient(circle,rgba(200,16,46,.16),transparent 68%);
+}
+
+.segempat-section-header {
+  border-color: var(--border);
+}
+
+.segempat-section-icon {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-subtle);
+}
+
+.segempat-section-title,
+.segempat-metric-value {
+  color: var(--text-1);
+}
+
+.segempat-section-description,
+.segempat-metric-label {
+  color: var(--text-4);
+}
+
+.segempat-metric-detail {
+  color: var(--text-3);
+}
+
+.segempat-admin-hero-eyebrow {
+  color: rgba(255,255,255,.50);
+}
+
+.segempat-admin-hero-description {
+  color: rgba(255,255,255,.60);
+}
+
+.segempat-admin-hero-updated {
+  color: rgba(255,255,255,.38);
+}
+
+.segempat-admin-badge {
+  border: 1px solid rgba(134,239,172,.16);
+  color: #9fe7b5;
+  background: rgba(16,185,129,.085);
+}
+
+.segempat-admin-badge[data-state="attention"] {
+  border-color: rgba(251,113,133,.18);
+  color: #ff96a8;
+  background: rgba(225,29,72,.105);
+}
+
+.segempat-admin-badge--master {
+  border-color: rgba(245,158,11,.18);
+  color: #f7d57a;
+  background: rgba(245,158,11,.08);
+}
+
+.segempat-admin-hero-action {
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.055);
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.segempat-admin-hero-action:hover {
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.085);
+  transform: translateY(-1px);
+}
+
+.segempat-admin-hero-action--primary {
+  color: #fff;
+  border-color: rgba(255,102,126,.23);
+  background: rgba(200,16,46,.22);
+}
+
+.segempat-admin-hero-action--primary:hover {
+  border-color: rgba(255,112,136,.30);
+  background: rgba(200,16,46,.30);
+}
+
+.segempat-admin-governance-toggle,
+.segempat-admin-quick-toggle {
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.segempat-admin-governance-toggle {
+  border-color: rgba(245,158,11,.16);
+  color: #c98205;
+  background: rgba(245,158,11,.075);
+}
+
+.segempat-admin-governance-card,
+.segempat-admin-sector-row,
+.segempat-admin-priority-row,
+.segempat-admin-quick-tile,
+.segempat-admin-performance-tile {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-subtle);
+}
+
+.segempat-admin-governance-card:hover,
+.segempat-admin-priority-row:hover,
+.segempat-admin-quick-tile:hover,
+.segempat-admin-performance-tile:hover {
+  border-color: color-mix(in srgb, var(--accent) 16%, var(--border));
+  box-shadow: 0 8px 22px rgba(16,24,40,.045);
+}
+
+.segempat-admin-priority-stat {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+
+.segempat-admin-card-footer {
+  border-color: var(--border);
+}
+
+.segempat-admin-quick-heading-icon {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.segempat-admin-quick-title {
+  color: var(--text-2);
+}
+
+.segempat-admin-quick-description {
+  color: var(--text-4);
+}
+
+.segempat-empty-state {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .segempat-admin-governance-card,
+[data-theme="dark"] .segempat-admin-sector-row,
+[data-theme="dark"] .segempat-admin-priority-row,
+[data-theme="dark"] .segempat-admin-quick-tile,
+[data-theme="dark"] .segempat-admin-performance-tile {
+  background: rgba(255,255,255,.022);
+  border-color: rgba(255,255,255,.05);
+}
+
+[data-theme="dark"] .segempat-admin-priority-stat {
+  background: rgba(255,255,255,.028);
+  border-color: rgba(255,255,255,.04);
+}
+
+[data-theme="dark"] .segempat-admin-governance-card:hover,
+[data-theme="dark"] .segempat-admin-priority-row:hover,
+[data-theme="dark"] .segempat-admin-quick-tile:hover,
+[data-theme="dark"] .segempat-admin-performance-tile:hover {
+  border-color: rgba(255,107,130,.13);
+  box-shadow: 0 10px 26px rgba(0,0,0,.16);
+}
+
+@media (min-width: 1024px) {
+  .segempat-admin-dashboard {
+    row-gap: .9rem;
+  }
+
+  .segempat-admin-hero {
+    min-height: 176px;
+    padding: 1.55rem 1.75rem !important;
+  }
+
+  .segempat-admin-hero-grid {
+    opacity: .28;
+  }
+
+  .segempat-admin-hero-glow {
+    opacity: .82;
+  }
+
+  .segempat-admin-hero-copy h1 {
+    font-size: clamp(1.65rem,1.85vw,2.05rem) !important;
+    font-weight: 750;
+    letter-spacing: -.028em;
+  }
+
+  .segempat-admin-hero-description {
+    max-width: 660px;
+  }
+
+  .segempat-admin-hero-badges {
+    margin-top: .85rem !important;
+  }
+
+  .segempat-admin-hero-actions {
+    gap: .45rem !important;
+  }
+
+  .segempat-admin-hero-actions > a,
+  .segempat-admin-hero-actions > button {
+    height: 38px !important;
+  }
+
+  .segempat-admin-governance > div:last-child {
+    gap: .65rem;
+    padding: .8rem 1rem 1rem !important;
+  }
+
+  .segempat-admin-governance-card {
+    min-height: 104px;
+    padding: .85rem !important;
+  }
+
+  .segempat-admin-metrics {
+    gap: .65rem !important;
+  }
+
+  .segempat-metric-card {
+    min-height: 108px !important;
+    padding: .92rem 1rem .9rem 1.12rem !important;
+  }
+
+  .segempat-metric-aura {
+    width: 5.5rem;
+    height: 5.5rem;
+    opacity: .035 !important;
+  }
+
+  .segempat-metric-label {
+    font-size: .61rem !important;
+    letter-spacing: .075em !important;
+  }
+
+  .segempat-metric-value {
+    margin-top: .45rem !important;
+    font-size: 1.62rem !important;
+    font-weight: 760 !important;
+  }
+
+  .segempat-metric-detail {
+    margin-top: .42rem !important;
+    font-size: .68rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  .segempat-metric-icon {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: .72rem !important;
+  }
+
+  .segempat-admin-primary-grid {
+    gap: .75rem !important;
+  }
+
+  .segempat-admin-sector-card,
+  .segempat-admin-priority-card {
+    min-height: 0;
+  }
+
+  .segempat-admin-sector-row,
+  .segempat-admin-priority-row {
+    padding: .72rem .8rem !important;
+  }
+
+  .segempat-admin-sector-row + .segempat-admin-sector-row {
+    margin-top: .48rem;
+  }
+
+  .segempat-empty-state {
+    min-height: 132px;
+  }
+
+  .segempat-admin-priority-card .segempat-empty-state {
+    min-height: 160px;
+  }
+
+  .segempat-admin-card-footer {
+    min-height: 44px;
+    padding-top: .6rem !important;
+    padding-bottom: .6rem !important;
+  }
+
+  .segempat-admin-quick {
+    padding: .78rem .86rem !important;
+  }
+
+  .segempat-admin-quick > div:first-child {
+    margin-bottom: .6rem !important;
+  }
+
+  .segempat-admin-quick-tile {
+    min-height: 64px !important;
+    gap: .62rem !important;
+    padding: .68rem .76rem !important;
+  }
+
+  .segempat-admin-performance > div:last-child {
+    gap: .6rem !important;
+    padding: .75rem .85rem .85rem !important;
+  }
+
+  .segempat-admin-performance-tile {
+    min-height: 120px;
+    padding: .82rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .segempat-empty-state {
+    min-height: 120px;
+  }
+}
