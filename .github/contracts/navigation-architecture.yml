@@ -68,4 +68,13 @@ jobs:
           grep -F 'current === section.section ? null : section.section' "$FILE" >/dev/null
           grep -F 'aria-expanded={isOpen}' "$FILE" >/dev/null
           grep -F '<GlobalSearch />' "$FILE" >/dev/null
+          grep -F 'description: "Rotinas e registros do dia a dia"' "$FILE" >/dev/null
+          grep -F 'description: "Formação, provas e certificações"' "$FILE" >/dev/null
+          grep -F 'description: "Aprendizado, provas e prática"' "$FILE" >/dev/null
+          grep -F 'description: "Progresso e certificados"' "$FILE" >/dev/null
+          grep -F 'for (const section of operatorSections)' "$FILE" >/dev/null
+          grep -F 'if (priorityItem) return { section: "Principal"' "$FILE" >/dev/null
+          if grep -F '{section.items.length} funções' "$FILE" >/dev/null; then
+            echo "Contagem de funções voltou a competir com o propósito das seções"; exit 1
+          fi
           echo "Arquitetura de navegação consolidada validada."
