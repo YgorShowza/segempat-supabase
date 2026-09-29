@@ -11,12 +11,7 @@ export function SystemSurface({
     <section
       {...props}
       className={`segempat-system-surface rounded-2xl ${className}`}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-card, var(--shadow-md))",
-        ...style,
-      }}
+      style={style}
     >
       {children}
     </section>
@@ -39,20 +34,9 @@ export function SystemPageHero({
   return (
     <section
       className="segempat-page-hero relative overflow-hidden rounded-[1.75rem] p-5 md:p-6 lg:p-7"
-      style={{
-        background: "var(--segempat-hero-bg)",
-        border: "1px solid var(--segempat-hero-border)",
-        boxShadow: "var(--segempat-hero-shadow)",
-      }}
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-50"
-        style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)",
-          backgroundSize: "30px 30px",
-        }}
-      />
-      <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,.22),transparent 68%)" }} />
+      <div className="segempat-page-hero-grid pointer-events-none absolute inset-0" />
+      <div className="segempat-page-hero-glow pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full" />
       <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 max-w-4xl">
           <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.16em] text-white/45">
@@ -81,16 +65,13 @@ export function SystemSectionHeader({
   accent?: string;
 }) {
   return (
-    <div className="segempat-section-header flex items-center gap-3 border-b p-4 lg:px-5" style={{ borderColor: "var(--border)" }}>
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-        style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }}
-      >
+    <div className="segempat-section-header flex items-center gap-3 border-b p-4 lg:px-5">
+      <span className="segempat-section-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
         <Icon className="h-4 w-4" style={{ color: accent }} />
       </span>
       <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</h2>
-        <p className="mt-0.5 text-[11px] leading-4" style={{ color: "var(--text-4)" }}>{description}</p>
+        <h2 className="segempat-section-title truncate text-sm font-black">{title}</h2>
+        <p className="segempat-section-description mt-0.5 text-[11px] leading-4">{description}</p>
       </div>
       {action}
     </div>
@@ -113,12 +94,12 @@ export function SystemMetricCard({
   return (
     <SystemSurface className="segempat-metric-card relative min-h-[132px] overflow-hidden p-4 sm:p-5">
       <div className="segempat-metric-accent absolute inset-x-0 top-0 h-[3px]" style={{ background: accent }} />
-      <div className="absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-[.055]" style={{ background: accent }} />
+      <div className="segempat-metric-aura absolute -right-9 -top-9 h-28 w-28 rounded-full opacity-[.055]" style={{ background: accent }} />
       <div className="segempat-metric-content relative flex h-full items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="segempat-metric-label text-[11px] font-black uppercase tracking-[.11em]" style={{ color: "var(--text-4)" }}>{label}</p>
-          <p className="segempat-metric-value mt-3 text-[2rem] font-black leading-none tracking-tight" style={{ color: "var(--text-1)" }}>{value}</p>
-          <p className="segempat-metric-detail mt-3 text-xs font-semibold leading-5" style={{ color: "var(--text-3)" }}>{detail}</p>
+          <p className="segempat-metric-label text-[11px] font-black uppercase tracking-[.11em]">{label}</p>
+          <p className="segempat-metric-value mt-3 text-[2rem] font-black leading-none tracking-tight">{value}</p>
+          <p className="segempat-metric-detail mt-3 text-xs font-semibold leading-5">{detail}</p>
         </div>
         <div
           className="segempat-metric-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
