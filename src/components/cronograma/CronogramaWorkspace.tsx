@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import {
   CalendarDays, ChevronLeft, ChevronRight, Plus, Search, Filter, CheckCircle2,
   Clock3, ShieldCheck, Pencil, Trash2, Users, Target, X, Layers3, CalendarRange,
