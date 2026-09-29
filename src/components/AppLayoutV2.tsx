@@ -90,18 +90,36 @@ const adminSections: MenuSection[] = [
   ] },
 ];
 
-const operatorMenu: MenuItem[] = [
+const operatorPriorityMenu: MenuItem[] = [
   { path: "/painel", label: "Início", icon: LayoutDashboard },
   { path: "/pendencias", label: "Pendências", icon: ClipboardList },
-  { path: "/provas", label: "Provas", icon: FileText },
-  { path: "/progresso", label: "Progresso", icon: TrendingUp },
-  { path: "/certificados", label: "Certificados", icon: Award },
-  { path: "/treinamentos", label: "Academia SEGEMPAT", icon: GraduationCap },
-  { path: "/conteudos", label: "Base de Conhecimento", icon: BookOpen },
-  { path: "/meu-perfil", label: "Meu Perfil", icon: UserRound },
-  { path: "/pratico", label: "Avaliação Prática", icon: ClipboardCheck },
   { path: "/minhas-ocorrencias", label: "Ocorrências", icon: AlertTriangle },
 ];
+
+const operatorSections: MenuSection[] = [
+  { section: "Capacitação", icon: GraduationCap, items: [
+    { path: "/treinamentos", label: "Academia SEGEMPAT", icon: GraduationCap },
+    { path: "/provas", label: "Provas", icon: FileText },
+    { path: "/conteudos", label: "Base de Conhecimento", icon: BookOpen },
+    { path: "/pratico", label: "Avaliação Prática", icon: ClipboardCheck },
+  ] },
+  { section: "Desempenho", icon: TrendingUp, items: [
+    { path: "/progresso", label: "Progresso", icon: TrendingUp },
+    { path: "/certificados", label: "Certificados", icon: Award },
+  ] },
+  { section: "Conta", icon: UserRound, items: [
+    { path: "/meu-perfil", label: "Meu Perfil", icon: UserRound },
+  ] },
+];
+
+const operatorMenu: MenuItem[] = [
+  ...operatorPriorityMenu,
+  ...operatorSections.flatMap((section) => section.items),
+];
+
+const operatorQuickMenu = operatorMenu.filter((item) =>
+  ["/painel", "/pendencias", "/minhas-ocorrencias", "/treinamentos", "/progresso"].includes(item.path),
+);
 
 function routeMatches(pathname: string, itemPath: string) {
   if (itemPath === "/admin" || itemPath === "/painel") return pathname === itemPath;
@@ -172,8 +190,31 @@ function AdminNavItems({ pathname, user }: { pathname: string; user: ReturnType<
   </div>;
 }
 
+function OperatorNavItems({ pathname }: { pathname: string }) {
+  const activeSection = operatorSections.find((section) => section.items.some((item) => routeMatches(pathname, item.path)))?.section;
+  const priorityRouteActive = operatorPriorityMenu.some((item) => routeMatches(pathname, item.path));
+  const defaultSection = priorityRouteActive ? null : activeSection ?? operatorSections[0]?.section ?? null;
+  const [openSection, setOpenSection] = useState<string | null>(defaultSection);
+
+  useEffect(() => {
+    if (priorityRouteActive) {
+      setOpenSection(null);
+      return;
+    }
+    if (activeSection) setOpenSection(activeSection);
+  }, [activeSection, priorityRouteActive]);
+
+  return <div className="space-y-3">
+    <div className="segempat-sidebar-priority space-y-1.5">
+      <p className="px-2 text-[9px] font-black uppercase tracking-[.15em]" style={{ color: "var(--text-4)" }}>Principal</p>
+      <div className="space-y-1">{operatorPriorityMenu.map((item) => <MenuLink key={item.path} item={item} />)}</div>
+    </div>
+    <div className="space-y-2">{operatorSections.map((section) => { const SectionIcon = section.icon; const isOpen = openSection === section.section; const isActive = activeSection === section.section; return <div key={section.section} className="segempat-sidebar-section-card overflow-hidden rounded-2xl transition-colors" data-active={isActive ? "true" : "false"} style={{ background: isActive ? "var(--accent-soft)" : "transparent", border: isActive ? "1px solid rgba(200,16,46,.20)" : "1px solid transparent" }}><button type="button" onClick={() => setOpenSection((current) => current === section.section ? null : section.section)} className="segempat-sidebar-section flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors" aria-expanded={isOpen}><div className="segempat-sidebar-section-icon flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: isActive ? "var(--accent-soft2)" : "var(--bg-surface-2)" }}><SectionIcon className="h-3.5 w-3.5" style={{ color: isActive ? "var(--accent)" : "var(--text-3)" }} /></div><div className="min-w-0 flex-1"><p className="segempat-sidebar-section-title truncate text-[10px] font-black uppercase tracking-[.13em]" style={{ color: isActive ? "var(--accent)" : "var(--text-2)" }}>{section.section}</p><p className="segempat-sidebar-section-count mt-0.5 text-[9px]" style={{ color: "var(--text-4)" }}>{section.items.length} funções</p></div>{isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "var(--text-4)" }} />}</button>{isOpen && <div className="space-y-1 px-1.5 pb-2">{section.items.map((item) => <MenuLink key={item.path} item={item} />)}</div>}</div>; })}</div>
+  </div>;
+}
+
 function NavItems({ isAdmin, pathname, user }: { isAdmin: boolean; pathname: string; user: ReturnType<typeof useCurrentUser>["data"] }) {
-  if (!isAdmin) return <div className="space-y-1.5">{operatorMenu.map((item) => <MenuLink key={item.path} item={item} />)}</div>;
+  if (!isAdmin) return <OperatorNavItems pathname={pathname} />;
   return <AdminNavItems pathname={pathname} user={user} />;
 }
 
@@ -262,7 +303,7 @@ export function AppLayoutV2({ children }: { children: ReactNode }) {
 
       <main className="segempat-app-main min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-24 lg:p-7 lg:pb-8 xl:p-8 2xl:px-10"><div className="segempat-app-content mx-auto w-full max-w-[1680px]">{children}</div></main>
 
-      {!isAdmin && <nav aria-label="Navegação rápida" className="fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 lg:hidden" style={{ background: "var(--header-bg)", borderTop: "1px solid var(--border)", backdropFilter: "blur(12px)", paddingBottom: "max(.375rem, env(safe-area-inset-bottom))" }}><div className="mx-auto flex w-full max-w-xl items-center justify-around gap-1">{operatorMenu.slice(0, 5).map((item) => <MobileNavLink key={item.path} item={item} />)}</div></nav>}
+      {!isAdmin && <nav aria-label="Navegação rápida" className="fixed bottom-0 left-0 right-0 z-40 px-2 py-1.5 lg:hidden" style={{ background: "var(--header-bg)", borderTop: "1px solid var(--border)", backdropFilter: "blur(12px)", paddingBottom: "max(.375rem, env(safe-area-inset-bottom))" }}><div className="mx-auto flex w-full max-w-xl items-center justify-around gap-1">{operatorQuickMenu.map((item) => <MobileNavLink key={item.path} item={item} />)}</div></nav>}
     </div>
   </div>;
 }
