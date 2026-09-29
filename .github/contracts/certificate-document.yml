@@ -21,3 +21,16 @@ jobs:
           node-version: 20
       - name: Validate certificate contract
         run: node scripts/check-certificate-document.mjs
+      - name: Validate certificate workflow visual shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          VALIDATION=src/components/certificates/CertificateValidationWorkspace.tsx
+          SIGNATURES=src/components/certificates/ExamSignaturesWorkspace.tsx
+          grep -F 'SystemPageHero' "$VALIDATION" >/dev/null
+          grep -F 'SystemSurface' "$VALIDATION" >/dev/null
+          grep -F 'segempat-document-form' "$VALIDATION" >/dev/null
+          grep -F 'SystemPageHero' "$SIGNATURES" >/dev/null
+          grep -F 'SystemSurface' "$SIGNATURES" >/dev/null
+          grep -F 'segempat-document-record' "$SIGNATURES" >/dev/null
+          grep -F 'Governance and certificate workflow convergence' src/styles.css >/dev/null
