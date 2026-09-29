@@ -34,22 +34,37 @@ jobs:
           grep -F 'hidden w-[19rem] flex-col lg:flex' "$LAYOUT" >/dev/null
           grep -F 'lg:ml-[19rem]' "$LAYOUT" >/dev/null
           grep -F 'max-w-[1680px]' "$LAYOUT" >/dev/null
-          grep -F 'background: "var(--header-bg)"' "$LAYOUT" >/dev/null
-          grep -F 'color: isActive ? "#fff" : "var(--text-2)"' "$LAYOUT" >/dev/null
-          grep -F 'color: isActive ? "#fff" : "var(--text-3)"' "$LAYOUT" >/dev/null
+          grep -F 'style={{ background: "var(--sidebar-bg)", color: "#fff" }}' "$LAYOUT" >/dev/null
+          test -f public/empat-mark.svg
+          grep -F 'const LOGO_URL = "/empat-mark.svg";' "$LAYOUT" >/dev/null
+          grep -F 'function SidebarBrand' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-logo-mark' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-wordmark-seg' "$LAYOUT" >/dev/null
+          grep -F 'segempat-sidebar-wordmark-empat' "$LAYOUT" >/dev/null
+          grep -F 'Segurança · Gestão · Operação' "$LAYOUT" >/dev/null
+          grep -F 'segempat-mobile-logo-mark' "$LAYOUT" >/dev/null
           grep -F 'Tema da interface' "$LAYOUT" >/dev/null
 
+          if grep -F 'segempat-sidebar-logo-shell overflow-hidden rounded-xl bg-white' "$LAYOUT" >/dev/null; then
+            echo 'ERRO: fundo branco voltou à marca da sidebar.' >&2
+            exit 1
+          fi
+
           grep -F '.segempat-sidebar-sheet[role="dialog"]' src/theme-contrast-fixes.css >/dev/null
-          grep -F 'background: var(--header-bg) !important' src/theme-contrast-fixes.css >/dev/null
-          grep -F 'color: var(--text-1) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'background: var(--sidebar-bg) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F 'background: rgba(255, 255, 255, 0.055) !important' src/theme-contrast-fixes.css >/dev/null
+          grep -F '.segempat-sidebar-wordmark-empat' src/final-experience.css >/dev/null
+          grep -F 'color: #e01833' src/final-experience.css >/dev/null
+          grep -F 'box-shadow: inset 3px 0 0 #e01833' src/final-experience.css >/dev/null
+          grep -F '.segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-count' src/final-experience.css >/dev/null
 
           if grep -F '[class*="w-[280px]"]' src/theme-contrast-fixes.css >/dev/null; then
             echo 'ERRO: proteção de tema não pode depender da largura histórica do drawer.' >&2
             exit 1
           fi
 
-          if grep -F 'rgba(255,255,255,0.62)' "$LAYOUT" >/dev/null; then
-            echo 'ERRO: link inativo da sidebar voltou a depender de texto branco fixo.' >&2
+          if grep -F 'background: var(--bg-surface-2) !important' src/theme-contrast-fixes.css >/dev/null; then
+            echo 'ERRO: hover da sidebar voltou a herdar superfície clara do tema.' >&2
             exit 1
           fi
 

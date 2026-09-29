@@ -108,10 +108,244 @@ main .overflow-x-auto,
   max-width: 100%;
 }
 
-.segempat-sidebar-link[data-active="false"]:hover,
-.segempat-sidebar-section:hover {
-  background: var(--bg-surface-2);
+/* Premium sidebar foundation: transparent EMPAT mark, SEGEMPAT wordmark,
+   dark-safe interactions and consistent hierarchy on desktop/mobile. */
+.segempat-sidebar-brand {
+  min-height: 80px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .8rem !important;
+  padding: .9rem .95rem !important;
 }
+
+.segempat-sidebar-brand--compact {
+  min-height: 76px !important;
+}
+
+.segempat-sidebar-logo-mark {
+  width: 84px;
+  height: 40px;
+  flex: 0 0 84px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.segempat-sidebar-logo-image {
+  width: 84px;
+  max-width: none;
+  height: auto;
+  display: block;
+  transform: translateY(0);
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,.18));
+}
+
+.segempat-sidebar-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin: 0;
+  font-family: "Sora", "Inter", sans-serif;
+  font-size: 1.03rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .035em;
+}
+
+.segempat-sidebar-wordmark-seg {
+  color: rgba(255,255,255,.96);
+}
+
+.segempat-sidebar-wordmark-empat {
+  color: #e01833;
+}
+
+.segempat-sidebar-tagline {
+  margin-top: .38rem;
+  color: rgba(255,255,255,.42);
+  font-family: "Inter", sans-serif;
+  font-size: .56rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.segempat-mobile-logo-mark {
+  width: 58px;
+  height: 28px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.segempat-mobile-logo-image {
+  width: 58px;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+
+.segempat-app-sidebar .segempat-sidebar-priority > p,
+.segempat-sidebar-sheet .segempat-sidebar-priority > p {
+  color: rgba(255,255,255,.34) !important;
+  letter-spacing: .13em !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link,
+.segempat-sidebar-sheet .segempat-sidebar-link {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover {
+  background: linear-gradient(90deg,rgba(255,255,255,.065),rgba(255,255,255,.035)) !important;
+  border-color: rgba(255,255,255,.075) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link[data-active="true"],
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] {
+  background: linear-gradient(90deg,rgba(200,16,46,.28),rgba(200,16,46,.075)) !important;
+  border-color: rgba(255,91,114,.19) !important;
+  box-shadow: inset 3px 0 0 #e01833, 0 8px 18px rgba(0,0,0,.10) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link-icon,
+.segempat-sidebar-sheet .segempat-sidebar-link-icon {
+  color: rgba(255,255,255,.50) !important;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link-label,
+.segempat-sidebar-sheet .segempat-sidebar-link-label {
+  color: rgba(255,255,255,.72) !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+  transition: color 150ms ease;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-icon,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-icon {
+  color: #ff6f86 !important;
+  transform: translateX(1px);
+}
+
+.segempat-app-sidebar .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-label,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="false"]:hover .segempat-sidebar-link-label,
+.segempat-app-sidebar .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-label {
+  color: #ffffff !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon,
+.segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] .segempat-sidebar-link-icon {
+  color: #ff8ca0 !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-card,
+.segempat-sidebar-sheet .segempat-sidebar-section-card {
+  border-radius: .82rem !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"],
+.segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] {
+  border-color: rgba(255,93,116,.12) !important;
+  background: rgba(200,16,46,.055) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section,
+.segempat-sidebar-sheet .segempat-sidebar-section {
+  border-radius: .75rem !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section:hover,
+.segempat-sidebar-sheet .segempat-sidebar-section:hover,
+.segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"],
+.segempat-sidebar-sheet .segempat-sidebar-section[aria-expanded="true"] {
+  background: rgba(255,255,255,.05) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-title,
+.segempat-sidebar-sheet .segempat-sidebar-section-title {
+  color: rgba(255,255,255,.67) !important;
+  font-family: "Sora", "Inter", sans-serif;
+  font-size: .61rem !important;
+  letter-spacing: .075em !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title,
+.segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-title,
+.segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-title,
+.segempat-sidebar-sheet .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-title {
+  color: rgba(255,255,255,.94) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-icon,
+.segempat-sidebar-sheet .segempat-sidebar-section-icon {
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(255,255,255,.055) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon,
+.segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] .segempat-sidebar-section-icon {
+  background: rgba(200,16,46,.16) !important;
+  border-color: rgba(255,91,114,.14) !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section-count,
+.segempat-sidebar-sheet .segempat-sidebar-section-count {
+  display: none !important;
+  color: rgba(255,255,255,.36) !important;
+  font-size: .56rem !important;
+  line-height: 1.15 !important;
+}
+
+.segempat-app-sidebar .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-count,
+.segempat-sidebar-sheet .segempat-sidebar-section[aria-expanded="true"] .segempat-sidebar-section-count {
+  display: block !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-identity p:first-of-type {
+  color: rgba(255,255,255,.92) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-identity p:nth-of-type(2),
+.segempat-sidebar-sheet .segempat-sidebar-section > svg:last-child {
+  color: rgba(255,255,255,.38) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-identity {
+  border-bottom-color: rgba(255,255,255,.07) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-identity > a:hover {
+  background: rgba(255,255,255,.045) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-footer {
+  border-top-color: rgba(255,255,255,.07) !important;
+  background: rgba(0,0,0,.10) !important;
+}
+
+.segempat-sidebar-sheet .segempat-sidebar-footer .segempat-theme-toggle {
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(255,255,255,.07) !important;
+}
+
 
 .segempat-dialog-content,
 .segempat-sheet-content {
