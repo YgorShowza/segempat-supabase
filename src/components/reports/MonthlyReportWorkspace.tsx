@@ -29,6 +29,7 @@ import {
 } from "@/lib/reporting-insights";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SystemPageHero, SystemSurface } from "@/components/system/SystemUI";
 
 function currentMonth() {
   return operationalMonth();
@@ -108,11 +109,11 @@ export function MonthlyReportWorkspace({ embedded = false }: { embedded?: boolea
   if (userLoading) return <Loading />;
   if (!user?.isAdmin || !canViewReports) {
     return (
-      <div className="mx-auto max-w-xl rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <SystemSurface className="mx-auto max-w-xl p-8 text-center">
         <ShieldCheck className="mx-auto mb-3 h-10 w-10" style={{ color: "var(--accent)" }} />
         <h1 className="text-lg font-black" style={{ color: "var(--text-1)" }}>Acesso restrito</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>O relatório mensal exige a permissão de visualização de relatórios.</p>
-      </div>
+      </SystemSurface>
     );
   }
 
@@ -132,24 +133,21 @@ export function MonthlyReportWorkspace({ embedded = false }: { embedded?: boolea
   return (
     <div className={`segempat-monthly-report-root ${embedded ? "w-full" : "mx-auto w-full max-w-6xl"} space-y-5 pb-10`}>
       {!embedded ? (
-        <header className="reports-no-print rounded-[1.5rem] p-5 md:p-6" style={{ background: "linear-gradient(135deg,#171118,#2b0b13 50%,#111216)", border: "1px solid rgba(200,16,46,.26)" }}>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.2em] text-white/40"><CalendarDays className="h-4 w-4" /> Fechamento mensal</div>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Relatório Mensal</h1>
-              <p className="mt-1 max-w-2xl text-sm text-white/50">Performance individual, avaliações e execução do cronograma com rastreabilidade por colaborador.</p>
-            </div>
-            <MonthlyControls month={month} onMonthChange={(value) => { setMonth(value); setOpenEmployees(new Set()); }} dark />
-          </div>
-        </header>
+        <SystemPageHero
+          icon={CalendarDays}
+          eyebrow="Fechamento mensal"
+          title="Relatório Mensal"
+          description="Performance individual, avaliações e execução do cronograma com rastreabilidade por colaborador."
+          actions={<MonthlyControls month={month} onMonthChange={(value) => { setMonth(value); setOpenEmployees(new Set()); }} dark />}
+        />
       ) : (
-        <section className="reports-no-print flex flex-col gap-4 rounded-2xl p-4 lg:flex-row lg:items-center lg:justify-between" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+        <SystemSurface className="reports-no-print flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.16em]" style={{ color: "var(--accent)" }}><CalendarDays className="h-4 w-4" /> Fechamento mensal</div>
             <p className="mt-1 text-sm font-bold" style={{ color: "var(--text-1)" }}>Performance individual, avaliações e execução do cronograma · {monthLabel(month)}</p>
           </div>
           <MonthlyControls month={month} onMonthChange={(value) => { setMonth(value); setOpenEmployees(new Set()); }} />
-        </section>
+        </SystemSurface>
       )}
 
       <section className="segempat-report-print rounded-2xl p-4" style={{ background: "#fff", color: "#171A1F", border: "1px solid #d7d9de" }}>
@@ -166,7 +164,7 @@ export function MonthlyReportWorkspace({ embedded = false }: { embedded?: boolea
         <Metric label="Avaliações" value={totals.attempts} icon={Award} />
       </section>
 
-      <section className="reports-no-print rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <SystemSurface className="reports-no-print p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_200px_auto] lg:items-end">
           <label className="text-[10px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>
             Buscar
@@ -177,10 +175,10 @@ export function MonthlyReportWorkspace({ embedded = false }: { embedded?: boolea
           <Button variant="outline" className="h-10 gap-2" onClick={() => { setSearch(""); setSituation("Todos"); setSector("Todos"); }}><Filter className="h-4 w-4" /> Limpar filtros</Button>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px]" style={{ color: "var(--text-4)" }}><span>Mostrando <strong style={{ color: "var(--text-2)" }}>{visibleRows.length}</strong> de {scopedRows.length} colaboradores no escopo.</span><div className="flex gap-2"><button type="button" onClick={expandAll} className="font-black" style={{ color: "var(--accent)" }}>Expandir resultados</button><span>·</span><button type="button" onClick={collapseAll} className="font-black" style={{ color: "var(--accent)" }}>Recolher</button></div></div>
-      </section>
+      </SystemSurface>
 
       {snapshot.isLoading && !snapshot.data ? <Loading /> : snapshot.isError ? (
-        <section className="rounded-2xl p-8 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><AlertTriangle className="mx-auto h-8 w-8 text-amber-500" /><p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar os dados do fechamento mensal.</p><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Nenhum consolidado é estimado quando a fonte falha.</p><Button variant="outline" className="mt-4" onClick={() => snapshot.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button></section>
+        <SystemSurface className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-amber-500" /><p className="mt-3 font-black" style={{ color: "var(--text-1)" }}>Não foi possível carregar os dados do fechamento mensal.</p><p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>Nenhum consolidado é estimado quando a fonte falha.</p><Button variant="outline" className="mt-4" onClick={() => snapshot.refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente</Button></SystemSurface>
       ) : scopedRows.length === 0 ? (
         <EmptyPanel title="Nenhum colaborador no escopo" detail="Não há colaboradores ativos deste setor para o período selecionado." />
       ) : visibleRows.length === 0 ? (
@@ -191,9 +189,9 @@ export function MonthlyReportWorkspace({ embedded = false }: { embedded?: boolea
         </div>
       )}
 
-      <section className="segempat-report-print rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <SystemSurface className="segempat-report-print p-4">
         <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--accent)" }} /><div><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>Critério do fechamento</p><p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>O consolidado considera colaboradores ativos fora do perfil Inspetor. Cronograma é vinculado por ID ou matrícula e avaliações pela matrícula. “Em atraso” representa item pendente de mês anterior ou, no mês operacional atual, item pendente cuja data planejada já passou. Indicadores sem base suficiente são exibidos como “—”.</p></div></div>
-      </section>
+      </SystemSurface>
 
       <style>{`
         @media print {
@@ -254,7 +252,7 @@ function MonthlyControls({ month, onMonthChange, dark = false }: { month: string
 }
 
 function Metric({ label, value, icon: Icon, tone }: { label: string; value: string | number; icon: typeof UserRound; tone?: string }) {
-  return <section className="segempat-report-print rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}><div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-2xl font-black" style={{ color: tone ?? "var(--text-1)" }}>{value}</p></div><Icon className="h-4 w-4" style={{ color: tone ?? "var(--accent)" }} /></div></section>;
+  return <SystemSurface className="segempat-report-print p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.12em]" style={{ color: "var(--text-4)" }}>{label}</p><p className="mt-2 text-2xl font-black" style={{ color: tone ?? "var(--text-1)" }}>{value}</p></div><Icon className="h-4 w-4" style={{ color: tone ?? "var(--accent)" }} /></div></SystemSurface>;
 }
 
 function InlineStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
@@ -280,7 +278,7 @@ function Empty({ text }: { text: string }) {
 }
 
 function EmptyPanel({ title, detail }: { title: string; detail: string }) {
-  return <section className="rounded-2xl p-10 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{detail}</p></section>;
+  return <SystemSurface className="p-10 text-center"><p className="text-sm font-black" style={{ color: "var(--text-1)" }}>{title}</p><p className="mt-1 text-xs" style={{ color: "var(--text-4)" }}>{detail}</p></SystemSurface>;
 }
 
 function formatPercent(value: number | null) {
