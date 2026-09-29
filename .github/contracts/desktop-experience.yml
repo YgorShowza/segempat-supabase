@@ -58,7 +58,9 @@ jobs:
           for route in /equipe /analytics /cronograma /ocorrencias /provas /risco /individual /relatorios; do
             grep -F "to: \"$route\"" src/components/dashboard/AdminDashboardV2.tsx >/dev/null || { echo "Atalho do Dashboard ausente: $route"; exit 1; }
           done
-          grep -F 'w-[19rem]' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F 'data-sidebar-collapsed={sidebarCollapsed ? "true" : "false"}' src/components/AppLayoutV2.tsx >/dev/null
+          grep -F -- '--segempat-sidebar-width: 19rem;' src/styles.css >/dev/null
+          grep -F -- '--segempat-sidebar-width: 5.25rem;' src/final-experience.css >/dev/null
           grep -F 'currentLocation' src/components/AppLayoutV2.tsx >/dev/null
           grep -F 'max-h-[62vh]' src/components/team/TeamManagementWorkspace.tsx >/dev/null
           grep -F '<table' src/components/team/TeamManagementWorkspace.tsx >/dev/null
