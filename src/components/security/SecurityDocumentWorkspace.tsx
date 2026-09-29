@@ -1,6 +1,7 @@
 import { AlertTriangle, Award, Database, FileCheck2, KeyRound, LockKeyhole, Network, Printer, ShieldCheck, UserCog } from "lucide-react";
+import { SystemSurface } from "@/components/system/SystemUI";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a1117d573bbf85981b1abee/8271ac857_IMG_9226.png";
+const LOGO_URL = "/empat-logo-report.png";
 
 const SECTIONS = [
   {
@@ -29,11 +30,11 @@ const SECTIONS = [
   },
   {
     icon: Database,
-    title: "Isolamento de dados no MySQL",
+    title: "Isolamento de dados no PostgreSQL",
     status: "Implementado no código",
     tone: "ok",
     items: [
-      "O frontend não se conecta diretamente ao MySQL; toda operação passa pela API SEGEMPAT.",
+      "O frontend não se conecta diretamente ao PostgreSQL/Supabase; toda operação passa pela API SEGEMPAT.",
       "Consultas de Operador são filtradas pela sessão e matrícula do usuário autenticado.",
       "Operações administrativas são protegidas por middleware de autorização da Inspetoria.",
       "Módulos como provas, cronograma, treinamento, ocorrências e certificados seguem essa fronteira de acesso.",
@@ -75,13 +76,13 @@ const SECTIONS = [
   },
   {
     icon: Network,
-    title: "Rede corporativa, IP e VPN",
+    title: "Hospedagem, rede e conexão segura",
     status: "Requer infraestrutura",
     tone: "warn",
     items: [
-      "A API SEGEMPAT deverá ser hospedada em ambiente definido pela empresa e conectada ao MySQL pela rede interna.",
-      "Restrições por IP, VPN, firewall, proxy reverso ou WAF devem ser aplicadas na infraestrutura de publicação.",
-      "A configuração final depende das regras de rede e segurança definidas pela TI responsável pela implantação.",
+      "A API SEGEMPAT opera como única intermediária entre o frontend e o PostgreSQL Supabase, usando conexão de runtime dedicada e TLS.",
+      "Controles adicionais como IP permitido, VPN, firewall, proxy reverso ou WAF podem ser aplicados pela infraestrutura quando exigidos pela política corporativa.",
+      "A conexão de runtime deve manter menor privilégio, pooling compatível com o Supabase e segredos somente no host da API.",
     ],
   },
   {
@@ -91,7 +92,7 @@ const SECTIONS = [
     tone: "warn",
     items: [
       "Homologar login, primeiro acesso, logout e recuperação de sessão com Inspetor e Operador em fluxo real.",
-      "Validar a API publicada contra o MySQL da empresa antes da implantação corporativa definitiva.",
+      "Validar continuamente a API publicada contra o PostgreSQL Supabase, incluindo readiness, TLS, migrations, storage e menor privilégio.",
       "Revisar retenção, backup, recuperação, logs e política de armazenamento das assinaturas com a TI.",
       "Concluir e validar o fluxo de exportação/compartilhamento do certificado nos navegadores móveis utilizados pela operação.",
       "Definir requisitos corporativos adicionais, como VPN, IP permitido, SSO ou MFA, antes da publicação definitiva.",
@@ -115,7 +116,7 @@ export function SecurityDocumentWorkspace() {
         </button>
       </div>
 
-      <header className="rounded-2xl p-5 md:p-6" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" }}>
+      <SystemSurface className="rounded-2xl p-5 md:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="w-fit rounded-xl bg-white p-2.5">
             <img src={LOGO_URL} alt="EMPAT" className="h-12 w-auto object-contain" />
@@ -125,29 +126,29 @@ export function SecurityDocumentWorkspace() {
               <ShieldCheck className="h-4 w-4" /> Arquitetura de segurança
             </div>
             <h1 className="mt-1 text-2xl font-black" style={{ color: "var(--text-1)" }}>Documento de Segurança da Informação</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>SEGEMPAT · arquitetura alvo baseada em API própria, sessão no backend e MySQL corporativo.</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--text-4)" }}>SEGEMPAT · arquitetura baseada em API própria, sessão no backend e PostgreSQL Supabase.</p>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Controles no código" value={String(implemented)} />
           <Stat label="Itens de homologação" value={String(pending)} warn />
           <Stat label="Autenticação" value="API própria" />
-          <Stat label="Banco alvo" value="MySQL" />
+          <Stat label="Banco" value="PostgreSQL" />
         </div>
-      </header>
+      </SystemSurface>
 
-      <section className="rounded-2xl p-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <SystemSurface className="rounded-2xl p-5">
         <p className="text-sm leading-6" style={{ color: "var(--text-2)" }}>
-          Este documento acompanha a implantação do SEGEMPAT na arquitetura corporativa MySQL. O navegador se comunica com a API SEGEMPAT, e somente essa API acessa o banco interno. O frontend atual não possui fallback de backend; o modo demonstração permanece isolado e é desabilitado quando a API corporativa é configurada ou exigida. A indicação “implementado no código” descreve controles presentes no repositório e não substitui a homologação final no ambiente real da empresa.
+          Este documento acompanha a edição SEGEMPAT sobre Supabase/PostgreSQL. O navegador se comunica com a API SEGEMPAT, e somente essa API acessa o banco e o storage privados. O frontend atual não possui fallback de backend; o modo demonstração permanece isolado e é desabilitado quando a API corporativa é configurada ou exigida. A indicação “implementado no código” descreve controles presentes no repositório e não substitui a homologação final no ambiente real da empresa.
         </p>
-      </section>
+      </SystemSurface>
 
       <div className="space-y-3">
         {SECTIONS.map((section) => {
           const Icon = section.icon;
           const warn = section.tone === "warn";
           return (
-            <section key={section.title} className="overflow-hidden rounded-2xl" style={{ background: "var(--bg-surface)", border: `1px solid ${warn ? "rgba(245,158,11,.30)" : "var(--border)"}` }}>
+            <SystemSurface key={section.title} className="overflow-hidden rounded-2xl" style={{ borderColor: warn ? "rgba(245,158,11,.30)" : "var(--border)" }}>
               <div className="flex items-center gap-3 p-4" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: warn ? "rgba(245,158,11,.10)" : "rgba(200,16,46,.08)" }}>
                   <Icon className="h-5 w-5" style={{ color: warn ? "#f59e0b" : "#C8102E" }} />
@@ -163,13 +164,13 @@ export function SecurityDocumentWorkspace() {
                   </li>
                 ))}
               </ul>
-            </section>
+            </SystemSurface>
           );
         })}
       </div>
 
       <footer className="rounded-2xl p-4 text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-4)" }}>
-        Documento técnico gerado a partir da arquitetura atual do projeto SEGEMPAT. Data de referência: {new Date().toLocaleDateString("pt-BR", { timeZone: "America/Maceio" })}. A homologação corporativa depende do ambiente MySQL e da infraestrutura fornecida pela TI.
+        Documento técnico gerado a partir da arquitetura atual da edição Supabase/PostgreSQL do SEGEMPAT. Data de referência: {new Date().toLocaleDateString("pt-BR", { timeZone: "America/Maceio" })}. A homologação corporativa depende dos gates reais de API, banco, storage, autenticação e infraestrutura.
       </footer>
     </div>
   );
