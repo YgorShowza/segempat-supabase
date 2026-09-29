@@ -59,8 +59,13 @@ jobs:
             grep -F "to: \"$route\"" src/components/dashboard/AdminDashboardV2.tsx >/dev/null || { echo "Atalho do Dashboard ausente: $route"; exit 1; }
           done
           grep -F 'data-sidebar-collapsed={sidebarCollapsed ? "true" : "false"}' src/components/AppLayoutV2.tsx >/dev/null
-          grep -F -- '--segempat-sidebar-width: 19rem;' src/styles.css >/dev/null
-          grep -F -- '--segempat-sidebar-width: 5.25rem;' src/final-experience.css >/dev/null
+          grep -F -- '--segempat-sidebar-width: 18rem;' src/styles.css >/dev/null
+          grep -F -- '--segempat-sidebar-collapsed-width: 5.25rem;' src/styles.css >/dev/null
+          grep -F '.segempat-app-shell[data-sidebar-collapsed="true"]' src/styles.css >/dev/null
+          grep -F 'UNIFIED DESKTOP EXPERIENCE' src/styles.css >/dev/null
+          if grep -F 'DESKTOP LAYER 2' src/styles.css >/dev/null || grep -F 'DESKTOP LAYER 3' src/styles.css >/dev/null; then
+            echo "Camadas desktop concorrentes voltaram ao stylesheet principal"; exit 1
+          fi
           grep -F 'currentLocation' src/components/AppLayoutV2.tsx >/dev/null
           grep -F 'max-h-[62vh]' src/components/team/TeamManagementWorkspace.tsx >/dev/null
           grep -F '<table' src/components/team/TeamManagementWorkspace.tsx >/dev/null
