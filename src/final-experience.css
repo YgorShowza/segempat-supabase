@@ -111,35 +111,35 @@ main .overflow-x-auto,
 /* Premium sidebar foundation — theme-aware, calm and corporate. */
 :root,
 [data-theme="light"] {
-  --sidebar-bg: #f8fafc;
+  --sidebar-bg: #f7f8fa;
   --sidebar-panel: #ffffff;
-  --sidebar-text: #172033;
-  --sidebar-muted: #667085;
+  --sidebar-text: #18202b;
+  --sidebar-muted: #697386;
   --sidebar-faint: #98a2b3;
-  --sidebar-border: #e3e7ec;
-  --sidebar-hover: #eef2f6;
-  --sidebar-icon-bg: #f1f4f7;
-  --sidebar-active-bg: #fff1f3;
-  --sidebar-active-border: rgba(200,16,46,.22);
-  --sidebar-section-active: #fff8f9;
-  --sidebar-footer-bg: #f8fafc;
-  --sidebar-shadow: 10px 0 30px rgba(15,23,42,.06);
+  --sidebar-border: #e4e7ec;
+  --sidebar-hover: #f0f2f5;
+  --sidebar-icon-bg: #f1f3f5;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-border: #e1e4e8;
+  --sidebar-section-active: rgba(15,23,42,.018);
+  --sidebar-footer-bg: #f7f8fa;
+  --sidebar-shadow: 8px 0 26px rgba(15,23,42,.045);
 }
 
 [data-theme="dark"] {
-  --sidebar-bg: #102d43;
-  --sidebar-panel: #102d43;
-  --sidebar-text: #f4f7fa;
-  --sidebar-muted: #a8b4c2;
-  --sidebar-faint: #718094;
-  --sidebar-border: rgba(255,255,255,.085);
-  --sidebar-hover: rgba(255,255,255,.065);
-  --sidebar-icon-bg: rgba(255,255,255,.055);
-  --sidebar-active-bg: rgba(200,16,46,.17);
-  --sidebar-active-border: rgba(255,96,119,.22);
-  --sidebar-section-active: rgba(200,16,46,.075);
-  --sidebar-footer-bg: rgba(4,16,26,.16);
-  --sidebar-shadow: 10px 0 34px rgba(0,0,0,.20);
+  --sidebar-bg: #15181d;
+  --sidebar-panel: #191d23;
+  --sidebar-text: #f4f6f8;
+  --sidebar-muted: #a1a8b3;
+  --sidebar-faint: #69717d;
+  --sidebar-border: rgba(255,255,255,.075);
+  --sidebar-hover: rgba(255,255,255,.045);
+  --sidebar-icon-bg: rgba(255,255,255,.045);
+  --sidebar-active-bg: rgba(255,255,255,.045);
+  --sidebar-active-border: rgba(255,255,255,.085);
+  --sidebar-section-active: rgba(255,255,255,.018);
+  --sidebar-footer-bg: #12151a;
+  --sidebar-shadow: 8px 0 28px rgba(0,0,0,.22);
 }
 
 .segempat-app-sidebar,
@@ -160,12 +160,12 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-brand {
-  min-height: 82px !important;
+  min-height: 74px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: .72rem !important;
-  padding: .95rem .95rem .9rem !important;
+  gap: .68rem !important;
+  padding: .82rem .95rem !important;
   border-bottom: 1px solid var(--sidebar-border) !important;
 }
 
@@ -174,9 +174,9 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-logo-mark {
-  width: 82px;
-  height: 43px;
-  flex: 0 0 82px;
+  width: 76px;
+  height: 40px;
+  flex: 0 0 76px;
   overflow: hidden;
   display: flex;
   align-items: flex-start;
@@ -188,7 +188,7 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-logo-image {
-  width: 82px;
+  width: 76px;
   max-width: none;
   height: auto;
   display: block;
@@ -196,7 +196,7 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-brand-copy {
-  max-width: calc(100% - 94px);
+  max-width: calc(100% - 88px);
 }
 
 .segempat-sidebar-wordmark {
@@ -205,10 +205,10 @@ main .overflow-x-auto,
   gap: 0;
   margin: 0;
   font-family: "Sora", "Inter", sans-serif;
-  font-size: 1.02rem;
+  font-size: .96rem;
   line-height: 1;
   font-weight: 800;
-  letter-spacing: .025em;
+  letter-spacing: .018em;
 }
 
 .segempat-sidebar-wordmark-seg {
@@ -220,13 +220,13 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-tagline {
-  margin-top: .4rem;
+  margin-top: .34rem;
   color: var(--sidebar-muted);
   font-family: "Inter", sans-serif;
-  font-size: .58rem;
-  line-height: 1.25;
-  font-weight: 650;
-  letter-spacing: .025em;
+  font-size: .54rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: .01em;
   text-transform: none;
   white-space: normal;
 }
@@ -248,17 +248,17 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-identity {
-  padding: .9rem .9rem .85rem !important;
+  padding: .72rem .85rem .7rem !important;
   border-bottom: 1px solid var(--sidebar-border) !important;
 }
 
 .segempat-sidebar-profile {
   display: flex;
   align-items: center;
-  gap: .7rem;
-  min-height: 46px;
-  padding: .3rem .35rem;
-  border-radius: .75rem;
+  gap: .62rem;
+  min-height: 42px;
+  padding: .25rem .3rem;
+  border-radius: .65rem;
   text-decoration: none;
   transition: background-color 150ms ease;
 }
@@ -269,25 +269,25 @@ main .overflow-x-auto,
 
 .segempat-sidebar-avatar {
   display: flex;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
   align-items: center;
   justify-content: center;
-  border-radius: .7rem;
-  background: color-mix(in srgb, #d71938 11%, var(--sidebar-panel));
-  border: 1px solid color-mix(in srgb, #d71938 24%, var(--sidebar-border));
+  border-radius: 999px;
+  background: var(--sidebar-icon-bg);
+  border: 1px solid var(--sidebar-border);
   color: #d71938;
   font-family: "Sora", "Inter", sans-serif;
-  font-size: .76rem;
+  font-size: .7rem;
   font-weight: 800;
   box-shadow: none;
 }
 
 [data-theme="dark"] .segempat-sidebar-avatar {
   color: #ff8fa1;
-  background: rgba(215,25,56,.14);
-  border-color: rgba(255,101,125,.18);
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.075);
 }
 
 .segempat-sidebar-profile-name {
@@ -295,9 +295,9 @@ main .overflow-x-auto,
   overflow: hidden;
   color: var(--sidebar-text);
   font-family: "Sora", "Inter", sans-serif;
-  font-size: .72rem;
-  line-height: 1.25;
-  font-weight: 750;
+  font-size: .7rem;
+  line-height: 1.28;
+  font-weight: 700;
   letter-spacing: -.01em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -322,30 +322,27 @@ main .overflow-x-auto,
   min-width: 0;
   align-items: center;
   gap: .5rem;
-  margin-top: .65rem;
-  padding: 0 .35rem;
+  display: block;
+  margin-top: .48rem;
+  padding: 0 .3rem;
 }
 
 .segempat-sidebar-access-pill {
   display: inline-flex;
-  flex: 0 0 auto;
   align-items: center;
-  gap: .35rem;
-  min-height: 23px;
-  padding: .2rem .48rem;
-  border-radius: 999px;
+  gap: .34rem;
   color: #c8102e;
-  background: color-mix(in srgb, #c8102e 7%, var(--sidebar-panel));
-  border: 1px solid color-mix(in srgb, #c8102e 18%, var(--sidebar-border));
+  background: transparent;
+  border: 0;
   font-size: .57rem;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 750;
 }
 
 [data-theme="dark"] .segempat-sidebar-access-pill {
-  color: #ff93a4;
-  background: rgba(200,16,46,.12);
-  border-color: rgba(255,105,128,.18);
+  color: #ff8fa1;
+  background: transparent;
+  border-color: transparent;
 }
 
 .segempat-sidebar-access-dot {
@@ -357,12 +354,14 @@ main .overflow-x-auto,
 }
 
 .segempat-sidebar-sector {
+  display: block;
   min-width: 0;
   overflow: hidden;
+  margin-top: .3rem;
   color: var(--sidebar-muted);
-  font-size: .57rem;
+  font-size: .56rem;
   line-height: 1.2;
-  font-weight: 650;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -386,12 +385,12 @@ main .overflow-x-auto,
 .segempat-app-sidebar .segempat-sidebar-link,
 .segempat-sidebar-sheet .segempat-sidebar-link {
   position: relative;
-  min-height: 41px;
+  min-height: 37px;
   overflow: hidden;
   margin: 0 !important;
-  padding: .52rem .68rem !important;
+  padding: .48rem .66rem !important;
   border: 1px solid transparent !important;
-  border-radius: .68rem !important;
+  border-radius: .62rem !important;
   background: transparent !important;
   box-shadow: none !important;
 }
@@ -406,7 +405,7 @@ main .overflow-x-auto,
 .segempat-sidebar-sheet .segempat-sidebar-link[data-active="true"] {
   background: var(--sidebar-active-bg) !important;
   border-color: var(--sidebar-active-border) !important;
-  box-shadow: inset 2px 0 0 #d71938 !important;
+  box-shadow: inset 2px 0 0 #c8102e, 0 2px 8px rgba(15,23,42,.035) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-link-icon,
@@ -418,8 +417,8 @@ main .overflow-x-auto,
 .segempat-app-sidebar .segempat-sidebar-link-label,
 .segempat-sidebar-sheet .segempat-sidebar-link-label {
   color: var(--sidebar-text) !important;
-  font-size: .72rem !important;
-  font-weight: 650 !important;
+  font-size: .7rem !important;
+  font-weight: 620 !important;
   letter-spacing: -.005em !important;
   transition: color 150ms ease;
 }
@@ -444,20 +443,20 @@ main .overflow-x-auto,
 .segempat-sidebar-sheet .segempat-sidebar-section-card {
   overflow: hidden;
   border: 1px solid transparent !important;
-  border-radius: .72rem !important;
+  border-radius: .62rem !important;
   background: transparent !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section-card[data-active="true"],
 .segempat-sidebar-sheet .segempat-sidebar-section-card[data-active="true"] {
-  border-color: color-mix(in srgb, #d71938 12%, var(--sidebar-border)) !important;
+  border-color: transparent !important;
   background: var(--sidebar-section-active) !important;
 }
 
 .segempat-app-sidebar .segempat-sidebar-section,
 .segempat-sidebar-sheet .segempat-sidebar-section {
-  min-height: 44px;
-  padding: .5rem .58rem !important;
+  min-height: 42px;
+  padding: .46rem .56rem !important;
   border-radius: .66rem !important;
 }
 
@@ -470,10 +469,10 @@ main .overflow-x-auto,
 
 .segempat-app-sidebar .segempat-sidebar-section-icon,
 .segempat-sidebar-sheet .segempat-sidebar-section-icon {
-  width: 29px !important;
-  height: 29px !important;
+  width: 28px !important;
+  height: 28px !important;
   background: var(--sidebar-icon-bg) !important;
-  border: 1px solid var(--sidebar-border) !important;
+  border: 1px solid transparent !important;
   border-radius: .6rem !important;
 }
 
@@ -503,9 +502,9 @@ main .overflow-x-auto,
   overflow: visible !important;
   color: var(--sidebar-text) !important;
   font-family: "Inter", sans-serif;
-  font-size: .67rem !important;
+  font-size: .65rem !important;
   line-height: 1.25 !important;
-  font-weight: 720 !important;
+  font-weight: 680 !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
   white-space: normal !important;
@@ -532,8 +531,8 @@ main .overflow-x-auto,
 
 .segempat-sidebar-footer {
   display: grid;
-  gap: .72rem;
-  padding: .75rem .78rem .9rem !important;
+  gap: .62rem;
+  padding: .7rem .75rem .78rem !important;
   border-top: 1px solid var(--sidebar-border) !important;
   background: var(--sidebar-footer-bg) !important;
 }
@@ -563,7 +562,7 @@ main .overflow-x-auto,
 }
 
 .segempat-theme-option {
-  min-height: 34px !important;
+  min-height: 32px !important;
   color: var(--sidebar-muted) !important;
   border: 1px solid transparent;
   box-shadow: none !important;
@@ -575,10 +574,10 @@ main .overflow-x-auto,
 }
 
 .segempat-theme-option[data-active="true"] {
-  color: #ffffff !important;
-  background: #c8102e !important;
-  border-color: #c8102e !important;
-  box-shadow: 0 4px 12px rgba(200,16,46,.18) !important;
+  color: #c8102e !important;
+  background: color-mix(in srgb, #c8102e 7%, var(--sidebar-panel)) !important;
+  border-color: color-mix(in srgb, #c8102e 16%, var(--sidebar-border)) !important;
+  box-shadow: none !important;
 }
 
 .segempat-sidebar-logout {
@@ -588,24 +587,24 @@ main .overflow-x-auto,
   align-items: center;
   gap: .65rem;
   padding: .55rem .72rem;
-  border: 1px solid color-mix(in srgb, #c8102e 18%, var(--sidebar-border));
-  border-radius: .72rem;
+  border: 1px solid var(--sidebar-border);
+  border-radius: .62rem;
   color: #c8102e;
-  background: color-mix(in srgb, #c8102e 5%, var(--sidebar-panel));
+  background: transparent;
   font-size: .7rem;
   font-weight: 700;
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 .segempat-sidebar-logout:hover {
-  background: color-mix(in srgb, #c8102e 9%, var(--sidebar-panel));
-  border-color: color-mix(in srgb, #c8102e 28%, var(--sidebar-border));
+  background: color-mix(in srgb, #c8102e 5%, var(--sidebar-panel));
+  border-color: color-mix(in srgb, #c8102e 18%, var(--sidebar-border));
 }
 
 [data-theme="dark"] .segempat-sidebar-logout {
   color: #ff8fa1;
-  background: rgba(200,16,46,.08);
-  border-color: rgba(255,101,125,.16);
+  background: transparent;
+  border-color: rgba(255,255,255,.075);
 }
 
 .segempat-app-sidebar .segempat-sidebar-link:focus-visible,
